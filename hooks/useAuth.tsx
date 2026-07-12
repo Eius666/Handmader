@@ -36,14 +36,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Safety valve: if Firebase Auth never calls back (bad config, network block),
+    // force loading:false after 8 s so the app doesn't hang on the splash screen.
+    const timer = setTimeout(() => {
+      console.error('[Auth] onAuthStateChanged timeout — forcing loading:false');
+      setLoading(false);
+    }, 8000);
+
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      clearTimeout(timer);
       if (firebaseUser) {
         try {
           const profile = await getUser(firebaseUser.uid);
           if (profile) {
             setCurrentUser(profile);
           } else {
-            // Firestore doc absent — create a basic user object from Auth
             const basic: User = {
               uid: firebaseUser.uid,
               email: firebaseUser.email ?? '',
@@ -52,12 +59,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               createdAt: new Date(),
             };
             setCurrentUser(basic);
-            // Persist to Firestore in background (don't block loading)
             setUser(firebaseUser.uid, basic).catch(console.error);
           }
         } catch (err) {
           console.error('[Auth] Failed to load Firestore profile:', err);
-          // Still let the user in with basic Auth data
           setCurrentUser({
             uid: firebaseUser.uid,
             email: firebaseUser.email ?? '',
@@ -71,7 +76,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       setLoading(false);
     });
-    return unsub;
+
+    return () => {
+      clearTimeout(timer);
+      unsub();
+    };
   }, []);
 
   async function signIn(email: string, password: string) {
