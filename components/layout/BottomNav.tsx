@@ -2,90 +2,71 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { Home, ClipboardList, User, Package, MessageSquareText } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { cn } from '@/lib/utils';
 
 interface NavItem {
   href: string;
-  icon: string;
   label: string;
+  icon: LucideIcon;
 }
 
-const CUSTOMER_NAV: NavItem[] = [
-  { href: '/home', icon: '🏠', label: 'Главная' },
-  { href: '/orders', icon: '📋', label: 'Заказы' },
-  { href: '/profile', icon: '👤', label: 'Профиль' },
+const CUSTOMER_ITEMS: NavItem[] = [
+  { href: '/home',    label: 'Главная',  icon: Home },
+  { href: '/orders',  label: 'Заказы',   icon: ClipboardList },
+  { href: '/profile', label: 'Профиль',  icon: User },
 ];
 
-const MASTER_NAV: NavItem[] = [
-  { href: '/feed', icon: '🧶', label: 'Лента' },
-  { href: '/my-responses', icon: '📋', label: 'Отклики' },
-  { href: '/profile', icon: '👤', label: 'Профиль' },
+const MASTER_ITEMS: NavItem[] = [
+  { href: '/feed',         label: 'Заказы',   icon: Package },
+  { href: '/my-responses', label: 'Отклики',  icon: MessageSquareText },
+  { href: '/profile',      label: 'Профиль',  icon: User },
+];
+
+const BOTH_ITEMS: NavItem[] = [
+  { href: '/home',         label: 'Главная',  icon: Home },
+  { href: '/orders',       label: 'Заказы',   icon: ClipboardList },
+  { href: '/feed',         label: 'Лента',    icon: Package },
+  { href: '/profile',      label: 'Профиль',  icon: User },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
   const { user } = useAuth();
 
-  const isMaster = user?.role === 'master';
-  const isBoth = user?.role === 'both';
-
-  const items = isMaster ? MASTER_NAV : CUSTOMER_NAV;
-  const extraItem: NavItem | null =
-    isBoth ? { href: '/feed', icon: '🧶', label: 'Лента' } : null;
-
-  const allItems = extraItem ? [...CUSTOMER_NAV.slice(0, 2), extraItem, CUSTOMER_NAV[2]] : items;
+  const items =
+    user?.role === 'master'  ? MASTER_ITEMS   :
+    user?.role === 'both'    ? BOTH_ITEMS      :
+    CUSTOMER_ITEMS;
 
   return (
-    <nav
-      style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: 'var(--nav-height)',
-        background: '#FFFFFF',
-        borderTop: '1px solid #EDE0D4',
-        display: 'flex',
-        alignItems: 'center',
-        zIndex: 100,
-        paddingBottom: 'env(safe-area-inset-bottom)',
-      }}
-    >
-      {allItems.map((item) => {
-        const isActive = pathname.startsWith(item.href);
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 3,
-              textDecoration: 'none',
-              paddingTop: 8,
-              paddingBottom: 4,
-              color: isActive ? 'var(--accent)' : 'var(--text-muted)',
-              transition: 'color 0.15s',
-            }}
-          >
-            <span style={{ fontSize: 22 }}>{item.icon}</span>
-            <span style={{ fontSize: 11, fontWeight: isActive ? 600 : 400 }}>{item.label}</span>
-            {isActive && (
-              <span
-                style={{
-                  width: 4,
-                  height: 4,
-                  borderRadius: '50%',
-                  background: 'var(--accent)',
-                  marginTop: 1,
-                }}
-              />
-            )}
-          </Link>
-        );
-      })}
+    <nav className="fixed inset-x-0 bottom-0 z-10 mx-auto max-w-md border-t border-border bg-card/95 backdrop-blur">
+      <ul className="flex items-center justify-around px-4 pb-6 pt-3">
+        {items.map((item) => {
+          const Icon = item.icon;
+          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+          return (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                aria-current={isActive ? 'page' : undefined}
+                className={cn(
+                  'flex min-w-16 flex-col items-center gap-1 rounded-2xl px-4 py-1.5 transition-colors no-underline',
+                  isActive ? 'text-primary' : 'text-muted-foreground',
+                )}
+              >
+                <Icon
+                  className={cn('size-6', isActive && 'fill-primary/15')}
+                  aria-hidden="true"
+                />
+                <span className="text-xs font-semibold">{item.label}</span>
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
     </nav>
   );
 }

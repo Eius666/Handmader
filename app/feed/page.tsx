@@ -2,25 +2,22 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { SlidersHorizontal, Clock, MapPin } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { PageLayout } from '@/components/layout/PageLayout';
-import { Spinner } from '@/components/ui/Spinner';
+import { BottomNav } from '@/components/layout/BottomNav';
 import { getAvailableOrders } from '@/lib/firestore';
 import { Order, OrderCategory, CATEGORY_LABELS } from '@/types';
+import { cn } from '@/lib/utils';
 
-const FILTER_OPTIONS: { key: OrderCategory | ''; label: string; emoji: string }[] = [
-  { key: '', label: 'Все', emoji: '✨' },
-  { key: 'hat', label: 'Шапки', emoji: '🧢' },
-  { key: 'sweater', label: 'Свитера', emoji: '🧥' },
-  { key: 'scarf', label: 'Шарфы', emoji: '🧣' },
-  { key: 'toy', label: 'Игрушки', emoji: '🐻' },
-  { key: 'accessory', label: 'Аксессуары', emoji: '👜' },
-  { key: 'other', label: 'Другое', emoji: '❓' },
+const FILTERS: { key: OrderCategory | ''; label: string }[] = [
+  { key: '',          label: 'Все' },
+  { key: 'hat',       label: 'Шапки' },
+  { key: 'sweater',   label: 'Свитеры' },
+  { key: 'scarf',     label: 'Шарфы' },
+  { key: 'toy',       label: 'Игрушки' },
+  { key: 'accessory', label: 'Аксессуары' },
+  { key: 'other',     label: 'Другое' },
 ];
-
-const EMOJI_MAP: Record<string, string> = {
-  hat: '🧢', sweater: '🧥', scarf: '🧣', toy: '🐻', accessory: '👜', other: '✨',
-};
 
 export default function FeedPage() {
   const { user } = useAuth();
@@ -28,6 +25,7 @@ export default function FeedPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<OrderCategory | ''>('');
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -38,197 +36,152 @@ export default function FeedPage() {
   }, [filter]);
 
   return (
-    <PageLayout title="Лента заказов">
-      {/* Filter chips */}
-      <div
-        style={{
-          padding: '12px 20px',
-          overflowX: 'auto',
-          display: 'flex',
-          gap: 8,
-          flexShrink: 0,
-          borderBottom: '1px solid var(--border)',
-        }}
-      >
-        {FILTER_OPTIONS.map((opt) => (
-          <button
-            key={opt.key}
-            onClick={() => setFilter(opt.key)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 5,
-              padding: '7px 14px',
-              borderRadius: 20,
-              border: 'none',
-              background: filter === opt.key ? 'var(--accent)' : 'var(--border)',
-              color: filter === opt.key ? '#FFFFFF' : 'var(--text)',
-              fontWeight: 600,
-              fontSize: 13,
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              transition: 'all 0.15s',
-            }}
-          >
-            <span>{opt.emoji}</span>
-            <span>{opt.label}</span>
-          </button>
-        ))}
-      </div>
+    <main className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-28">
+      <header className="flex items-center justify-between px-5 pb-2 pt-8">
+        <h1 className="text-2xl font-extrabold text-foreground">Новые заказы</h1>
+        <button
+          type="button"
+          aria-label="Фильтр"
+          onClick={() => setShowFilters((v) => !v)}
+          className={cn(
+            'flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-[0_4px_20px_rgba(224,122,95,0.12)]',
+            showFilters && 'bg-primary text-primary-foreground',
+          )}
+        >
+          <SlidersHorizontal className="size-5" aria-hidden="true" />
+        </button>
+      </header>
 
-      <div style={{ padding: '16px 20px' }}>
+      {/* Filter chips */}
+      {showFilters && (
+        <div className="-mx-0 flex gap-2.5 overflow-x-auto px-5 pb-3 pt-1 scrollbar-none">
+          {FILTERS.map(({ key, label }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => { setFilter(key); setShowFilters(false); }}
+              className={cn(
+                'shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors',
+                filter === key
+                  ? 'bg-primary text-primary-foreground shadow-[0_4px_14px_rgba(224,122,95,0.35)]'
+                  : 'bg-card text-muted-foreground',
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <section
+        className="flex flex-col gap-4 px-5 pt-3"
+        aria-label="Список доступных заказов"
+      >
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 60 }}>
-            <Spinner size={32} />
+          <div className="flex justify-center py-16">
+            <span className="size-8 rounded-full border-2 border-secondary border-t-primary animate-spin" />
           </div>
         ) : orders.length === 0 ? (
-          <div
-            style={{
-              textAlign: 'center',
-              paddingTop: 80,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 12,
-            }}
-          >
-            <div style={{ fontSize: 64 }}>🧶</div>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+          <div className="flex flex-col items-center gap-3 rounded-2xl bg-card py-12 text-center shadow-[0_4px_20px_rgba(45,45,45,0.06)]">
+            <span className="text-5xl">🧶</span>
+            <p className="text-base font-semibold text-muted-foreground">
               Заказов пока нет
-            </h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: 0, maxWidth: 240 }}>
+            </p>
+            <p className="text-sm text-muted-foreground">
               Попробуйте другую категорию или загляните позже
             </p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {orders.map((order) => (
-              <div
-                key={order.id}
-                className="card"
-                style={{ padding: 16 }}
-              >
-                {/* Header */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 }}>
-                  <div
-                    style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 12,
-                      background: 'var(--bg)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 24,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {EMOJI_MAP[order.category]}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 2 }}>
-                      {CATEGORY_LABELS[order.category]}
-                    </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                      от {order.customerName}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      background: 'var(--bg)',
-                      borderRadius: 8,
-                      padding: '4px 8px',
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: 'var(--text)',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {Object.keys(order.responses || {}).length} откл.
-                  </div>
-                </div>
+          orders.map((order) => (
+            <BrowseOrderCard
+              key={order.id}
+              order={order}
+              onRespond={() => router.push(`/orders/${order.id}/respond`)}
+              onDetail={() => router.push(`/orders/${order.id}`)}
+            />
+          ))
+        )}
+      </section>
 
-                {/* Description */}
-                <p
-                  style={{
-                    margin: '0 0 12px',
-                    fontSize: 13,
-                    color: 'var(--text)',
-                    lineHeight: 1.45,
-                    display: '-webkit-box',
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                  }}
-                >
-                  {order.description}
-                </p>
+      <BottomNav />
+    </main>
+  );
+}
 
-                {/* Details */}
-                <div
-                  style={{
-                    display: 'flex',
-                    gap: 10,
-                    flexWrap: 'wrap',
-                    marginBottom: 14,
-                    paddingTop: 10,
-                    borderTop: '1px solid var(--border)',
-                  }}
-                >
-                  <Chip emoji="💰" text={`${order.budgetMin.toLocaleString('ru')} — ${order.budgetMax.toLocaleString('ru')} ₽`} />
-                  <Chip emoji="📅" text={`до ${formatDate(order.deadline)}`} />
-                </div>
+function BrowseOrderCard({
+  order,
+  onRespond,
+  onDetail,
+}: {
+  order: Order;
+  onRespond: () => void;
+  onDetail: () => void;
+}) {
+  const responseCount = Object.keys(order.responses ?? {}).length;
 
-                {/* Actions */}
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button
-                    onClick={() => router.push(`/orders/${order.id}`)}
-                    className="btn-secondary"
-                    style={{ flex: 1, padding: '11px 16px', fontSize: 14 }}
-                  >
-                    Подробнее
-                  </button>
-                  <button
-                    onClick={() => router.push(`/orders/${order.id}/respond`)}
-                    className="btn-primary"
-                    style={{ flex: 2, padding: '11px 16px', fontSize: 14 }}
-                  >
-                    Откликнуться
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+  return (
+    <article className="flex flex-col gap-4 rounded-2xl bg-card p-4 shadow-[0_4px_20px_rgba(224,122,95,0.12)]">
+      <div className="flex items-start gap-3">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground text-lg">
+          {getCategoryEmoji(order.category)}
+        </span>
+        <div className="min-w-0 flex-1">
+          <span className="text-xs font-medium text-muted-foreground">
+            {CATEGORY_LABELS[order.category]}
+          </span>
+          <h3 className="text-base font-bold leading-snug text-card-foreground">
+            от {order.customerName}
+          </h3>
+        </div>
+        {responseCount > 0 && (
+          <span className="shrink-0 rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-muted-foreground">
+            {responseCount} откл.
+          </span>
         )}
       </div>
-    </PageLayout>
+
+      <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+        {order.description}
+      </p>
+
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <span className="text-base font-bold text-primary">
+          {order.budgetMin.toLocaleString('ru-RU')} — {order.budgetMax.toLocaleString('ru-RU')} ₽
+        </span>
+        <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
+          <Clock className="size-3.5" aria-hidden="true" />
+          до {formatDate(order.deadline)}
+        </span>
+      </div>
+
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={onDetail}
+          className="flex-1 rounded-xl border-2 border-secondary py-2.5 text-sm font-bold text-foreground transition-colors active:bg-secondary"
+        >
+          Подробнее
+        </button>
+        <button
+          type="button"
+          onClick={onRespond}
+          className="flex-2 rounded-xl border-2 border-primary py-2.5 px-4 text-sm font-bold text-primary transition-colors active:bg-primary/10"
+        >
+          Откликнуться
+        </button>
+      </div>
+    </article>
   );
 }
 
-function Chip({ emoji, text }: { emoji: string; text: string }) {
-  return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 4,
-        background: 'var(--bg)',
-        borderRadius: 8,
-        padding: '4px 10px',
-        fontSize: 12,
-        color: 'var(--text)',
-      }}
-    >
-      {emoji} {text}
-    </span>
-  );
+function getCategoryEmoji(cat: OrderCategory): string {
+  const m: Record<OrderCategory, string> = {
+    hat: '🧢', sweater: '🧥', scarf: '🧣', toy: '🐻', accessory: '👜', other: '✨',
+  };
+  return m[cat] ?? '🧶';
 }
 
-function formatDate(dateStr: string): string {
-  if (!dateStr) return '—';
-  try {
-    return new Date(dateStr).toLocaleDateString('ru', { day: 'numeric', month: 'short' });
-  } catch {
-    return dateStr;
-  }
+function formatDate(s: string) {
+  try { return new Date(s).toLocaleDateString('ru', { day: 'numeric', month: 'short' }); }
+  catch { return s; }
 }

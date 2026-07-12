@@ -1,484 +1,209 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
+import { ArrowLeft, Wallet, CalendarClock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useTelegram } from '@/hooks/useTelegram';
-import { PageLayout } from '@/components/layout/PageLayout';
-import { StatusBadge } from '@/components/ui/StatusBadge';
-import { StarRating } from '@/components/ui/StarRating';
-import { Spinner } from '@/components/ui/Spinner';
-import { getOrder, selectMaster, updateOrderStatus } from '@/lib/firestore';
-import { Order, OrderResponse, CATEGORY_LABELS, STATUS_STEPS } from '@/types';
+import { MasterResponseCard } from '@/components/ui/MasterResponseCard';
+import { getOrder, selectMaster } from '@/lib/firestore';
+import { Order, OrderResponse, CATEGORY_LABELS } from '@/types';
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const { openTelegramChat } = useTelegram();
   const router = useRouter();
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectingMaster, setSelectingMaster] = useState<string | null>(null);
-  const [confirmingDelivery, setConfirmingDelivery] = useState(false);
 
   const isOwner = order?.customerId === user?.uid;
-  const isMaster = order?.selectedMasterId === user?.uid;
 
   useEffect(() => {
     if (!id) return;
     getOrder(id)
-      .then((o) => setOrder(o))
+      .then(setOrder)
       .finally(() => setLoading(false));
   }, [id]);
 
-  async function handleSelectMaster(masterId: string, response: OrderResponse) {
-    if (!order || !user) return;
+  async function handleSelectMaster(masterId: string, resp: OrderResponse) {
+    if (!order) return;
     setSelectingMaster(masterId);
     try {
-      await selectMaster(order.id, masterId, response.masterName, response.price);
+      await selectMaster(order.id, masterId, resp.masterName, resp.price);
       setOrder((prev) =>
-        prev
-          ? {
-              ...prev,
-              status: 'master_selected',
-              selectedMasterId: masterId,
-              selectedMasterName: response.masterName,
-              selectedPrice: response.price,
-            }
-          : prev
+        prev ? { ...prev, status: 'master_selected', selectedMasterId: masterId, selectedMasterName: resp.masterName, selectedPrice: resp.price } : prev
       );
     } finally {
       setSelectingMaster(null);
     }
   }
 
-  async function handleConfirmDelivery() {
-    if (!order) return;
-    setConfirmingDelivery(true);
-    try {
-      await updateOrderStatus(order.id, 'completed');
-      setOrder((prev) => (prev ? { ...prev, status: 'completed' } : prev));
-    } finally {
-      setConfirmingDelivery(false);
-    }
-  }
-
-  async function handleAdvanceStatus() {
-    if (!order) return;
-    const idx = STATUS_STEPS.indexOf(order.status as typeof STATUS_STEPS[number]);
-    if (idx < 0 || idx >= STATUS_STEPS.length - 1) return;
-    const next = STATUS_STEPS[idx + 1];
-    await updateOrderStatus(order.id, next);
-    setOrder((prev) => (prev ? { ...prev, status: next } : prev));
-  }
-
   if (loading) {
     return (
-      <PageLayout showBack title="">
-        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 80 }}>
-          <Spinner size={36} />
-        </div>
-      </PageLayout>
+      <div className="flex min-h-dvh items-center justify-center bg-background">
+        <span className="size-9 rounded-full border-2 border-secondary border-t-primary animate-spin" />
+      </div>
     );
   }
 
   if (!order) {
     return (
-      <PageLayout showBack title="Заказ">
-        <div style={{ textAlign: 'center', paddingTop: 80 }}>
-          <p>Заказ не найден</p>
-        </div>
-      </PageLayout>
+      <div className="flex min-h-dvh flex-col items-center justify-center bg-background gap-4">
+        <p className="text-muted-foreground">Заказ не найден</p>
+        <button onClick={() => router.back()} className="text-primary font-semibold">← Назад</button>
+      </div>
     );
   }
 
-  const responses = Object.entries(order.responses || {});
-  const selectedResponse = order.selectedMasterId
-    ? order.responses[order.selectedMasterId]
-    : null;
+  const responses = Object.entries(order.responses ?? {});
+  const isMasterSelected = !!order.selectedMasterId;
 
-  const isActive = order.status !== 'awaiting_responses' && order.status !== 'completed';
-  const stepIdx = STATUS_STEPS.indexOf(order.status as typeof STATUS_STEPS[number]);
+  // If order is in active state, redirect to tracking
+  if (['in_progress', 'ready', 'delivered'].includes(order.status)) {
+    router.replace(`/track/${order.id}`);
+    return null;
+  }
 
   return (
-    <PageLayout showBack title={CATEGORY_LABELS[order.category]}>
-      <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-10">
+      <header className="flex items-center gap-4 px-5 pb-2 pt-4">
+        <button
+          onClick={() => router.back()}
+          aria-label="Назад"
+          className="flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-[0_4px_16px_rgba(45,45,45,0.06)] transition-colors active:bg-secondary"
+        >
+          <ArrowLeft className="size-5" aria-hidden="true" />
+        </button>
+        <h1 className="text-2xl font-extrabold text-foreground">
+          {CATEGORY_LABELS[order.category]}
+        </h1>
+      </header>
 
-        {/* Status */}
-        <div className="card" style={{ padding: 16, display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-          <div>
-            <div style={{ marginBottom: 6 }}>
-              <StatusBadge status={order.status} />
-            </div>
-            {isActive && (
-              <div style={{ marginTop: 12 }}>
-                <ProgressBar steps={STATUS_STEPS.slice(0, -1)} currentIdx={stepIdx - 1} />
-              </div>
-            )}
+      <div className="flex flex-col gap-6 px-5 pt-4">
+        {/* Order info card */}
+        <section className="flex flex-col gap-4 rounded-2xl bg-card p-5 shadow-[0_4px_20px_rgba(45,45,45,0.06)]">
+          <span className="inline-flex w-fit items-center rounded-full bg-primary/12 px-3 py-1 text-sm font-bold text-primary">
+            {CATEGORY_LABELS[order.category]}
+          </span>
+
+          <p className="text-base leading-relaxed text-foreground">{order.description}</p>
+
+          <div className="flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-sm font-semibold text-foreground">
+              <Wallet className="size-4 text-primary" aria-hidden="true" />
+              {order.budgetMin.toLocaleString('ru-RU')} — {order.budgetMax.toLocaleString('ru-RU')} ₽
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-sm font-semibold text-foreground">
+              <CalendarClock className="size-4 text-primary" aria-hidden="true" />
+              до {formatDate(order.deadline)}
+            </span>
           </div>
-        </div>
 
-        {/* Order info */}
-        <div className="card" style={{ padding: 18 }}>
-          <h3 style={{ margin: '0 0 10px', fontSize: 15, fontWeight: 700 }}>Описание</h3>
-          <p style={{ margin: '0 0 14px', fontSize: 14, color: 'var(--text)', lineHeight: 1.5 }}>
-            {order.description}
-          </p>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <InfoChip emoji="💰" text={`${order.budgetMin.toLocaleString('ru')} — ${order.budgetMax.toLocaleString('ru')} ₽`} />
-            <InfoChip emoji="📅" text={`до ${formatDate(order.deadline)}`} />
-          </div>
-
+          {/* Photos */}
           {order.photos && order.photos.length > 0 && (
-            <div style={{ marginTop: 14 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: 'var(--text-muted)' }}>
-                Референсы
-              </div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {order.photos.map((url, i) => (
-                  <a
-                    key={i}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'block',
-                      width: 70,
-                      height: 70,
-                      borderRadius: 10,
-                      overflow: 'hidden',
-                      background: 'var(--bg)',
-                      border: '1px solid var(--border)',
-                    }}
-                  >
-                    <img
-                      src={url}
-                      alt={`ref-${i}`}
-                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = 'none';
-                      }}
-                    />
-                  </a>
-                ))}
-              </div>
+            <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1 scrollbar-none">
+              {order.photos.map((src, i) => (
+                <div
+                  key={i}
+                  className="relative size-24 shrink-0 overflow-hidden rounded-xl bg-secondary"
+                >
+                  <Image
+                    src={src}
+                    alt={`Фото заказа ${i + 1}`}
+                    fill
+                    sizes="96px"
+                    className="object-cover"
+                    onError={() => {}}
+                  />
+                </div>
+              ))}
             </div>
           )}
-        </div>
+        </section>
 
-        {/* Selected master block */}
-        {selectedResponse && (
-          <div
-            className="card"
-            style={{
-              padding: 18,
-              border: '2px solid var(--success)',
-              background: '#F5FAF7',
-            }}
-          >
-            <h3 style={{ margin: '0 0 12px', fontSize: 15, fontWeight: 700, color: '#2E7D32' }}>
-              ✓ Мастер выбран
-            </h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-              <div
-                style={{
-                  width: 46,
-                  height: 46,
-                  borderRadius: '50%',
-                  background: 'var(--border)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 22,
-                  overflow: 'hidden',
-                  flexShrink: 0,
-                }}
-              >
-                {selectedResponse.masterPhoto ? (
-                  <img
-                    src={selectedResponse.masterPhoto}
-                    alt=""
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                ) : (
-                  '🧶'
-                )}
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 15 }}>
-                  {selectedResponse.masterName}
-                </div>
-                <StarRating value={selectedResponse.masterRating} size={14} />
-              </div>
+        {/* Master selected banner */}
+        {isMasterSelected && order.status === 'master_selected' && (
+          <section className="flex items-center gap-3 rounded-2xl bg-status-progress/10 p-4 border border-status-progress/30">
+            <span className="text-2xl">✓</span>
+            <div>
+              <p className="font-bold text-foreground">Мастер выбран!</p>
+              <p className="text-sm text-muted-foreground">
+                {order.selectedMasterName} приступит к работе
+              </p>
             </div>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
-              <InfoChip emoji="💰" text={`${selectedResponse.price.toLocaleString('ru')} ₽`} />
-              <InfoChip emoji="⏱️" text={selectedResponse.timeline} />
-            </div>
-
-            {selectedResponse.masterPhoto && (
-              <button
-                onClick={() => openTelegramChat(order.selectedMasterId!)}
-                className="btn-primary"
-                style={{ marginBottom: 10 }}
-              >
-                💬 Связаться в Telegram
-              </button>
-            )}
-
-            {isOwner && order.status === 'ready' && (
-              <button
-                className="btn-primary"
-                onClick={handleConfirmDelivery}
-                disabled={confirmingDelivery}
-                style={{ background: 'var(--success)' }}
-              >
-                {confirmingDelivery ? 'Подтверждаем...' : '✓ Подтвердить получение'}
-              </button>
-            )}
-
-            {!isOwner && isMaster && isActive && order.status !== 'ready' && order.status !== 'delivered' && (
-              <button
-                className="btn-secondary"
-                onClick={handleAdvanceStatus}
-              >
-                Обновить статус →
-              </button>
-            )}
-          </div>
+            <button
+              onClick={() => router.push(`/track/${order.id}`)}
+              className="ml-auto shrink-0 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
+            >
+              Трекинг
+            </button>
+          </section>
         )}
 
         {/* Responses */}
         {isOwner && order.status === 'awaiting_responses' && (
-          <div>
-            <h3 style={{ margin: '0 0 12px', fontSize: 16, fontWeight: 700 }}>
-              Отклики мастеров ({responses.length})
-            </h3>
+          <section className="flex flex-col gap-4">
+            <h2 className="text-xl font-extrabold text-foreground">
+              Отклики мастеров{' '}
+              <span className="text-primary">({responses.length})</span>
+            </h2>
+
             {responses.length === 0 ? (
-              <div
-                className="card"
-                style={{
-                  padding: 24,
-                  textAlign: 'center',
-                  color: 'var(--text-muted)',
-                  fontSize: 14,
-                }}
-              >
-                <div style={{ fontSize: 36, marginBottom: 8 }}>⏳</div>
-                Ожидаем откликов мастеров...
-                <br />
-                Обычно первые отклики приходят в течение часа.
+              <div className="flex flex-col items-center gap-3 rounded-2xl bg-card p-8 text-center shadow-[0_4px_20px_rgba(45,45,45,0.06)]">
+                <span className="text-5xl">⏳</span>
+                <p className="text-base font-semibold text-muted-foreground">
+                  Ожидаем откликов мастеров...
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Обычно первые отклики приходят в течение часа
+                </p>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <ul className="flex flex-col gap-4">
                 {responses.map(([masterId, resp]) => (
-                  <ResponseCard
-                    key={masterId}
-                    masterId={masterId}
-                    response={resp}
-                    onSelect={() => handleSelectMaster(masterId, resp)}
-                    isSelecting={selectingMaster === masterId}
-                  />
+                  <li key={masterId}>
+                    <MasterResponseCard
+                      masterId={masterId}
+                      response={resp}
+                      onSelect={isOwner ? () => handleSelectMaster(masterId, resp) : undefined}
+                      isSelecting={selectingMaster === masterId}
+                    />
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
-          </div>
+          </section>
+        )}
+
+        {/* Selected master responses */}
+        {isMasterSelected && order.status === 'master_selected' && (
+          <section className="flex flex-col gap-4">
+            <h2 className="text-xl font-extrabold text-foreground">Выбранный мастер</h2>
+            <MasterResponseCard
+              masterId={order.selectedMasterId!}
+              response={order.responses[order.selectedMasterId!]}
+              selected
+            />
+          </section>
         )}
 
         {/* Respond button for master */}
-        {!isOwner && user?.role !== 'customer' && order.status === 'awaiting_responses' && (
+        {!isOwner && (user?.role === 'master' || user?.role === 'both') && order.status === 'awaiting_responses' && (
           <button
-            className="btn-primary"
             onClick={() => router.push(`/orders/${order.id}/respond`)}
+            className="w-full rounded-xl bg-primary py-4 text-lg font-bold text-primary-foreground shadow-[0_8px_24px_rgba(224,122,95,0.4)] transition-transform active:scale-[0.98]"
           >
             Откликнуться на заказ
           </button>
         )}
       </div>
-    </PageLayout>
-  );
-}
-
-function ResponseCard({
-  masterId,
-  response,
-  onSelect,
-  isSelecting,
-}: {
-  masterId: string;
-  response: OrderResponse;
-  onSelect: () => void;
-  isSelecting: boolean;
-}) {
-  return (
-    <div className="card" style={{ padding: 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-        <div
-          style={{
-            width: 46,
-            height: 46,
-            borderRadius: '50%',
-            background: 'var(--bg)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 22,
-            overflow: 'hidden',
-            flexShrink: 0,
-          }}
-        >
-          {response.masterPhoto ? (
-            <img
-              src={response.masterPhoto}
-              alt=""
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          ) : (
-            '🧶'
-          )}
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 2 }}>
-            {response.masterName}
-          </div>
-          <StarRating value={response.masterRating} size={14} />
-        </div>
-      </div>
-
-      {response.comment && (
-        <p style={{ margin: '0 0 12px', fontSize: 13, color: 'var(--text)', lineHeight: 1.45 }}>
-          {response.comment}
-        </p>
-      )}
-
-      <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
-        <InfoChip emoji="💰" text={`${response.price.toLocaleString('ru')} ₽`} />
-        <InfoChip emoji="⏱️" text={response.timeline} />
-      </div>
-
-      {response.portfolioPhotos && response.portfolioPhotos.length > 0 && (
-        <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
-          {response.portfolioPhotos.slice(0, 3).map((url, i) => (
-            <div
-              key={i}
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 8,
-                overflow: 'hidden',
-                background: 'var(--bg)',
-                border: '1px solid var(--border)',
-              }}
-            >
-              <img
-                src={url}
-                alt=""
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                onError={(e) => {
-                  (e.target as HTMLImageElement).parentElement!.style.display = 'none';
-                }}
-              />
-            </div>
-          ))}
-        </div>
-      )}
-
-      <button
-        className="btn-primary"
-        onClick={onSelect}
-        disabled={isSelecting}
-        style={{ fontSize: 14, padding: '11px 20px' }}
-      >
-        {isSelecting ? 'Выбираем...' : '✓ Выбрать этого мастера'}
-      </button>
     </div>
   );
 }
 
-function InfoChip({ emoji, text }: { emoji: string; text: string }) {
-  return (
-    <div
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 4,
-        background: 'var(--bg)',
-        borderRadius: 8,
-        padding: '5px 10px',
-        fontSize: 13,
-        color: 'var(--text)',
-        fontWeight: 500,
-      }}
-    >
-      <span>{emoji}</span>
-      <span>{text}</span>
-    </div>
-  );
-}
-
-function ProgressBar({ steps, currentIdx }: { steps: readonly string[]; currentIdx: number }) {
-  const LABELS: Record<string, string> = {
-    master_selected: 'Принят',
-    in_progress: 'В работе',
-    ready: 'Готов',
-    delivered: 'Доставлен',
-  };
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-      {steps.map((step, i) => {
-        const done = i <= currentIdx;
-        const current = i === currentIdx;
-        return (
-          <div key={step} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1 }}>
-              <div
-                style={{
-                  width: 12,
-                  height: 12,
-                  borderRadius: '50%',
-                  background: done ? 'var(--accent)' : 'var(--border)',
-                  border: current ? '2px solid var(--accent)' : 'none',
-                  transition: 'background 0.3s',
-                }}
-              />
-              <div
-                style={{
-                  fontSize: 9,
-                  color: done ? 'var(--accent)' : 'var(--text-muted)',
-                  marginTop: 3,
-                  fontWeight: done ? 600 : 400,
-                  textAlign: 'center',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {LABELS[step] ?? step}
-              </div>
-            </div>
-            {i < steps.length - 1 && (
-              <div
-                style={{
-                  height: 2,
-                  flex: 2,
-                  background: i < currentIdx ? 'var(--accent)' : 'var(--border)',
-                  marginBottom: 16,
-                  transition: 'background 0.3s',
-                }}
-              />
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return '—';
-  try {
-    return new Date(dateStr).toLocaleDateString('ru', { day: 'numeric', month: 'short' });
-  } catch {
-    return dateStr;
-  }
+function formatDate(s: string) {
+  try { return new Date(s).toLocaleDateString('ru', { day: 'numeric', month: 'short' }); }
+  catch { return s; }
 }

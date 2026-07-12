@@ -1,69 +1,79 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useRef, useState, Suspense } from 'react';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { ArrowLeft, Camera, Calendar, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
-import { PageLayout } from '@/components/layout/PageLayout';
 import { createOrder } from '@/lib/firestore';
 import { OrderCategory, CATEGORY_LABELS } from '@/types';
 
-const CATEGORIES: { key: OrderCategory; emoji: string }[] = [
-  { key: 'hat', emoji: '🧢' },
-  { key: 'sweater', emoji: '🧥' },
-  { key: 'scarf', emoji: '🧣' },
-  { key: 'toy', emoji: '🐻' },
-  { key: 'accessory', emoji: '👜' },
-  { key: 'other', emoji: '✨' },
+const CATEGORIES: { key: OrderCategory; label: string }[] = [
+  { key: 'hat',       label: 'Шапки' },
+  { key: 'sweater',   label: 'Свитеры' },
+  { key: 'scarf',     label: 'Шарфы' },
+  { key: 'toy',       label: 'Игрушки' },
+  { key: 'accessory', label: 'Аксессуары' },
+  { key: 'other',     label: 'Другое' },
 ];
 
-function NewOrderForm() {
+const MAX_PHOTOS = 5;
+
+function NewOrderFormInner() {
   const searchParams = useSearchParams();
-  const initialCategory = (searchParams.get('category') as OrderCategory) || '';
+  const initialCat = (searchParams.get('category') as OrderCategory) || 'hat';
 
-  const [category, setCategory] = useState<OrderCategory | ''>(initialCategory);
+  const [selectedCategory, setSelectedCategory] = useState<OrderCategory>(initialCat);
   const [description, setDescription] = useState('');
-  const [budgetMin, setBudgetMin] = useState(500);
-  const [budgetMax, setBudgetMax] = useState(3000);
+  const [budgetMin, setBudgetMin] = useState('');
+  const [budgetMax, setBudgetMax] = useState('');
   const [deadline, setDeadline] = useState('');
-  const [photoUrls, setPhotoUrls] = useState<string[]>(['']);
-  const [loading, setLoading] = useState(false);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const router = useRouter();
 
-  function addPhotoUrl() {
-    if (photoUrls.length >= 5) return;
-    setPhotoUrls((prev) => [...prev, '']);
+  function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files) return;
+    const remaining = MAX_PHOTOS - photos.length;
+    const urls = Array.from(files)
+      .slice(0, remaining)
+      .map((f) => URL.createObjectURL(f));
+    setPhotos((prev) => [...prev, ...urls]);
+    e.target.value = '';
   }
 
-  function updatePhotoUrl(index: number, value: string) {
-    setPhotoUrls((prev) => prev.map((u, i) => (i === index ? value : u)));
-  }
-
-  function removePhotoUrl(index: number) {
-    setPhotoUrls((prev) => prev.filter((_, i) => i !== index));
+  function removePhoto(index: number) {
+    setPhotos((prev) => {
+      const next = [...prev];
+      URL.revokeObjectURL(next[index]);
+      next.splice(index, 1);
+      return next;
+    });
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
-    if (!category) { setError('Выберите категорию'); return; }
     if (!description.trim()) { setError('Добавьте описание'); return; }
-    if (!deadline) { setError('Укажите срок выполнения'); return; }
-
+    if (!deadline) { setError('Укажите срок'); return; }
+    const min = Number(budgetMin) || 500;
+    const max = Number(budgetMax) || 3000;
     setError('');
-    setLoading(true);
+    setSubmitting(true);
     try {
-      const cleanPhotos = photoUrls.filter((u) => u.trim() !== '');
       const id = await createOrder({
         customerId: user.uid,
         customerName: user.displayName,
         description: description.trim(),
-        category: category as OrderCategory,
-        photos: cleanPhotos,
-        budgetMin,
-        budgetMax,
+        category: selectedCategory,
+        photos: [],          // file upload → Storage not configured in MVP
+        budgetMin: min,
+        budgetMax: Math.max(min, max),
         deadline,
       });
       router.replace(`/orders/${id}`);
@@ -71,240 +81,199 @@ function NewOrderForm() {
       console.error(err);
       setError('Не удалось создать заказ. Попробуйте снова.');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   }
 
   const today = new Date().toISOString().split('T')[0];
 
   return (
-    <PageLayout title="Новый заказ" showBack hideNav={false}>
-      <form onSubmit={handleSubmit} style={{ padding: '16px 20px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div className="flex min-h-dvh flex-col bg-background">
+      <header className="flex items-center gap-4 px-5 pb-2 pt-4">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          aria-label="Назад"
+          className="flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-[0_4px_16px_rgba(45,45,45,0.06)] transition-colors active:bg-secondary"
+        >
+          <ArrowLeft className="size-5" aria-hidden="true" />
+        </button>
+        <h1 className="text-2xl font-extrabold text-foreground">Новый заказ</h1>
+      </header>
 
+      <form
+        id="new-order-form"
+        onSubmit={handleSubmit}
+        className="flex flex-1 flex-col gap-7 px-5 pb-40 pt-4"
+      >
         {/* Category */}
-        <div className="card" style={{ padding: 18 }}>
-          <label style={{ fontWeight: 700, fontSize: 15, display: 'block', marginBottom: 12 }}>
-            Категория
-          </label>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-            {CATEGORIES.map((cat) => (
-              <button
-                type="button"
-                key={cat.key}
-                onClick={() => setCategory(cat.key)}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: 4,
-                  padding: '10px 6px',
-                  borderRadius: 12,
-                  border: category === cat.key ? '2px solid var(--accent)' : '2px solid transparent',
-                  background: category === cat.key ? '#FFF0EB' : 'var(--bg)',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s',
-                }}
-              >
-                <span style={{ fontSize: 22 }}>{cat.emoji}</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)' }}>
-                  {CATEGORY_LABELS[cat.key]}
-                </span>
-              </button>
-            ))}
+        <section className="flex flex-col gap-3">
+          <label className="text-base font-bold text-foreground">Категория</label>
+          <div className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-1 scrollbar-none">
+            {CATEGORIES.map(({ key, label }) => {
+              const isActive = key === selectedCategory;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setSelectedCategory(key)}
+                  aria-pressed={isActive}
+                  className={cn(
+                    'shrink-0 rounded-full px-5 py-2.5 text-base font-semibold transition-colors',
+                    isActive
+                      ? 'bg-primary text-primary-foreground shadow-[0_4px_14px_rgba(224,122,95,0.35)]'
+                      : 'bg-card text-muted-foreground',
+                  )}
+                >
+                  {label}
+                </button>
+              );
+            })}
           </div>
-        </div>
+        </section>
 
         {/* Description */}
-        <div className="card" style={{ padding: 18 }}>
-          <label style={{ fontWeight: 700, fontSize: 15, display: 'block', marginBottom: 10 }}>
-            Описание заказа
+        <section className="flex flex-col gap-3">
+          <label htmlFor="desc" className="text-base font-bold text-foreground">
+            Описание
           </label>
           <textarea
-            className="input-field"
-            placeholder="Что хотите создать? Укажите размер, цвет, пряжу, особые пожелания..."
+            id="desc"
+            rows={5}
+            placeholder="Опишите что хотите: размер, цвет, пряжа..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            rows={4}
+            className="w-full resize-none rounded-2xl bg-card px-5 py-4 text-base font-medium text-foreground shadow-[0_4px_16px_rgba(45,45,45,0.05)] outline-none placeholder:font-medium placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40"
             required
           />
-        </div>
+        </section>
 
-        {/* Budget */}
-        <div className="card" style={{ padding: 18 }}>
-          <label style={{ fontWeight: 700, fontSize: 15, display: 'block', marginBottom: 10 }}>
-            Бюджет
-          </label>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              marginBottom: 14,
-            }}
-          >
-            <div
-              style={{
-                background: 'var(--bg)',
-                borderRadius: 10,
-                padding: '8px 14px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
-              <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>от</span>
-              <span style={{ fontWeight: 700, fontSize: 17, color: 'var(--accent)' }}>
-                {budgetMin.toLocaleString('ru')} ₽
-              </span>
-            </div>
-            <span style={{ color: 'var(--text-muted)' }}>—</span>
-            <div
-              style={{
-                background: 'var(--bg)',
-                borderRadius: 10,
-                padding: '8px 14px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
-            >
-              <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>до</span>
-              <span style={{ fontWeight: 700, fontSize: 17, color: 'var(--accent)' }}>
-                {budgetMax.toLocaleString('ru')} ₽
-              </span>
-            </div>
-          </div>
-          <div style={{ marginBottom: 8 }}>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>
-              Минимум
-            </div>
-            <input
-              type="range"
-              min={200}
-              max={budgetMax}
-              step={100}
-              value={budgetMin}
-              onChange={(e) => setBudgetMin(Number(e.target.value))}
-            />
-          </div>
-          <div>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>
-              Максимум
-            </div>
-            <input
-              type="range"
-              min={budgetMin}
-              max={50000}
-              step={100}
-              value={budgetMax}
-              onChange={(e) => setBudgetMax(Number(e.target.value))}
-            />
-          </div>
-        </div>
-
-        {/* Deadline */}
-        <div className="card" style={{ padding: 18 }}>
-          <label style={{ fontWeight: 700, fontSize: 15, display: 'block', marginBottom: 10 }}>
-            Нужно готово к
+        {/* Photo upload (preview only; Storage not configured) */}
+        <section className="flex flex-col gap-3">
+          <label className="text-base font-bold text-foreground">
+            Фото{' '}
+            <span className="font-medium text-muted-foreground">
+              ({photos.length}/{MAX_PHOTOS})
+            </span>
           </label>
           <input
-            className="input-field"
-            type="date"
-            value={deadline}
-            min={today}
-            onChange={(e) => setDeadline(e.target.value)}
-            required
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={handleFiles}
           />
-        </div>
-
-        {/* Photo references */}
-        <div className="card" style={{ padding: 18 }}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 10,
-            }}
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={photos.length >= MAX_PHOTOS}
+            className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 py-8 text-primary transition-colors active:bg-primary/10 disabled:opacity-50"
           >
-            <label style={{ fontWeight: 700, fontSize: 15 }}>
-              Фото-референсы (URL)
-            </label>
-            {photoUrls.length < 5 && (
-              <button
-                type="button"
-                onClick={addPhotoUrl}
-                style={{
-                  background: 'var(--bg)',
-                  border: 'none',
-                  color: 'var(--accent)',
-                  fontWeight: 600,
-                  fontSize: 13,
-                  cursor: 'pointer',
-                  borderRadius: 8,
-                  padding: '4px 10px',
-                }}
-              >
-                + Добавить
-              </button>
-            )}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {photoUrls.map((url, i) => (
-              <div key={i} style={{ display: 'flex', gap: 8 }}>
-                <input
-                  className="input-field"
-                  type="url"
-                  placeholder="https://..."
-                  value={url}
-                  onChange={(e) => updatePhotoUrl(i, e.target.value)}
-                  style={{ flex: 1 }}
-                />
-                {photoUrls.length > 1 && (
+            <Camera className="size-8" aria-hidden="true" />
+            <span className="text-base font-semibold">Добавить фото</span>
+          </button>
+
+          {photos.length > 0 && (
+            <ul className="flex flex-wrap gap-3 pt-1">
+              {photos.map((src, i) => (
+                <li key={src} className="relative size-20 overflow-hidden rounded-2xl">
+                  <Image
+                    src={src}
+                    alt={`Фото ${i + 1}`}
+                    fill
+                    sizes="80px"
+                    className="object-cover"
+                    unoptimized
+                  />
                   <button
                     type="button"
-                    onClick={() => removePhotoUrl(i)}
-                    style={{
-                      background: '#FFF0EB',
-                      border: 'none',
-                      color: 'var(--accent)',
-                      borderRadius: 10,
-                      padding: '0 12px',
-                      cursor: 'pointer',
-                      flexShrink: 0,
-                      fontSize: 16,
-                    }}
+                    onClick={() => removePhoto(i)}
+                    aria-label={`Удалить фото ${i + 1}`}
+                    className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-full bg-foreground/70 text-background"
                   >
-                    ✕
+                    <X className="size-3.5" aria-hidden="true" />
                   </button>
-                )}
-              </div>
-            ))}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        {/* Budget */}
+        <section className="flex flex-col gap-3">
+          <label className="text-base font-bold text-foreground">Бюджет</label>
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1">
+              <input
+                type="number"
+                inputMode="numeric"
+                placeholder="От"
+                value={budgetMin}
+                onChange={(e) => setBudgetMin(e.target.value)}
+                aria-label="Бюджет от"
+                className="w-full rounded-2xl bg-card py-4 pl-5 pr-9 text-base font-semibold text-foreground shadow-[0_4px_16px_rgba(45,45,45,0.05)] outline-none placeholder:font-medium placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40"
+              />
+              <span className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-base font-semibold text-muted-foreground">₽</span>
+            </div>
+            <div className="relative flex-1">
+              <input
+                type="number"
+                inputMode="numeric"
+                placeholder="До"
+                value={budgetMax}
+                onChange={(e) => setBudgetMax(e.target.value)}
+                aria-label="Бюджет до"
+                className="w-full rounded-2xl bg-card py-4 pl-5 pr-9 text-base font-semibold text-foreground shadow-[0_4px_16px_rgba(45,45,45,0.05)] outline-none placeholder:font-medium placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40"
+              />
+              <span className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-base font-semibold text-muted-foreground">₽</span>
+            </div>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: 12, margin: '8px 0 0' }}>
-            Вставьте ссылки на фото из интернета или Instagram
-          </p>
-        </div>
+        </section>
+
+        {/* Deadline */}
+        <section className="flex flex-col gap-3">
+          <label htmlFor="deadline" className="text-base font-bold text-foreground">
+            Срок выполнения
+          </label>
+          <div className="relative">
+            <input
+              id="deadline"
+              type="date"
+              min={today}
+              value={deadline}
+              onChange={(e) => setDeadline(e.target.value)}
+              className="w-full appearance-none rounded-2xl bg-card py-4 pl-5 pr-12 text-base font-semibold text-foreground shadow-[0_4px_16px_rgba(45,45,45,0.05)] outline-none focus:ring-2 focus:ring-primary/40 [&::-webkit-calendar-picker-indicator]:opacity-0"
+              required
+            />
+            <Calendar className="pointer-events-none absolute right-5 top-1/2 size-5 -translate-y-1/2 text-primary" aria-hidden="true" />
+          </div>
+        </section>
 
         {error && (
-          <p style={{ color: 'var(--accent)', fontWeight: 600, margin: 0, textAlign: 'center' }}>
-            {error}
-          </p>
+          <p className="text-center text-sm font-semibold text-primary">{error}</p>
         )}
-
-        <button className="btn-primary" type="submit" disabled={loading} style={{ marginTop: 4 }}>
-          {loading ? 'Публикуем...' : 'Опубликовать заказ 🚀'}
-        </button>
       </form>
-    </PageLayout>
+
+      {/* Submit */}
+      <div className="fixed inset-x-0 bottom-0 mx-auto max-w-md border-t border-border bg-background/95 px-5 pb-8 pt-4 backdrop-blur">
+        <button
+          type="submit"
+          form="new-order-form"
+          disabled={submitting}
+          className="w-full rounded-xl bg-primary py-4 text-lg font-bold text-primary-foreground shadow-[0_8px_24px_rgba(224,122,95,0.4)] transition-transform active:scale-[0.98] disabled:opacity-60"
+        >
+          {submitting ? 'Публикуем...' : 'Опубликовать заказ 🚀'}
+        </button>
+      </div>
+    </div>
   );
 }
 
 export default function NewOrderPage() {
   return (
-    <Suspense fallback={<div style={{ padding: 40, textAlign: 'center' }}>Загрузка...</div>}>
-      <NewOrderForm />
+    <Suspense fallback={<div className="flex min-h-dvh items-center justify-center bg-background"><span className="text-muted-foreground">Загрузка...</span></div>}>
+      <NewOrderFormInner />
     </Suspense>
   );
 }
