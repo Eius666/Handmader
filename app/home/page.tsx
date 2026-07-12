@@ -37,7 +37,7 @@ export default function HomePage() {
 
   return (
     <main className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col bg-background">
-      <div className="flex flex-1 flex-col gap-7 px-5 pt-6 pb-28">
+      <div className="flex flex-1 flex-col gap-6 px-5 pt-6 pb-28">
 
         {/* Greeting + search */}
         <header className="flex flex-col gap-5 pt-2">

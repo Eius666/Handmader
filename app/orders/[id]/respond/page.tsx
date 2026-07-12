@@ -89,40 +89,31 @@ export default function RespondPage() {
 
   return (
     <PageLayout showBack title="Отклик на заказ">
-      <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="flex flex-col gap-4 px-5 pb-8 pt-4">
 
         {/* Order summary */}
-        <div className="card" style={{ padding: 16 }}>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 6 }}>Заказ</div>
-          <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 6 }}>
-            {CATEGORY_LABELS[order.category]}
-          </div>
-          <p style={{ margin: '0 0 10px', fontSize: 13, color: 'var(--text)', lineHeight: 1.45 }}>
+        <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
+          <span className="text-xs font-medium text-muted-foreground">Заказ</span>
+          <span className="text-base font-bold text-foreground">{CATEGORY_LABELS[order.category]}</span>
+          <p className="text-sm leading-relaxed text-foreground" style={{ margin: 0 }}>
             {order.description}
           </p>
-          <div style={{ display: 'flex', gap: 12, fontSize: 13, color: 'var(--text-muted)' }}>
+          <div className="flex flex-wrap gap-3 pt-1 text-xs font-medium text-muted-foreground">
             <span>💰 {order.budgetMin.toLocaleString('ru')} — {order.budgetMax.toLocaleString('ru')} ₽</span>
             <span>📅 до {formatDate(order.deadline)}</span>
           </div>
         </div>
 
         {success ? (
-          <div
-            className="card"
-            style={{ padding: 32, textAlign: 'center', color: 'var(--success)' }}
-          >
-            <div style={{ fontSize: 48, marginBottom: 12 }}>✅</div>
-            <div style={{ fontWeight: 700, fontSize: 18 }}>Отклик отправлен!</div>
-            <div style={{ color: 'var(--text-muted)', fontSize: 14, marginTop: 6 }}>
-              Заказчик получит уведомление
-            </div>
+          <div className="flex flex-col items-center gap-3 rounded-2xl bg-card p-8 text-center shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
+            <span className="text-5xl">✅</span>
+            <span className="text-lg font-bold text-foreground">Отклик отправлен!</span>
+            <span className="text-sm text-muted-foreground">Заказчик получит уведомление</span>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div className="card" style={{ padding: 18 }}>
-              <label style={{ fontWeight: 700, fontSize: 15, display: 'block', marginBottom: 10 }}>
-                Ваша цена (₽)
-              </label>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
+              <label className="text-sm font-bold text-foreground">Ваша цена (₽)</label>
               <input
                 className="input-field"
                 type="number"
@@ -132,15 +123,13 @@ export default function RespondPage() {
                 min={1}
                 required
               />
-              <p style={{ color: 'var(--text-muted)', fontSize: 12, margin: '6px 0 0' }}>
+              <p className="text-xs text-muted-foreground" style={{ margin: 0 }}>
                 Бюджет заказчика: {order.budgetMin.toLocaleString('ru')} — {order.budgetMax.toLocaleString('ru')} ₽
               </p>
             </div>
 
-            <div className="card" style={{ padding: 18 }}>
-              <label style={{ fontWeight: 700, fontSize: 15, display: 'block', marginBottom: 10 }}>
-                Срок выполнения
-              </label>
+            <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
+              <label className="text-sm font-bold text-foreground">Срок выполнения</label>
               <input
                 className="input-field"
                 type="text"
@@ -151,10 +140,8 @@ export default function RespondPage() {
               />
             </div>
 
-            <div className="card" style={{ padding: 18 }}>
-              <label style={{ fontWeight: 700, fontSize: 15, display: 'block', marginBottom: 10 }}>
-                Комментарий
-              </label>
+            <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
+              <label className="text-sm font-bold text-foreground">Комментарий</label>
               <textarea
                 className="input-field"
                 placeholder="Расскажите о себе, опыте, почему вы подойдёте для этого заказа..."
@@ -165,7 +152,7 @@ export default function RespondPage() {
             </div>
 
             {error && (
-              <p style={{ color: 'var(--accent)', fontWeight: 600, margin: 0, textAlign: 'center' }}>
+              <p className="text-center text-sm font-semibold text-primary" style={{ margin: 0 }}>
                 {error}
               </p>
             )}

@@ -102,13 +102,10 @@ export default function ProfilePage() {
         </Link>
       }
     >
-      <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div className="flex flex-col gap-6 px-5 pb-24 pt-4">
 
         {/* ── Avatar + name ──────────────────────────────── */}
-        <div
-          className="card"
-          style={{ padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}
-        >
+        <div className="flex flex-col items-center gap-3 rounded-2xl bg-card p-6 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
           <div
             style={{
               width: 80, height: 80, borderRadius: '50%',
@@ -128,7 +125,7 @@ export default function ProfilePage() {
 
         {/* ── Master profile ─────────────────────────────── */}
         {isMaster && (
-          <div className="card" style={{ padding: 18 }}>
+          <div className="rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>
                 🧶 Профиль мастера

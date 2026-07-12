@@ -209,7 +209,7 @@ export default function TrackPage() {
 
         {/* Order summary */}
         <section className="flex flex-col gap-4 rounded-2xl bg-card p-5 shadow-[0_4px_20px_rgba(45,45,45,0.06)]">
-          <h2 className="flex items-center gap-2 text-lg font-extrabold text-foreground">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
             <Package className="size-5 text-primary" aria-hidden="true" />
             Детали заказа
           </h2>

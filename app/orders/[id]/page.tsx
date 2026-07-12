@@ -145,7 +145,7 @@ export default function OrderDetailPage() {
         {/* Responses */}
         {isOwner && order.status === 'awaiting_responses' && (
           <section className="flex flex-col gap-4">
-            <h2 className="text-xl font-extrabold text-foreground">
+            <h2 className="text-lg font-bold text-foreground">
               Отклики мастеров{' '}
               <span className="text-primary">({responses.length})</span>
             </h2>
@@ -180,7 +180,7 @@ export default function OrderDetailPage() {
         {/* Selected master responses */}
         {isMasterSelected && order.status === 'master_selected' && (
           <section className="flex flex-col gap-4">
-            <h2 className="text-xl font-extrabold text-foreground">Выбранный мастер</h2>
+            <h2 className="text-lg font-bold text-foreground">Выбранный мастер</h2>
             <MasterResponseCard
               masterId={order.selectedMasterId!}
               response={order.responses[order.selectedMasterId!]}

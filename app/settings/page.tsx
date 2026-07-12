@@ -37,10 +37,10 @@ export default function SettingsPage() {
 
   return (
     <PageLayout title="Настройки" showBack>
-      <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div className="flex flex-col gap-4 px-5 pb-24 pt-4">
 
         {/* ── Role section ──────────────────────────────── */}
-        <div className="card" style={{ padding: 18 }}>
+        <div className="rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>
@@ -105,19 +105,15 @@ export default function SettingsPage() {
         ].map((item) => (
           <div
             key={item.label}
-            className="card"
-            style={{
-              padding: '14px 18px',
-              display: 'flex', alignItems: 'center', gap: 14,
-              opacity: 0.55, cursor: 'default',
-            }}
+            className="flex items-center gap-3.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgba(45,45,45,0.06)]"
+            style={{ opacity: 0.55, cursor: 'default' }}
           >
-            <span style={{ fontSize: 22 }}>{item.emoji}</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text)' }}>{item.label}</div>
-              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{item.sub}</div>
+            <span className="text-[22px] leading-none">{item.emoji}</span>
+            <div className="flex-1">
+              <div className="text-[15px] font-semibold text-foreground">{item.label}</div>
+              <div className="mt-0.5 text-xs text-muted-foreground">{item.sub}</div>
             </div>
-            <span style={{ color: 'var(--text-muted)', fontSize: 18 }}>›</span>
+            <span className="text-lg text-muted-foreground">›</span>
           </div>
         ))}
       </div>

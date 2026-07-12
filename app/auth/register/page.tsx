@@ -6,12 +6,12 @@ import { useRouter } from 'next/navigation';
 import { useAuth, getFirebaseErrorMessage } from '@/hooks/useAuth';
 
 export default function RegisterPage() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [name,     setName]     = useState('');
+  const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [confirm,  setConfirm]  = useState('');
+  const [error,    setError]    = useState('');
+  const [loading,  setLoading]  = useState(false);
   const { signUp } = useAuth();
   const router = useRouter();
 
@@ -29,7 +29,6 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await signUp(email, password, name);
-      // hasSelectedRole:false is set in signUp → root page shows OnboardingRole
       router.replace('/');
     } catch (err) {
       setError(getFirebaseErrorMessage(err));
@@ -39,40 +38,18 @@ export default function RegisterPage() {
   }
 
   return (
-    <div
-      style={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        background: 'var(--bg)',
-      }}
-    >
-      <div style={{ padding: '50px 24px 24px', textAlign: 'center' }}>
-        <div style={{ fontSize: 48 }}>🧶</div>
-        <h1
-          style={{ fontSize: 28, fontWeight: 800, color: 'var(--accent)', margin: '10px 0 4px' }}
-        >
-          Создать аккаунт
-        </h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: 0 }}>
-          Присоединяйтесь к Handmader
-        </p>
+    <div className="flex min-h-dvh flex-col bg-background">
+      {/* Logo */}
+      <div className="flex flex-col items-center px-5 pb-6 pt-12 text-center">
+        <span className="text-5xl leading-none">🧶</span>
+        <h1 className="mt-3 text-[28px] font-extrabold text-primary">Создать аккаунт</h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">Присоединяйтесь к Handmader</p>
       </div>
 
-      <div
-        style={{
-          flex: 1,
-          padding: '0 24px 40px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 12,
-        }}
-      >
-        <div className="card" style={{ padding: 24 }}>
-          <form
-            onSubmit={handleSubmit}
-            style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
-          >
+      {/* Form area */}
+      <div className="flex flex-1 flex-col gap-3 px-5 pb-10">
+        <div className="rounded-2xl bg-card p-6 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <input
               className="input-field"
               type="text"
@@ -109,11 +86,9 @@ export default function RegisterPage() {
               required
               autoComplete="new-password"
             />
-
             {error && (
-              <p style={{ color: '#E07A5F', fontSize: 13, margin: 0 }}>{error}</p>
+              <p className="text-sm font-semibold text-primary">{error}</p>
             )}
-
             <button
               className="btn-primary"
               type="submit"
@@ -125,11 +100,12 @@ export default function RegisterPage() {
           </form>
         </div>
 
-        <p style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 }}>
+        <p className="text-center text-sm text-muted-foreground">
           Уже есть аккаунт?{' '}
           <Link
             href="/auth/login"
-            style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'none' }}
+            className="font-semibold text-primary"
+            style={{ textDecoration: 'none' }}
           >
             Войти
           </Link>

@@ -38,50 +38,19 @@ export function PageLayout({
   }, [showBack, webApp, onBack, router]);
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        background: 'var(--bg)',
-      }}
-    >
+    <div className="flex h-full flex-col bg-background">
       {title && (
-        <header
-          style={{
-            padding: '16px 20px 12px',
-            background: 'var(--bg)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            flexShrink: 0,
-            borderBottom: '1px solid var(--border)',
-          }}
-        >
+        <header className="flex shrink-0 items-center gap-3 border-b border-border px-5 pb-3 pt-4">
           {showBack && !webApp && (
             <button
               onClick={onBack ?? (() => router.back())}
-              style={{
-                background: 'none',
-                border: 'none',
-                fontSize: 22,
-                cursor: 'pointer',
-                padding: 0,
-                color: 'var(--accent)',
-              }}
+              className="text-[22px] leading-none text-primary"
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
             >
               ←
             </button>
           )}
-          <h1
-            style={{
-              flex: 1,
-              margin: 0,
-              fontSize: 20,
-              fontWeight: 700,
-              color: 'var(--text)',
-            }}
-          >
+          <h1 className="flex-1 text-xl font-bold text-foreground" style={{ margin: 0 }}>
             {title}
           </h1>
           {headerRight}
@@ -89,11 +58,8 @@ export function PageLayout({
       )}
 
       <div
-        className="scrollable"
-        style={{
-          flex: 1,
-          paddingBottom: hideNav ? 0 : 'calc(var(--nav-height) + env(safe-area-inset-bottom))',
-        }}
+        className="scrollable flex-1"
+        style={{ paddingBottom: hideNav ? 0 : 'calc(var(--nav-height) + env(safe-area-inset-bottom))' }}
       >
         {children}
       </div>
