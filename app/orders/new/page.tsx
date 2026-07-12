@@ -88,8 +88,8 @@ function NewOrderFormInner() {
   const today = new Date().toISOString().split('T')[0];
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
-      <header className="flex items-center gap-4 px-5 pb-2 pt-4">
+    <div className="flex h-dvh flex-col overflow-hidden bg-background">
+      <header className="flex shrink-0 items-center gap-4 px-5 pb-2 pt-4">
         <button
           type="button"
           onClick={() => router.back()}
@@ -101,10 +101,12 @@ function NewOrderFormInner() {
         <h1 className="text-2xl font-extrabold text-foreground">Новый заказ</h1>
       </header>
 
+      {/* Scrollable form area — header stays fixed, submit button is `fixed` at bottom */}
+      <div className="scrollbar-none flex-1 overflow-y-auto">
       <form
         id="new-order-form"
         onSubmit={handleSubmit}
-        className="flex flex-1 flex-col gap-7 px-5 pb-40 pt-4"
+        className="flex flex-col gap-7 px-5 pb-40 pt-4"
       >
         {/* Category */}
         <section className="flex flex-col gap-3">
@@ -254,8 +256,9 @@ function NewOrderFormInner() {
           <p className="text-center text-sm font-semibold text-primary">{error}</p>
         )}
       </form>
+      </div>{/* end scrollable */}
 
-      {/* Submit */}
+      {/* Submit — fixed so it's always visible regardless of scroll position */}
       <div className="fixed inset-x-0 bottom-0 mx-auto max-w-md border-t border-border bg-background/95 px-5 pb-8 pt-4 backdrop-blur">
         <button
           type="submit"
