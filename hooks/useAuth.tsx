@@ -38,10 +38,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        const profile = await getUser(firebaseUser.uid);
-        if (profile) {
-          setCurrentUser(profile);
-        } else {
+        try {
+          const profile = await getUser(firebaseUser.uid);
+          if (profile) {
+            setCurrentUser(profile);
+          } else {
+            // Firestore doc absent — create a basic user object from Auth
+            const basic: User = {
+              uid: firebaseUser.uid,
+              email: firebaseUser.email ?? '',
+              displayName: firebaseUser.displayName ?? '',
+              role: 'customer',
+              createdAt: new Date(),
+            };
+            setCurrentUser(basic);
+            // Persist to Firestore in background (don't block loading)
+            setUser(firebaseUser.uid, basic).catch(console.error);
+          }
+        } catch (err) {
+          console.error('[Auth] Failed to load Firestore profile:', err);
+          // Still let the user in with basic Auth data
           setCurrentUser({
             uid: firebaseUser.uid,
             email: firebaseUser.email ?? '',

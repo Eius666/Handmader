@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { AuthProvider } from '@/hooks/useAuth';
+import { AppShell } from '@/components/AppShell';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -18,9 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru" style={{ height: '100%' }}>
       <body style={{ height: '100%', margin: 0 }}>
-        <AuthProvider>
-          <div id="app-root">{children}</div>
-        </AuthProvider>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
