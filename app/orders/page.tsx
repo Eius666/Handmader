@@ -51,14 +51,14 @@ export default function OrdersPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col bg-background">
+    <main className="mx-auto flex min-h-dvh w-full max-w-5xl flex-col bg-background">
       {/* Header */}
-      <header className="flex items-center justify-between px-5 pb-3 pt-8">
+      <header className="flex items-center justify-between px-5 sm:px-8 lg:px-12 pb-3 pt-8">
         <div>
           <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-0.5">
             Мои
           </p>
-          <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-foreground leading-none">
+          <h1 className="text-[26px] sm:text-[30px] font-extrabold tracking-[-0.03em] text-foreground leading-none">
             Заказы
           </h1>
         </div>
@@ -74,7 +74,7 @@ export default function OrdersPage() {
 
       {/* Tabs */}
       <div
-        className="mx-5 mt-1 mb-4 flex gap-1 rounded-xl p-1"
+        className="mx-5 sm:mx-8 lg:mx-12 mt-1 mb-4 flex w-fit gap-1 rounded-xl p-1 min-w-[240px] max-w-sm"
         style={{ background: 'rgba(180,100,70,0.07)' }}
       >
         {(['active', 'completed'] as const).map((t) => (
@@ -94,9 +94,9 @@ export default function OrdersPage() {
         ))}
       </div>
 
-      <section className="flex flex-col gap-3 px-5 pb-28">
+      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 px-5 sm:px-8 lg:px-12 pb-28 items-start">
         {loading ? (
-          <div className="flex flex-col gap-3">
+          <>
             {[...Array(3)].map((_, i) => (
               <div
                 key={i}
@@ -108,10 +108,10 @@ export default function OrdersPage() {
                 }}
               />
             ))}
-          </div>
+          </>
         ) : filtered.length === 0 ? (
           <div
-            className="flex flex-col items-center gap-3 rounded-2xl py-14 text-center"
+            className="col-span-full flex flex-col items-center gap-3 rounded-2xl py-14 text-center"
             style={{
               background: '#ffffff',
               border: '1px solid rgba(180,100,70,0.08)',
@@ -161,6 +161,7 @@ function OrderListCard({ order, onClick }: { order: Order; onClick: () => void }
         boxShadow: '0 2px 10px rgba(140,80,50,0.06)',
       }}
     >
+      {/* Top row — always flex, badge aligns to top-right */}
       <div className="flex items-start gap-3">
         <span
           className="flex size-10 shrink-0 items-center justify-center rounded-xl"
@@ -179,8 +180,9 @@ function OrderListCard({ order, onClick }: { order: Order; onClick: () => void }
         <StatusBadge status={order.status} />
       </div>
 
+      {/* Bottom meta row */}
       <div
-        className="flex items-center justify-between pt-3 text-[11px] font-medium text-muted-foreground"
+        className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-3 text-[11px] font-medium text-muted-foreground"
         style={{ borderTop: '1px solid rgba(180,100,70,0.08)' }}
       >
         <span>
@@ -188,7 +190,7 @@ function OrderListCard({ order, onClick }: { order: Order; onClick: () => void }
         </span>
         <span>до {formatDate(order.deadline)}</span>
         {responseCount > 0 && (
-          <span className="font-bold text-primary">{responseCount} откл.</span>
+          <span className="font-bold text-primary ml-auto">{responseCount} откл.</span>
         )}
       </div>
     </button>
