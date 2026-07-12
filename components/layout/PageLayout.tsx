@@ -2,6 +2,7 @@
 
 import { ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 import { BottomNav } from './BottomNav';
 import { useTelegram } from '@/hooks/useTelegram';
 
@@ -40,17 +41,24 @@ export function PageLayout({
   return (
     <div className="flex h-full flex-col bg-background">
       {title && (
-        <header className="flex shrink-0 items-center gap-3 border-b border-border px-5 pb-3 pt-4">
+        <header
+          className="flex shrink-0 items-center gap-3 px-5 pb-3 pt-5"
+          style={{ borderBottom: '1px solid rgba(180,100,70,0.08)' }}
+        >
           {showBack && !webApp && (
             <button
               onClick={onBack ?? (() => router.back())}
-              className="text-[22px] leading-none text-primary"
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+              aria-label="Назад"
+              className="flex size-9 items-center justify-center rounded-full text-foreground transition-all duration-200 active:scale-95"
+              style={{ background: 'rgba(217,108,82,0.08)' }}
             >
-              ←
+              <ArrowLeft className="size-4 text-primary" />
             </button>
           )}
-          <h1 className="flex-1 text-xl font-bold text-foreground" style={{ margin: 0 }}>
+          <h1
+            className="flex-1 text-[19px] font-bold tracking-[-0.02em] text-foreground"
+            style={{ margin: 0 }}
+          >
             {title}
           </h1>
           {headerRight}

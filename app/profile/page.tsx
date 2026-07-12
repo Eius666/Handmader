@@ -105,18 +105,28 @@ export default function ProfilePage() {
       <div className="flex flex-col gap-6 px-5 pb-24 pt-4">
 
         {/* ── Avatar + name ──────────────────────────────── */}
-        <div className="flex flex-col items-center gap-3 rounded-2xl bg-card p-6 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
+        <div
+          className="flex flex-col items-center gap-3 p-6"
+          style={{
+            background: '#ffffff',
+            border: '1px solid rgba(180,100,70,0.08)',
+            borderRadius: 22,
+            boxShadow: '0 2px 12px rgba(140,80,50,0.06)',
+          }}
+        >
           <div
             style={{
               width: 80, height: 80, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #E07A5F, #F2A594)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36,
+              background: 'linear-gradient(135deg, #d96c52, #f0a07a)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34,
+              boxShadow: '0 6px 20px rgba(217,108,82,0.3)',
+              border: '3px solid rgba(255,255,255,0.9)',
             }}
           >
             {user.displayName?.[0]?.toUpperCase() ?? '👤'}
           </div>
           <div style={{ textAlign: 'center' }}>
-            <h2 style={{ fontSize: 22, fontWeight: 800, margin: '0 0 4px', color: 'var(--text)' }}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 4px', color: 'var(--text)', letterSpacing: '-0.03em' }}>
               {user.displayName}
             </h2>
             <p style={{ fontSize: 14, color: 'var(--text-muted)', margin: 0 }}>{user.email}</p>
@@ -125,7 +135,15 @@ export default function ProfilePage() {
 
         {/* ── Master profile ─────────────────────────────── */}
         {isMaster && (
-          <div className="rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
+          <div
+            style={{
+              background: '#ffffff',
+              border: '1px solid rgba(180,100,70,0.08)',
+              borderRadius: 20,
+              padding: 16,
+              boxShadow: '0 2px 10px rgba(140,80,50,0.06)',
+            }}
+          >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
               <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>
                 🧶 Профиль мастера

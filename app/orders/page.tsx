@@ -43,7 +43,7 @@ export default function OrdersPage() {
   );
 
   function handleCardClick(order: Order) {
-    if (order.status === 'in_progress' || order.status === 'ready' || order.status === 'delivered') {
+    if (['in_progress', 'ready', 'delivered'].includes(order.status)) {
       router.push(`/track/${order.id}`);
     } else {
       router.push(`/orders/${order.id}`);
@@ -53,49 +53,80 @@ export default function OrdersPage() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col bg-background">
       {/* Header */}
-      <header className="flex items-center justify-between px-5 pb-2 pt-8">
-        <h1 className="text-2xl font-extrabold text-foreground">Мои заказы</h1>
+      <header className="flex items-center justify-between px-5 pb-3 pt-8">
+        <div>
+          <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-0.5">
+            Мои
+          </p>
+          <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-foreground leading-none">
+            Заказы
+          </h1>
+        </div>
         <button
           onClick={() => router.push('/orders/new')}
           aria-label="Новый заказ"
-          className="flex size-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_4px_14px_rgba(224,122,95,0.35)]"
+          className="flex size-11 items-center justify-center rounded-full text-white transition-all duration-200 active:scale-95"
+          style={{ background: '#d96c52', boxShadow: '0 4px 14px rgba(217,108,82,0.35)' }}
         >
           <Plus className="size-5" aria-hidden="true" />
         </button>
       </header>
 
       {/* Tabs */}
-      <div className="flex gap-1 px-5 pt-3 pb-1">
+      <div
+        className="mx-5 mt-1 mb-4 flex gap-1 rounded-xl p-1"
+        style={{ background: 'rgba(180,100,70,0.07)' }}
+      >
         {(['active', 'completed'] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`flex-1 rounded-xl py-2.5 text-sm font-bold transition-colors ${
-              tab === t
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-secondary text-muted-foreground'
-            }`}
+            className="flex-1 rounded-lg py-2.5 text-[13px] font-bold transition-all duration-250"
+            style={{
+              background: tab === t ? '#ffffff' : 'transparent',
+              color: tab === t ? '#d96c52' : '#78716c',
+              boxShadow: tab === t ? '0 2px 8px rgba(140,80,50,0.1)' : 'none',
+              transition: 'all 0.25s cubic-bezier(0.32, 0.72, 0, 1)',
+            }}
           >
             {t === 'active' ? 'Активные' : 'Завершённые'}
           </button>
         ))}
       </div>
 
-      <section className="flex flex-col gap-4 px-5 pt-3 pb-28">
+      <section className="flex flex-col gap-3 px-5 pb-28">
         {loading ? (
-          <div className="flex justify-center py-16">
-            <span className="size-8 rounded-full border-2 border-secondary border-t-primary animate-spin" />
+          <div className="flex flex-col gap-3">
+            {[...Array(3)].map((_, i) => (
+              <div
+                key={i}
+                className="rounded-2xl"
+                style={{
+                  height: 90,
+                  background: 'rgba(180,100,70,0.06)',
+                  border: '1px solid rgba(180,100,70,0.06)',
+                }}
+              />
+            ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-2xl bg-card py-12 text-center shadow-[0_4px_20px_rgba(45,45,45,0.06)]">
+          <div
+            className="flex flex-col items-center gap-3 rounded-2xl py-14 text-center"
+            style={{
+              background: '#ffffff',
+              border: '1px solid rgba(180,100,70,0.08)',
+              boxShadow: '0 2px 12px rgba(140,80,50,0.06)',
+            }}
+          >
             <span className="text-5xl">📋</span>
-            <p className="text-base font-semibold text-muted-foreground">
+            <p className="text-[14px] font-semibold text-muted-foreground">
               {tab === 'active' ? 'Активных заказов нет' : 'Завершённых заказов нет'}
             </p>
             {tab === 'active' && (
               <button
                 onClick={() => router.push('/orders/new')}
-                className="mt-1 rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground shadow-[0_4px_14px_rgba(224,122,95,0.35)]"
+                className="mt-1 rounded-full px-6 py-2.5 text-[13px] font-bold text-white transition-all active:scale-95"
+                style={{ background: '#d96c52', boxShadow: '0 4px 14px rgba(217,108,82,0.3)' }}
               >
                 Создать заказ
               </button>
@@ -121,26 +152,43 @@ function OrderListCard({ order, onClick }: { order: Order; onClick: () => void }
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col gap-3 rounded-2xl bg-card p-4 text-left shadow-[0_4px_20px_rgba(224,122,95,0.08)] transition-transform active:scale-[0.98] w-full"
+      className="flex flex-col gap-3 w-full text-left transition-all duration-200 active:scale-[0.98]"
+      style={{
+        background: '#ffffff',
+        border: '1px solid rgba(180,100,70,0.08)',
+        borderRadius: 18,
+        padding: '14px 16px',
+        boxShadow: '0 2px 10px rgba(140,80,50,0.06)',
+      }}
     >
       <div className="flex items-start gap-3">
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-secondary text-primary">
-          <Icon className="size-5" aria-hidden="true" />
+        <span
+          className="flex size-10 shrink-0 items-center justify-center rounded-xl"
+          style={{ background: 'rgba(217,108,82,0.1)' }}
+        >
+          <Icon className="size-5 text-primary" aria-hidden="true" />
         </span>
         <div className="flex-1 min-w-0">
-          <span className="text-xs font-medium text-muted-foreground">{CATEGORY_LABELS[order.category]}</span>
-          <p className="line-clamp-2 text-sm font-bold leading-snug text-foreground">
+          <span className="text-[11px] font-medium text-muted-foreground tracking-wide">
+            {CATEGORY_LABELS[order.category]}
+          </span>
+          <p className="line-clamp-2 text-[13px] font-bold leading-snug text-foreground">
             {order.description}
           </p>
         </div>
         <StatusBadge status={order.status} />
       </div>
 
-      <div className="flex items-center justify-between border-t border-border pt-3 text-xs font-medium text-muted-foreground">
-        <span>💰 {order.budgetMin.toLocaleString('ru-RU')} — {order.budgetMax.toLocaleString('ru-RU')} ₽</span>
-        <span>📅 до {formatDate(order.deadline)}</span>
+      <div
+        className="flex items-center justify-between pt-3 text-[11px] font-medium text-muted-foreground"
+        style={{ borderTop: '1px solid rgba(180,100,70,0.08)' }}
+      >
+        <span>
+          {order.budgetMin.toLocaleString('ru-RU')} — {order.budgetMax.toLocaleString('ru-RU')} ₽
+        </span>
+        <span>до {formatDate(order.deadline)}</span>
         {responseCount > 0 && (
-          <span className="text-primary font-semibold">💬 {responseCount}</span>
+          <span className="font-bold text-primary">{responseCount} откл.</span>
         )}
       </div>
     </button>

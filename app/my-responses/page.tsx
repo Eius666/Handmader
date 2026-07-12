@@ -60,23 +60,28 @@ export default function MyResponsesPage() {
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-28">
-      <header className="px-5 pb-2 pt-8">
-        <h1 className="text-2xl font-extrabold text-foreground">Мои отклики</h1>
+      <header className="px-5 pb-3 pt-8">
+        <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-0.5">Мои</p>
+        <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-foreground leading-none">Отклики</h1>
       </header>
 
-      <section className="flex flex-col gap-4 px-5 pt-3">
+      <section className="flex flex-col gap-3 px-5 pt-2">
         {loading ? (
           <div className="flex justify-center py-16">
             <span className="size-8 rounded-full border-2 border-secondary border-t-primary animate-spin" />
           </div>
         ) : entries.length === 0 ? (
-          <div className="flex flex-col items-center gap-3 rounded-2xl bg-card py-12 text-center shadow-[0_4px_20px_rgba(45,45,45,0.06)]">
+          <div
+            className="flex flex-col items-center gap-3 rounded-2xl py-14 text-center"
+            style={{ background: '#ffffff', border: '1px solid rgba(180,100,70,0.08)', boxShadow: '0 2px 12px rgba(140,80,50,0.06)' }}
+          >
             <span className="text-5xl">📩</span>
-            <p className="text-base font-semibold text-muted-foreground">Откликов пока нет</p>
-            <p className="text-sm text-muted-foreground">Перейдите в ленту и откликнитесь!</p>
+            <p className="text-[14px] font-semibold text-muted-foreground">Откликов пока нет</p>
+            <p className="text-[12px] text-muted-foreground">Перейдите в ленту и откликнитесь</p>
             <button
               onClick={() => router.push('/feed')}
-              className="mt-2 rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground shadow-[0_4px_14px_rgba(224,122,95,0.35)]"
+              className="mt-2 rounded-full px-6 py-2.5 text-[13px] font-bold text-white transition-all active:scale-95"
+              style={{ background: '#d96c52', boxShadow: '0 4px 14px rgba(217,108,82,0.3)' }}
             >
               Открыть ленту
             </button>
@@ -91,11 +96,14 @@ export default function MyResponsesPage() {
                   ? router.push(`/track/${order.id}`)
                   : router.push(`/orders/${order.id}`)
               }
-              className={`flex flex-col gap-3 rounded-2xl p-4 text-left shadow-[0_4px_20px_rgba(45,45,45,0.06)] w-full transition-transform active:scale-[0.98] ${
-                isSelected
-                  ? 'bg-status-progress/10 border border-status-progress/30'
-                  : 'bg-card'
-              }`}
+              className="flex flex-col gap-3 w-full text-left transition-all duration-200 active:scale-[0.98]"
+              style={{
+                borderRadius: 18,
+                padding: '14px 16px',
+                background: isSelected ? 'rgba(74,124,89,0.07)' : '#ffffff',
+                border: isSelected ? '1px solid rgba(74,124,89,0.2)' : '1px solid rgba(180,100,70,0.08)',
+                boxShadow: '0 2px 10px rgba(140,80,50,0.06)',
+              }}
             >
               <div className="flex items-start gap-3">
                 <span className="text-2xl shrink-0">{getCategoryEmoji(order.category)}</span>
