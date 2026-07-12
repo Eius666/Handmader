@@ -51,11 +51,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (profile) {
             setCurrentUser(profile);
           } else {
+            // No Firestore doc — create a minimal fallback; hasSelectedRole:false
+            // triggers the OnboardingRole screen so user picks their role explicitly.
             const basic: User = {
               uid: firebaseUser.uid,
               email: firebaseUser.email ?? '',
               displayName: firebaseUser.displayName ?? '',
               role: 'customer',
+              hasSelectedRole: false,
               createdAt: new Date(),
             };
             setCurrentUser(basic);
@@ -68,6 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: firebaseUser.email ?? '',
             displayName: firebaseUser.displayName ?? '',
             role: 'customer',
+            hasSelectedRole: false,
             createdAt: new Date(),
           });
         }
@@ -90,18 +94,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function signUp(email: string, password: string, displayName: string) {
     const { user: fbUser } = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(fbUser, { displayName });
+    // hasSelectedRole: false → OnboardingRole screen will ask the user to pick a role
     await setUser(fbUser.uid, {
       email,
       displayName,
       role: 'customer',
+      hasSelectedRole: false,
       createdAt: new Date(),
     });
   }
 
   async function setRole(role: UserRole) {
-    if (!auth.currentUser) return;
-    await setUser(auth.currentUser.uid, { role });
-    setCurrentUser((prev) => (prev ? { ...prev, role } : prev));
+    if (!auth.currentUser) throw new Error('Нет авторизации');
+    const uid = auth.currentUser.uid;
+    console.log('[setRole] uid:', uid, 'role:', role);
+
+    await Promise.race([
+      setUser(uid, { role, hasSelectedRole: true }),
+      new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error('Firestore не ответил за 5 секунд. Проверьте соединение.')),
+          5000,
+        )
+      ),
+    ]);
+
+    console.log('[setRole] saved');
+    setCurrentUser((prev) => (prev ? { ...prev, role, hasSelectedRole: true } : prev));
   }
 
   async function logout() {

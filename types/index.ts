@@ -32,6 +32,7 @@ export interface User {
   displayName: string;
   role: UserRole;
   createdAt: Date;
+  hasSelectedRole?: boolean;  // false = hasn't completed role-selection onboarding yet
   masterProfile?: MasterProfile;
 }
 

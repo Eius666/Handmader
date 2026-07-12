@@ -1,37 +1,33 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { StarRating } from '@/components/ui/StarRating';
 import { setUser } from '@/lib/firestore';
-import { UserRole, OrderCategory, CATEGORY_LABELS, MasterProfile } from '@/types';
-
-const ROLE_OPTIONS: { role: UserRole; emoji: string; title: string; desc: string }[] = [
-  { role: 'customer', emoji: '🛍️', title: 'Заказчик',   desc: 'Создаю заказы на изделия' },
-  { role: 'master',   emoji: '🧶', title: 'Мастер',     desc: 'Выполняю заказы на вязание' },
-  { role: 'both',     emoji: '✨', title: 'Обе роли',   desc: 'И заказываю, и выполняю' },
-];
+import { OrderCategory, CATEGORY_LABELS, MasterProfile } from '@/types';
 
 const MASTER_CATS: OrderCategory[] = ['hat', 'sweater', 'scarf', 'toy', 'accessory', 'other'];
 
 export default function ProfilePage() {
-  const { user, setRole, refreshUser, logout } = useAuth();
+  const { user, refreshUser, logout } = useAuth();
   const router = useRouter();
 
   const [loggingOut,    setLoggingOut]    = useState(false);
-  const [savingRole,    setSavingRole]    = useState(false);
   const [editingMaster, setEditingMaster] = useState(false);
   const [savingMaster,  setSavingMaster]  = useState(false);
+  const [masterError,   setMasterError]   = useState('');
 
-  // Master profile form fields
+  // Master profile form state
   const [bio,  setBio]  = useState('');
   const [cats, setCats] = useState<OrderCategory[]>([]);
   const [urls, setUrls] = useState(['', '', '']);
   const [city, setCity] = useState('');
 
-  // Initialise form from Firestore data once user is available
+  // Initialise form from Firestore data once user loads
   useEffect(() => {
     if (!user) return;
     const mp = user.masterProfile;
@@ -52,21 +48,10 @@ export default function ProfilePage() {
   const isMaster = user.role === 'master' || user.role === 'both';
   const mp = user.masterProfile;
 
-  async function handleRoleChange(newRole: UserRole) {
-    if (!user || newRole === user.role || savingRole) return;
-    setSavingRole(true);
-    try {
-      await setRole(newRole);
-      const hasMasterRole = newRole === 'master' || newRole === 'both';
-      setEditingMaster(hasMasterRole && !user.masterProfile);
-    } finally {
-      setSavingRole(false);
-    }
-  }
-
   async function handleSaveMaster() {
     if (!user) return;
     setSavingMaster(true);
+    setMasterError('');
     try {
       const masterProfile: MasterProfile = {
         bio,
@@ -76,9 +61,19 @@ export default function ProfilePage() {
         rating:          mp?.rating          ?? 0,
         completedOrders: mp?.completedOrders ?? 0,
       };
-      await setUser(user.uid, { masterProfile });
+      await Promise.race([
+        setUser(user.uid, { masterProfile }),
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () => reject(new Error('Firestore не ответил за 5 секунд')),
+            5000,
+          )
+        ),
+      ]);
       await refreshUser();
       setEditingMaster(false);
+    } catch (err) {
+      setMasterError(err instanceof Error ? err.message : 'Ошибка сохранения');
     } finally {
       setSavingMaster(false);
     }
@@ -95,10 +90,21 @@ export default function ProfilePage() {
   }
 
   return (
-    <PageLayout title="Профиль">
+    <PageLayout
+      title="Профиль"
+      headerRight={
+        <Link
+          href="/settings"
+          aria-label="Настройки"
+          style={{ display: 'flex', alignItems: 'center', padding: '4px 0 4px 12px', color: 'var(--text-muted)', textDecoration: 'none' }}
+        >
+          <Settings size={22} />
+        </Link>
+      }
+    >
       <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-        {/* ── Avatar + name ──────────────────────────────────── */}
+        {/* ── Avatar + name ──────────────────────────────── */}
         <div
           className="card"
           style={{ padding: 24, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}
@@ -120,50 +126,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* ── Role selection ─────────────────────────────────── */}
-        <div className="card" style={{ padding: 18 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>
-              👤 Ваша роль
-            </h3>
-            {savingRole && (
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Сохранение...</span>
-            )}
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {ROLE_OPTIONS.map((r) => {
-              const active = user.role === r.role;
-              return (
-                <button
-                  key={r.role}
-                  onClick={() => handleRoleChange(r.role)}
-                  disabled={savingRole}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '12px 14px', borderRadius: 12, width: '100%', textAlign: 'left',
-                    border:      active ? '2px solid #E07A5F' : '2px solid var(--border)',
-                    background:  active ? '#FFF0EB'           : 'var(--card)',
-                    cursor:      savingRole ? 'default'        : 'pointer',
-                    opacity:     savingRole && !active ? 0.6   : 1,
-                    transition:  'all 0.15s',
-                  }}
-                >
-                  <span style={{ fontSize: 22, flexShrink: 0 }}>{r.emoji}</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: active ? '#E07A5F' : 'var(--text)' }}>
-                      {r.title}
-                    </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{r.desc}</div>
-                  </div>
-                  {active && <span style={{ color: '#E07A5F', fontSize: 16, flexShrink: 0 }}>✓</span>}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ── Master profile ─────────────────────────────────── */}
+        {/* ── Master profile ─────────────────────────────── */}
         {isMaster && (
           <div className="card" style={{ padding: 18 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
@@ -172,7 +135,7 @@ export default function ProfilePage() {
               </h3>
               {mp && !editingMaster && (
                 <button
-                  onClick={() => setEditingMaster(true)}
+                  onClick={() => { setEditingMaster(true); setMasterError(''); }}
                   style={{
                     background: 'none', border: 'none', color: 'var(--accent)',
                     fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: 0,
@@ -199,7 +162,7 @@ export default function ProfilePage() {
                   <textarea
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    placeholder="Расскажите об опыте, стиле и любимых техниках..."
+                    placeholder="Расскажите об опыте, стиле и техниках..."
                     rows={3}
                     style={{
                       width: '100%', padding: '10px 14px', borderRadius: 10,
@@ -220,15 +183,13 @@ export default function ProfilePage() {
                       return (
                         <button
                           key={cat}
-                          onClick={() =>
-                            setCats((prev) => on ? prev.filter((c) => c !== cat) : [...prev, cat])
-                          }
+                          onClick={() => setCats((prev) => on ? prev.filter((c) => c !== cat) : [...prev, cat])}
                           style={{
                             padding: '6px 14px', borderRadius: 20, fontSize: 13, cursor: 'pointer',
-                            border:      on ? '1.5px solid #E07A5F' : '1.5px solid var(--border)',
-                            background:  on ? '#FFF0EB'             : 'transparent',
-                            color:       on ? '#E07A5F'             : 'var(--text-muted)',
-                            fontWeight:  on ? 700                   : 400,
+                            border:     on ? '1.5px solid #E07A5F' : '1.5px solid var(--border)',
+                            background: on ? '#FFF0EB'             : 'transparent',
+                            color:      on ? '#E07A5F'             : 'var(--text-muted)',
+                            fontWeight: on ? 700                   : 400,
                             transition: 'all 0.12s',
                           }}
                         >
@@ -270,10 +231,16 @@ export default function ProfilePage() {
                   />
                 </div>
 
+                {masterError && (
+                  <p style={{ color: '#E07A5F', fontSize: 13, margin: 0, textAlign: 'center' }}>
+                    {masterError}
+                  </p>
+                )}
+
                 <div style={{ display: 'flex', gap: 8 }}>
                   {mp && (
                     <button
-                      onClick={() => setEditingMaster(false)}
+                      onClick={() => { setEditingMaster(false); setMasterError(''); }}
                       className="btn-secondary"
                       style={{ flex: 1 }}
                     >
@@ -314,7 +281,6 @@ export default function ProfilePage() {
                     </div>
                   )}
                 </div>
-
                 {mp.bio && (
                   <p style={{ margin: '0 0 10px', fontSize: 13, color: 'var(--text)', lineHeight: 1.5 }}>
                     {mp.bio}
@@ -350,11 +316,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* ── Misc actions ───────────────────────────────────── */}
-        <div className="card" style={{ padding: 4, overflow: 'hidden' }}>
-          <ActionItem emoji="ℹ️" label="О приложении" onClick={() => {}} />
-        </div>
-
+        {/* ── Logout ─────────────────────────────────────── */}
         <button className="btn-secondary" onClick={handleLogout} disabled={loggingOut}>
           {loggingOut ? 'Выходим...' : '🚪 Выйти'}
         </button>
@@ -364,22 +326,5 @@ export default function ProfilePage() {
         </p>
       </div>
     </PageLayout>
-  );
-}
-
-function ActionItem({ emoji, label, onClick }: { emoji: string; label: string; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 14, width: '100%',
-        padding: '15px 16px', background: 'none', border: 'none',
-        cursor: 'pointer', fontSize: 15, color: 'var(--text)', textAlign: 'left',
-      }}
-    >
-      <span style={{ fontSize: 20 }}>{emoji}</span>
-      <span style={{ flex: 1, fontWeight: 500 }}>{label}</span>
-      <span style={{ color: 'var(--text-muted)', fontSize: 18 }}>›</span>
-    </button>
   );
 }

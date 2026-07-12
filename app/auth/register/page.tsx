@@ -29,7 +29,8 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await signUp(email, password, name);
-      router.replace('/auth/select-role');
+      // hasSelectedRole:false is set in signUp → root page shows OnboardingRole
+      router.replace('/');
     } catch (err) {
       setError(getFirebaseErrorMessage(err));
     } finally {
