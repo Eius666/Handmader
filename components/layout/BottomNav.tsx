@@ -14,22 +14,22 @@ interface NavItem {
 }
 
 const CUSTOMER_ITEMS: NavItem[] = [
-  { href: '/home',    label: 'Главная',  icon: Home },
-  { href: '/orders',  label: 'Заказы',   icon: ClipboardList },
-  { href: '/profile', label: 'Профиль',  icon: User },
+  { href: '/home',    label: 'Главная',    icon: Home },
+  { href: '/orders',  label: 'Мои заказы', icon: ClipboardList },
+  { href: '/profile', label: 'Профиль',    icon: User },
 ];
 
 const MASTER_ITEMS: NavItem[] = [
-  { href: '/feed',         label: 'Заказы',   icon: Package },
-  { href: '/my-responses', label: 'Отклики',  icon: MessageSquareText },
-  { href: '/profile',      label: 'Профиль',  icon: User },
+  { href: '/feed',         label: 'Заказы',      icon: Package },
+  { href: '/my-responses', label: 'Мои отклики', icon: MessageSquareText },
+  { href: '/profile',      label: 'Профиль',     icon: User },
 ];
 
 const BOTH_ITEMS: NavItem[] = [
-  { href: '/home',         label: 'Главная',  icon: Home },
-  { href: '/orders',       label: 'Заказы',   icon: ClipboardList },
-  { href: '/feed',         label: 'Лента',    icon: Package },
-  { href: '/profile',      label: 'Профиль',  icon: User },
+  { href: '/home',         label: 'Главная',    icon: Home },
+  { href: '/feed',         label: 'Заказы',     icon: Package },
+  { href: '/orders',       label: 'Мои заказы', icon: ClipboardList },
+  { href: '/profile',      label: 'Профиль',    icon: User },
 ];
 
 export function BottomNav() {
