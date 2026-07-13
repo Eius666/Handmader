@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Wallet, CalendarClock } from 'lucide-react';
+import { ArrowLeft, Wallet, CalendarClock, Ruler } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { MasterResponseCard } from '@/components/ui/MasterResponseCard';
 import { Toast } from '@/components/ui/Toast';
@@ -123,6 +123,27 @@ export default function OrderDetailPage() {
             </div>
           )}
         </section>
+
+        {/* Measurements */}
+        {order.measurements && (
+          <section
+            className="flex gap-3 rounded-2xl p-4"
+            style={{
+              background: 'rgba(194,112,62,0.06)',
+              border: '1px solid rgba(194,112,62,0.15)',
+            }}
+          >
+            <Ruler className="mt-0.5 size-4 shrink-0" style={{ color: '#C2703E' }} aria-hidden="true" />
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-bold uppercase tracking-wide" style={{ color: '#C2703E' }}>
+                Мерки клиента
+              </span>
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                {order.measurements}
+              </p>
+            </div>
+          </section>
+        )}
 
         {/* Master selected banner */}
         {isMasterSelected && order.status === 'master_selected' && (

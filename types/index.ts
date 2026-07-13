@@ -72,6 +72,7 @@ export interface Order {
   selectedPrice?: number;
   responses: Record<string, OrderResponse>;
   ratings?: OrderRating[];
+  measurements?: string;
   location?: string;
 }
 

@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { Spinner } from '@/components/ui/Spinner';
+import { Ruler } from 'lucide-react';
 import { getOrder, addResponse } from '@/lib/firestore';
 import { Order, CATEGORY_LABELS } from '@/types';
 
@@ -140,6 +141,27 @@ export default function RespondPage() {
             <span>📅 до {formatDate(order.deadline)}</span>
           </div>
         </div>
+
+        {/* Measurements — prominently shown so master doesn't miss them */}
+        {order.measurements && (
+          <div
+            className="flex gap-3 rounded-2xl p-4"
+            style={{
+              background: 'rgba(194,112,62,0.08)',
+              border: '1.5px solid rgba(194,112,62,0.25)',
+            }}
+          >
+            <Ruler className="mt-0.5 size-4 shrink-0" style={{ color: '#C2703E' }} aria-hidden="true" />
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-extrabold uppercase tracking-wide" style={{ color: '#C2703E' }}>
+                Мерки клиента
+              </span>
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                {order.measurements}
+              </p>
+            </div>
+          </div>
+        )}
 
         {success ? (
           <div className="flex flex-col items-center gap-3 rounded-2xl bg-card p-8 text-center shadow-[0_4px_16px_rgba(45,45,45,0.06)]">

@@ -3,7 +3,7 @@
 import { useRef, useState, Suspense } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Camera, Calendar, X } from 'lucide-react';
+import { ArrowLeft, Camera, Calendar, Ruler, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { createOrder } from '@/lib/firestore';
@@ -30,6 +30,7 @@ function NewOrderFormInner() {
   const [budgetMax, setBudgetMax] = useState('');
   const [deadline, setDeadline] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
+  const [measurements, setMeasurements] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -75,6 +76,7 @@ function NewOrderFormInner() {
         budgetMin: min,
         budgetMax: Math.max(min, max),
         deadline,
+        ...(measurements.trim() ? { measurements: measurements.trim() } : {}),
       });
       router.replace(`/orders/${id}`);
     } catch (err) {
@@ -250,6 +252,25 @@ function NewOrderFormInner() {
             />
             <Calendar className="pointer-events-none absolute right-5 top-1/2 size-5 -translate-y-1/2 text-primary" aria-hidden="true" />
           </div>
+        </section>
+
+        {/* Measurements */}
+        <section className="flex flex-col gap-3">
+          <label htmlFor="measurements" className="flex items-center gap-2 text-base font-bold text-foreground">
+            <Ruler className="size-5 text-primary" aria-hidden="true" />
+            Ваши мерки
+          </label>
+          <textarea
+            id="measurements"
+            rows={3}
+            placeholder="Рост: 170 см, Обхват груди: 90 см, Обхват талии: 70 см..."
+            value={measurements}
+            onChange={(e) => setMeasurements(e.target.value)}
+            className="w-full resize-y rounded-2xl bg-card px-5 py-4 text-base font-medium text-foreground shadow-[0_4px_16px_rgba(45,45,45,0.05)] outline-none placeholder:font-medium placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40"
+          />
+          <p className="text-xs font-medium text-muted-foreground">
+            Укажите свои размеры, чтобы мастер мог точнее оценить заказ
+          </p>
         </section>
 
         {error && (
