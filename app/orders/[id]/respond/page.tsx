@@ -7,6 +7,7 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { Spinner } from '@/components/ui/Spinner';
 import { Ruler } from 'lucide-react';
 import { getOrder, addResponse } from '@/lib/firestore';
+import { PhotoStrip } from '@/components/ui/PhotoStrip';
 import { Order, CATEGORY_LABELS } from '@/types';
 
 export default function RespondPage() {
@@ -142,6 +143,16 @@ export default function RespondPage() {
             <span>📅 до {formatDate(order.deadline)}</span>
           </div>
         </div>
+
+        {/* Reference photos */}
+        {order.photos && order.photos.length > 0 && (
+          <div className="flex flex-col gap-2 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
+            <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+              Фото от клиента
+            </span>
+            <PhotoStrip photos={order.photos} />
+          </div>
+        )}
 
         {/* Measurements — prominently shown so master doesn't miss them */}
         {order.measurements && (

@@ -7,6 +7,7 @@ import { ArrowLeft, Check, Send, Wallet, Package } from 'lucide-react';
 import { StarRating } from '@/components/ui/StarRating';
 import { Toast } from '@/components/ui/Toast';
 import { RatingModal } from '@/components/RatingModal';
+import { PhotoStrip } from '@/components/ui/PhotoStrip';
 import { getOrder, startWork, markReady, confirmDelivery, submitRating } from '@/lib/firestore';
 import { useAuth } from '@/hooks/useAuth';
 import { useTelegram } from '@/hooks/useTelegram';
@@ -131,7 +132,7 @@ export default function TrackPage() {
   const selectedResp = order.selectedMasterId ? order.responses?.[order.selectedMasterId] : null;
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-background pb-28">
+    <div className="flex min-h-dvh w-full flex-col bg-background pb-28">
       <header className="flex items-center gap-4 px-5 pb-2 pt-4">
         <button
           onClick={() => router.back()}
@@ -248,6 +249,11 @@ export default function TrackPage() {
             Детали заказа
           </h2>
           <p className="text-base leading-relaxed text-foreground">{order.description}</p>
+
+          {order.photos && order.photos.length > 0 && (
+            <PhotoStrip photos={order.photos} />
+          )}
+
           <div className="flex items-center justify-between border-t border-border pt-4">
             <span className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
               <Wallet className="size-4 text-primary" aria-hidden="true" />

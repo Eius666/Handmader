@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Wallet, CalendarClock, Ruler } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { MasterResponseCard } from '@/components/ui/MasterResponseCard';
+import { PhotoStrip } from '@/components/ui/PhotoStrip';
 import { Toast } from '@/components/ui/Toast';
 import { getOrder, selectMaster } from '@/lib/firestore';
 import { Order, OrderResponse, CATEGORY_LABELS } from '@/types';
@@ -68,7 +68,7 @@ export default function OrderDetailPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-10">
+    <div className="flex min-h-dvh w-full flex-col bg-background pb-10">
       <header className="flex items-center gap-4 px-5 pb-2 pt-4">
         <button
           onClick={() => router.back()}
@@ -104,23 +104,7 @@ export default function OrderDetailPage() {
 
           {/* Photos */}
           {order.photos && order.photos.length > 0 && (
-            <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1 scrollbar-none">
-              {order.photos.map((src, i) => (
-                <div
-                  key={i}
-                  className="relative size-24 shrink-0 overflow-hidden rounded-xl bg-secondary"
-                >
-                  <Image
-                    src={src}
-                    alt={`Фото заказа ${i + 1}`}
-                    fill
-                    sizes="96px"
-                    className="object-cover"
-                    onError={() => {}}
-                  />
-                </div>
-              ))}
-            </div>
+            <PhotoStrip photos={order.photos} />
           )}
         </section>
 

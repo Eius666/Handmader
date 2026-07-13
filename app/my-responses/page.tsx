@@ -59,7 +59,7 @@ export default function MyResponsesPage() {
   }, [user]);
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-28">
+    <main className="flex min-h-dvh w-full flex-col bg-background pb-28">
       <header className="px-5 pb-3 pt-8">
         <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-0.5">Мои</p>
         <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-foreground leading-none">Отклики</h1>

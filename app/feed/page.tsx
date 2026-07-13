@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Clock, SlidersHorizontal } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { BottomNav } from '@/components/layout/BottomNav';
+import { PhotoStrip } from '@/components/ui/PhotoStrip';
 import { getAvailableOrders } from '@/lib/firestore';
 import { Order, OrderCategory, CATEGORY_LABELS } from '@/types';
 import { cn } from '@/lib/utils';
@@ -36,7 +37,7 @@ export default function FeedPage() {
   }, [filter]);
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-28">
+    <main className="flex min-h-dvh w-full flex-col bg-background pb-28">
       {/* Header */}
       <header className="flex items-center justify-between px-5 pb-3 pt-8">
         <div>
@@ -181,6 +182,10 @@ function BrowseOrderCard({
       <p className="line-clamp-3 text-[13px] leading-relaxed text-muted-foreground">
         {order.description}
       </p>
+
+      {order.photos && order.photos.length > 0 && (
+        <PhotoStrip photos={order.photos} />
+      )}
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
         <span className="text-[15px] font-extrabold text-foreground tracking-[-0.02em]">
