@@ -93,13 +93,18 @@ export async function updateOrderStatus(
   await updateDoc(doc(db, 'orders', orderId), { status, ...extra });
 }
 
+function stripUndefined(obj: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
+}
+
 export async function addResponse(
   orderId: string,
   masterId: string,
   response: Omit<OrderResponse, 'createdAt'>
 ): Promise<void> {
+  const clean = stripUndefined({ ...response, createdAt: serverTimestamp() });
   await updateDoc(doc(db, 'orders', orderId), {
-    [`responses.${masterId}`]: { ...response, createdAt: serverTimestamp() },
+    [`responses.${masterId}`]: clean,
   });
 }
 
