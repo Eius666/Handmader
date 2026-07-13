@@ -21,7 +21,16 @@ export async function getUser(uid: string): Promise<User | null> {
   const snap = await getDoc(doc(db, 'users', uid));
   if (!snap.exists()) return null;
   const data = snap.data();
-  return { ...data, uid, createdAt: (data.createdAt as Timestamp).toDate() } as User;
+  return {
+    uid,
+    email:          data.email          ?? '',
+    displayName:    data.displayName    ?? '',
+    role:           data.role           ?? null,
+    // old docs pre-dating hasSelectedRole default to true (they already picked a role)
+    hasSelectedRole: data.hasSelectedRole ?? true,
+    createdAt:      (data.createdAt as Timestamp)?.toDate() ?? new Date(),
+    masterProfile:  data.masterProfile,
+  } as User;
 }
 
 export async function setUser(uid: string, data: Partial<User>): Promise<void> {

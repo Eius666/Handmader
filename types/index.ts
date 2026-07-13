@@ -30,9 +30,9 @@ export interface User {
   uid: string;
   email: string;
   displayName: string;
-  role: UserRole;
+  role: UserRole | null;      // null = new user who hasn't picked a role yet
   createdAt: Date;
-  hasSelectedRole?: boolean;  // false = hasn't completed role-selection onboarding yet
+  hasSelectedRole: boolean;   // false = show onboarding; true = skip it
   masterProfile?: MasterProfile;
 }
 

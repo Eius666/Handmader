@@ -10,7 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error,    setError]    = useState('');
   const [loading,  setLoading]  = useState(false);
-  const { signIn } = useAuth();
+  const { login } = useAuth();
   const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -18,7 +18,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      await signIn(email, password);
+      await login(email, password);
       router.replace('/');
     } catch (err) {
       setError(getFirebaseErrorMessage(err));

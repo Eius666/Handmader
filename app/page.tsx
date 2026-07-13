@@ -12,19 +12,41 @@ export default function RootPage() {
 
   useEffect(() => {
     if (loading) return;
-    if (!user) { router.replace('/auth/login'); return; }
-    // hasSelectedRole === false → stay on this page, OnboardingRole renders below
-    if (user.hasSelectedRole === false) return;
-    if (user.role === 'master') { router.replace('/feed'); }
-    else { router.replace('/home'); }
+    if (!user) {
+      router.replace('/auth/login');
+      return;
+    }
+    // hasSelectedRole: false → stay here; OnboardingRole renders below
+    if (!user.hasSelectedRole) return;
+    // Role is set — route by role
+    router.replace(user.role === 'master' ? '/feed' : '/home');
   }, [user, loading, router]);
 
-  // Show onboarding fullscreen when user exists but hasn't picked a role yet
-  if (!loading && user && user.hasSelectedRole === false) {
+  if (loading) {
+    return (
+      <div
+        style={{
+          height: '100%',
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          background: 'var(--bg)', gap: 16,
+        }}
+      >
+        <div style={{ fontSize: 56 }}>🧶</div>
+        <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--accent)', margin: 0 }}>
+          Handmader
+        </h1>
+        <Spinner size={28} />
+      </div>
+    );
+  }
+
+  // Show role-selection onboarding when user is authenticated but hasn't picked a role
+  if (user && !user.hasSelectedRole) {
     return <OnboardingRole />;
   }
 
-  // Splash / loading / redirect in progress
+  // Redirect in progress — keep showing splash
   return (
     <div
       style={{

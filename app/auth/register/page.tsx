@@ -12,7 +12,7 @@ export default function RegisterPage() {
   const [confirm,  setConfirm]  = useState('');
   const [error,    setError]    = useState('');
   const [loading,  setLoading]  = useState(false);
-  const { signUp } = useAuth();
+  const { register } = useAuth();
   const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
@@ -28,7 +28,7 @@ export default function RegisterPage() {
     }
     setLoading(true);
     try {
-      await signUp(email, password, name);
+      await register(email, password, name);
       router.replace('/');
     } catch (err) {
       setError(getFirebaseErrorMessage(err));

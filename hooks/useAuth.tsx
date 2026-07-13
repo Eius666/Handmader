@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useRef,
   useState,
   ReactNode,
 } from 'react';
@@ -12,20 +13,24 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
-  updateProfile,
+  updateProfile as updateFirebaseProfile,
 } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { auth } from '@/lib/firebase';
-import { getUser, setUser } from '@/lib/firestore';
+import { getUser, setUser as firestoreSetUser } from '@/lib/firestore';
 import { User, UserRole } from '@/types';
 
 interface AuthContextType {
-  user: User | null;
+  user:    User | null;
+  profile: User | null;  // alias — same reference as user, for code that prefers this name
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, displayName: string) => Promise<void>;
-  setRole: (role: UserRole) => Promise<void>;
-  logout: () => Promise<void>;
+  login:         (email: string, password: string, displayName?: string) => Promise<void>;
+  register:      (email: string, password: string, displayName: string) => Promise<void>;
+  logout:        () => Promise<void>;
+  updateProfile: (data: Partial<User>) => Promise<void>;
+  refreshProfile: () => Promise<void>;
+  // backward-compat aliases used by settings/profile/select-role pages
+  setRole:     (role: UserRole) => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
@@ -33,51 +38,60 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setCurrentUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]  = useState(true);
+
+  // When register() is running it owns the auth-state write; skip the
+  // onAuthStateChanged handler so we don't race against it.
+  const registering = useRef(false);
 
   useEffect(() => {
-    // Safety valve: if Firebase Auth never calls back (bad config, network block),
-    // force loading:false after 8 s so the app doesn't hang on the splash screen.
+    // Safety valve: force-unblock after 8 s if Firebase never calls back.
     const timer = setTimeout(() => {
       console.error('[Auth] onAuthStateChanged timeout — forcing loading:false');
       setLoading(false);
     }, 8000);
 
-    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsub = onAuthStateChanged(auth, async (fbUser) => {
+      if (registering.current) return;   // register() handles state itself
+
       clearTimeout(timer);
-      if (firebaseUser) {
+
+      if (fbUser) {
+        // Bug fix #2: set loading:true here so page.tsx shows a spinner while
+        // we fetch the Firestore profile instead of briefly seeing user:null.
+        setLoading(true);
         try {
-          const profile = await getUser(firebaseUser.uid);
+          const profile = await getUser(fbUser.uid);
           if (profile) {
             setCurrentUser(profile);
           } else {
-            // No Firestore doc — create a minimal fallback; hasSelectedRole:false
-            // triggers the OnboardingRole screen so user picks their role explicitly.
+            // No Firestore doc yet — create minimal defaults so onboarding shows.
             const basic: User = {
-              uid: firebaseUser.uid,
-              email: firebaseUser.email ?? '',
-              displayName: firebaseUser.displayName ?? '',
-              role: 'customer',
+              uid:             fbUser.uid,
+              email:           fbUser.email        ?? '',
+              displayName:     fbUser.displayName  ?? '',
+              role:            null,
               hasSelectedRole: false,
-              createdAt: new Date(),
+              createdAt:       new Date(),
             };
             setCurrentUser(basic);
-            setUser(firebaseUser.uid, basic).catch(console.error);
+            firestoreSetUser(fbUser.uid, basic).catch(console.error);
           }
         } catch (err) {
-          console.error('[Auth] Failed to load Firestore profile:', err);
+          console.error('[Auth] profile load error:', err);
           setCurrentUser({
-            uid: firebaseUser.uid,
-            email: firebaseUser.email ?? '',
-            displayName: firebaseUser.displayName ?? '',
-            role: 'customer',
+            uid:             fbUser.uid,
+            email:           fbUser.email        ?? '',
+            displayName:     fbUser.displayName  ?? '',
+            role:            null,
             hasSelectedRole: false,
-            createdAt: new Date(),
+            createdAt:       new Date(),
           });
         }
       } else {
         setCurrentUser(null);
       }
+
       setLoading(false);
     });
 
@@ -87,54 +101,95 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  async function signIn(email: string, password: string) {
-    await signInWithEmailAndPassword(auth, email, password);
+  // ── login ───────────────────────────────────────────────────────────────────
+  async function login(email: string, password: string) {
+    // Bug fix #2: set loading:true BEFORE the network call so that by the time
+    // router.replace('/') runs in the login page, page.tsx sees loading:true
+    // and shows a spinner rather than the stale user:null → redirect-to-login.
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      // onAuthStateChanged fires next, loads the profile, then sets loading:false
+    } catch (err) {
+      setLoading(false);
+      throw err;
+    }
   }
 
-  async function signUp(email: string, password: string, displayName: string) {
-    const { user: fbUser } = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(fbUser, { displayName });
-    // hasSelectedRole: false → OnboardingRole screen will ask the user to pick a role
-    await setUser(fbUser.uid, {
-      email,
-      displayName,
-      role: 'customer',
-      hasSelectedRole: false,
-      createdAt: new Date(),
-    });
+  // ── register ─────────────────────────────────────────────────────────────────
+  async function register(email: string, password: string, displayName: string) {
+    // Bug fix #1 + #2: we own state during the entire registration sequence.
+    registering.current = true;
+    setLoading(true);
+    try {
+      const { user: fbUser } = await createUserWithEmailAndPassword(auth, email, password);
+      await updateFirebaseProfile(fbUser, { displayName });
+
+      const profile: User = {
+        uid:             fbUser.uid,
+        email,
+        displayName,
+        role:            null,   // Bug fix #3: null until user picks a role
+        hasSelectedRole: false,
+        createdAt:       new Date(),
+      };
+
+      await firestoreSetUser(fbUser.uid, profile);
+      // Set local state explicitly — this overrides whatever onAuthStateChanged
+      // may have set during the race (displayName was '' there because Firebase
+      // Auth displayName wasn't set yet when the event fired).
+      setCurrentUser(profile);
+      setLoading(false);
+    } catch (err) {
+      setLoading(false);
+      throw err;
+    } finally {
+      registering.current = false;
+    }
   }
 
-  async function setRole(role: UserRole) {
-    if (!auth.currentUser) throw new Error('Нет авторизации');
-    const uid = auth.currentUser.uid;
-    console.log('[setRole] uid:', uid, 'role:', role);
-
-    await Promise.race([
-      setUser(uid, { role, hasSelectedRole: true }),
-      new Promise<never>((_, reject) =>
-        setTimeout(
-          () => reject(new Error('Firestore не ответил за 5 секунд. Проверьте соединение.')),
-          5000,
-        )
-      ),
-    ]);
-
-    console.log('[setRole] saved');
-    setCurrentUser((prev) => (prev ? { ...prev, role, hasSelectedRole: true } : prev));
-  }
-
+  // ── logout ───────────────────────────────────────────────────────────────────
   async function logout() {
     await signOut(auth);
+    setCurrentUser(null);
   }
 
-  async function refreshUser() {
+  // ── updateProfile ────────────────────────────────────────────────────────────
+  async function updateProfile(data: Partial<User>) {
+    if (!auth.currentUser) throw new Error('Нет авторизации');
+    await firestoreSetUser(auth.currentUser.uid, data);
+    setCurrentUser((prev) => (prev ? { ...prev, ...data } : prev));
+  }
+
+  // ── refreshProfile ───────────────────────────────────────────────────────────
+  async function refreshProfile() {
     if (!auth.currentUser) return;
     const profile = await getUser(auth.currentUser.uid);
     if (profile) setCurrentUser(profile);
   }
 
+  // ── backward-compat aliases ──────────────────────────────────────────────────
+  async function setRole(role: UserRole) {
+    await updateProfile({ role, hasSelectedRole: true });
+  }
+
+  const refreshUser = refreshProfile;
+
+  const value: AuthContextType = {
+    user,
+    profile: user,
+    loading,
+    login,
+    register,
+    logout,
+    updateProfile,
+    refreshProfile,
+    setRole,
+    refreshUser,
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, setRole, logout, refreshUser }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
@@ -150,12 +205,12 @@ export function getFirebaseErrorMessage(error: unknown): string {
   if (error instanceof FirebaseError) {
     switch (error.code) {
       case 'auth/email-already-in-use': return 'Этот email уже зарегистрирован';
-      case 'auth/invalid-email': return 'Неверный формат email';
-      case 'auth/weak-password': return 'Пароль должен содержать минимум 6 символов';
-      case 'auth/user-not-found': return 'Пользователь не найден';
-      case 'auth/wrong-password': return 'Неверный пароль';
-      case 'auth/invalid-credential': return 'Неверный email или пароль';
-      default: return 'Произошла ошибка. Попробуйте снова';
+      case 'auth/invalid-email':        return 'Неверный формат email';
+      case 'auth/weak-password':        return 'Пароль должен содержать минимум 6 символов';
+      case 'auth/user-not-found':       return 'Пользователь не найден';
+      case 'auth/wrong-password':       return 'Неверный пароль';
+      case 'auth/invalid-credential':   return 'Неверный email или пароль';
+      default:                          return 'Произошла ошибка. Попробуйте снова';
     }
   }
   return 'Произошла ошибка. Попробуйте снова';

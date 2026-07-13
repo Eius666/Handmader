@@ -15,7 +15,7 @@ const ROLE_LABELS: Record<UserRole, string> = {
 export default function SettingsPage() {
   const { user, setRole } = useAuth();
   const [editingRole,  setEditingRole]  = useState(false);
-  const [pendingRole,  setPendingRole]  = useState<UserRole | undefined>(user?.role);
+  const [pendingRole,  setPendingRole]  = useState<UserRole | undefined>(user?.role ?? undefined);
   const [savingRole,   setSavingRole]   = useState(false);
   const [roleError,    setRoleError]    = useState('');
 
@@ -47,12 +47,12 @@ export default function SettingsPage() {
                 Роль аккаунта
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 3 }}>
-                {ROLE_LABELS[user.role]}
+                {user.role ? ROLE_LABELS[user.role] : '—'}
               </div>
             </div>
             {!editingRole && (
               <button
-                onClick={() => { setEditingRole(true); setPendingRole(user.role); setRoleError(''); }}
+                onClick={() => { setEditingRole(true); setPendingRole(user.role ?? undefined); setRoleError(''); }}
                 style={{
                   background: 'var(--bg)', border: 'none', borderRadius: 8,
                   padding: '7px 14px', fontSize: 13, fontWeight: 600,

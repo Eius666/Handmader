@@ -6,18 +6,18 @@ import { RoleSelector } from './RoleSelector';
 import { UserRole } from '@/types';
 
 export function OnboardingRole() {
-  const { setRole } = useAuth();
+  const { updateProfile } = useAuth();
   const [selected, setSelected] = useState<UserRole | undefined>(undefined);
-  const [loading, setLoading]   = useState(false);
-  const [error,   setError]     = useState('');
+  const [loading,  setLoading]   = useState(false);
+  const [error,    setError]     = useState('');
 
   async function handleContinue() {
     if (!selected) return;
     setLoading(true);
     setError('');
     try {
-      await setRole(selected);
-      // After setRole updates the auth state, app/page.tsx will redirect automatically
+      await updateProfile({ role: selected, hasSelectedRole: true });
+      // page.tsx useEffect detects hasSelectedRole: true and redirects by role
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не удалось сохранить роль');
     } finally {
@@ -58,6 +58,12 @@ export function OnboardingRole() {
           }}
         >
           {error}
+          <button
+            onClick={() => setError('')}
+            style={{ marginLeft: 8, fontWeight: 700, background: 'none', border: 'none', color: '#E07A5F', cursor: 'pointer' }}
+          >
+            ✕
+          </button>
         </div>
       )}
 
