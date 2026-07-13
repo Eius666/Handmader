@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { X } from 'lucide-react';
 
 interface PhotoStripProps {
@@ -22,14 +21,13 @@ export function PhotoStrip({ photos, className }: PhotoStripProps) {
             key={i}
             type="button"
             onClick={(e) => { e.stopPropagation(); setLightboxSrc(src); }}
-            className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-secondary transition-transform active:scale-95"
+            className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-secondary transition-transform active:scale-95"
           >
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={src}
               alt={`Фото ${i + 1}`}
-              fill
-              sizes="80px"
-              className="object-cover"
+              className="h-full w-full object-cover"
               onError={() => {}}
             />
           </button>

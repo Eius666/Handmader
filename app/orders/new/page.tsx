@@ -1,7 +1,6 @@
 'use client';
 
 import { useRef, useState, Suspense } from 'react';
-import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Camera, Ruler, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -21,6 +20,28 @@ const CATEGORIES: { key: OrderCategory; label: string }[] = [
 
 const MAX_PHOTOS = 5;
 
+function compressImage(file: File, maxPx = 900, quality = 0.72): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    const blobUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(blobUrl);
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) { reject(new Error('canvas')); return; }
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = reject;
+    img.src = blobUrl;
+  });
+}
+
 function NewOrderFormInner() {
   const searchParams = useSearchParams();
   const initialCat = (searchParams.get('category') as OrderCategory) || 'hat';
@@ -38,24 +59,18 @@ function NewOrderFormInner() {
   const { user } = useAuth();
   const router = useRouter();
 
-  function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
     if (!files) return;
     const remaining = MAX_PHOTOS - photos.length;
-    const urls = Array.from(files)
-      .slice(0, remaining)
-      .map((f) => URL.createObjectURL(f));
-    setPhotos((prev) => [...prev, ...urls]);
+    const selected = Array.from(files).slice(0, remaining);
     e.target.value = '';
+    const compressed = await Promise.all(selected.map(compressImage));
+    setPhotos((prev) => [...prev, ...compressed]);
   }
 
   function removePhoto(index: number) {
-    setPhotos((prev) => {
-      const next = [...prev];
-      URL.revokeObjectURL(next[index]);
-      next.splice(index, 1);
-      return next;
-    });
+    setPhotos((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -73,7 +88,7 @@ function NewOrderFormInner() {
         customerName: user.displayName,
         description: description.trim(),
         category: selectedCategory,
-        photos: [],          // file upload → Storage not configured in MVP
+        photos,
         budgetMin: min,
         budgetMax: Math.max(min, max),
         deadline,
@@ -180,14 +195,12 @@ function NewOrderFormInner() {
           {photos.length > 0 && (
             <ul className="flex flex-wrap gap-3 pt-1">
               {photos.map((src, i) => (
-                <li key={src} className="relative size-20 overflow-hidden rounded-2xl">
-                  <Image
+                <li key={i} className="relative size-20 overflow-hidden rounded-2xl">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={src}
                     alt={`Фото ${i + 1}`}
-                    fill
-                    sizes="80px"
-                    className="object-cover"
-                    unoptimized
+                    className="h-full w-full object-cover"
                   />
                   <button
                     type="button"
