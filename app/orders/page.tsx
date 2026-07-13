@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shirt, HardHat, Wind, Baby, Sparkles, Package, Plus, Star } from 'lucide-react';
+import { Shirt, HardHat, Wind, Baby, Sparkles, Package, Plus, Star, Trash2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { RatingModal } from '@/components/RatingModal';
-import { getCustomerOrders, submitRating } from '@/lib/firestore';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
+import { Toast } from '@/components/ui/Toast';
+import { getCustomerOrders, submitRating, deleteOrder } from '@/lib/firestore';
 import { Order, OrderCategory, CATEGORY_LABELS, OrderStatus } from '@/types';
 
 const CATEGORY_ICONS: Record<OrderCategory, LucideIcon> = {
@@ -29,6 +31,9 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<'active' | 'completed'>('active');
   const [ratingOrder, setRatingOrder] = useState<Order | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Order | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [toast, setToast] = useState('');
 
   useEffect(() => {
     if (!user) return;
@@ -49,6 +54,23 @@ export default function OrdersPage() {
       router.push(`/track/${order.id}`);
     } else {
       router.push(`/orders/${order.id}`);
+    }
+  }
+
+  const DELETABLE: OrderStatus[] = ['awaiting_responses', 'master_selected'];
+
+  async function handleDeleteConfirm() {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await deleteOrder(deleteTarget.id);
+      setOrders((prev) => prev.filter((o) => o.id !== deleteTarget.id));
+      setToast('Заказ удалён');
+      setDeleteTarget(null);
+    } catch {
+      setToast('Не удалось удалить заказ');
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -153,6 +175,7 @@ export default function OrdersPage() {
               order.status === 'completed' &&
               !!order.selectedMasterId &&
               !order.ratings?.some((r) => r.userId === user?.uid);
+            const canDelete = DELETABLE.includes(order.status);
             return (
               <OrderListCard
                 key={order.id}
@@ -160,6 +183,8 @@ export default function OrdersPage() {
                 onClick={() => handleCardClick(order)}
                 canRate={canRate}
                 onRate={() => setRatingOrder(order)}
+                canDelete={canDelete}
+                onDelete={() => setDeleteTarget(order)}
               />
             );
           })
@@ -175,26 +200,45 @@ export default function OrdersPage() {
           onSkip={() => setRatingOrder(null)}
         />
       )}
+
+      {deleteTarget && (
+        <ConfirmModal
+          title="Удалить заказ?"
+          body={deleteTarget.description.length > 80
+            ? deleteTarget.description.slice(0, 80) + '…'
+            : deleteTarget.description}
+          confirmLabel="Удалить"
+          loading={deleting}
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
+
+      {toast && <Toast message={toast} onClose={() => setToast('')} />}
     </main>
   );
 }
 
 function OrderListCard({
-  order, onClick, canRate, onRate,
+  order, onClick, canRate, onRate, canDelete, onDelete,
 }: {
   order: Order;
   onClick: () => void;
   canRate?: boolean;
   onRate?: () => void;
+  canDelete?: boolean;
+  onDelete?: () => void;
 }) {
   const Icon = CATEGORY_ICONS[order.category] ?? Package;
   const responseCount = Object.keys(order.responses ?? {}).length;
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onClick}
-      className="flex flex-col gap-3 w-full text-left transition-all duration-200 active:scale-[0.98]"
+      onKeyDown={(e) => e.key === 'Enter' && onClick()}
+      className="flex flex-col gap-3 w-full text-left cursor-pointer transition-all duration-200 active:scale-[0.98]"
       style={{
         background: '#ffffff',
         border: '1px solid rgba(180,100,70,0.08)',
@@ -203,7 +247,7 @@ function OrderListCard({
         boxShadow: '0 2px 10px rgba(140,80,50,0.06)',
       }}
     >
-      {/* Top row — always flex, badge aligns to top-right */}
+      {/* Top row */}
       <div className="flex items-start gap-3">
         <span
           className="flex size-10 shrink-0 items-center justify-center rounded-xl"
@@ -219,7 +263,22 @@ function OrderListCard({
             {order.description}
           </p>
         </div>
-        <StatusBadge status={order.status} />
+        <div className="flex shrink-0 flex-col items-end gap-1.5">
+          <StatusBadge status={order.status} />
+          {canDelete && (
+            <button
+              type="button"
+              aria-label="Удалить заказ"
+              onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
+              className="flex size-7 items-center justify-center rounded-full transition-colors active:scale-95"
+              style={{ color: '#a8a29e' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#c0392b')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#a8a29e')}
+            >
+              <Trash2 className="size-3.5" aria-hidden="true" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Bottom meta row */}
@@ -246,7 +305,7 @@ function OrderListCard({
           </button>
         )}
       </div>
-    </button>
+    </div>
   );
 }
 

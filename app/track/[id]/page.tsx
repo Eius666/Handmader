@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Check, Send, Wallet, Package } from 'lucide-react';
+import { ArrowLeft, Check, Send, Wallet, Package, Trash2 } from 'lucide-react';
 import { StarRating } from '@/components/ui/StarRating';
 import { Toast } from '@/components/ui/Toast';
 import { RatingModal } from '@/components/RatingModal';
+import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { PhotoStrip } from '@/components/ui/PhotoStrip';
-import { getOrder, startWork, markReady, confirmDelivery, submitRating } from '@/lib/firestore';
+import { getOrder, startWork, markReady, confirmDelivery, submitRating, deleteOrder } from '@/lib/firestore';
 import { useAuth } from '@/hooks/useAuth';
 import { useTelegram } from '@/hooks/useTelegram';
 import { Order, OrderStatus, CATEGORY_LABELS } from '@/types';
@@ -56,20 +57,23 @@ export default function TrackPage() {
   const { openTelegramChat } = useTelegram();
   const router = useRouter();
 
-  const [order,      setOrder]      = useState<Order | null>(null);
-  const [loading,    setLoading]    = useState(true);
-  const [acting,     setActing]     = useState(false);
-  const [toast,      setToast]      = useState('');
-  const [showRating, setShowRating] = useState(false);
+  const [order,       setOrder]       = useState<Order | null>(null);
+  const [loading,     setLoading]     = useState(true);
+  const [acting,      setActing]      = useState(false);
+  const [toast,       setToast]       = useState('');
+  const [showRating,  setShowRating]  = useState(false);
+  const [showDelete,  setShowDelete]  = useState(false);
+  const [deleting,    setDeleting]    = useState(false);
 
   useEffect(() => {
     if (!id) return;
     getOrder(id).then(setOrder).finally(() => setLoading(false));
   }, [id]);
 
-  const isOwner  = order?.customerId     === user?.uid;
-  const isMaster = !isOwner && order?.selectedMasterId === user?.uid;
+  const isOwner    = order?.customerId      === user?.uid;
+  const isMaster   = !isOwner && order?.selectedMasterId === user?.uid;
   const canConfirm = isOwner && (order?.status === 'ready' || order?.status === 'delivered');
+  const canDelete  = isOwner && !!order && ['awaiting_responses', 'master_selected'].includes(order.status);
 
   async function handleStart() {
     if (!order) return;
@@ -101,6 +105,20 @@ export default function TrackPage() {
       setToast('Заказ завершён');
       if (order.selectedMasterId) setShowRating(true);
     } finally { setActing(false); }
+  }
+
+  async function handleDelete() {
+    if (!order) return;
+    setDeleting(true);
+    try {
+      await deleteOrder(order.id);
+      setToast('Заказ удалён');
+      setTimeout(() => router.replace('/orders'), 1000);
+    } catch {
+      setToast('Не удалось удалить заказ');
+      setDeleting(false);
+    }
+    setShowDelete(false);
   }
 
   async function handleRatingSend(rating: number, comment: string) {
@@ -141,9 +159,19 @@ export default function TrackPage() {
         >
           <ArrowLeft className="size-5" aria-hidden="true" />
         </button>
-        <h1 className="text-2xl font-extrabold text-foreground">
+        <h1 className="flex-1 text-2xl font-extrabold text-foreground">
           {CATEGORY_LABELS[order.category]}
         </h1>
+        {canDelete && (
+          <button
+            type="button"
+            aria-label="Удалить заказ"
+            onClick={() => setShowDelete(true)}
+            className="flex size-10 items-center justify-center rounded-full bg-card text-muted-foreground shadow-[0_4px_16px_rgba(45,45,45,0.06)] transition-all active:scale-95 active:text-red-600"
+          >
+            <Trash2 className="size-4" aria-hidden="true" />
+          </button>
+        )}
       </header>
 
       <div className="flex flex-col gap-6 px-5 pt-4">
@@ -321,6 +349,19 @@ export default function TrackPage() {
           masterName={order?.responses?.[order.selectedMasterId!]?.masterName}
           onSend={handleRatingSend}
           onSkip={() => setShowRating(false)}
+        />
+      )}
+
+      {showDelete && (
+        <ConfirmModal
+          title="Удалить заказ?"
+          body={order.description.length > 80
+            ? order.description.slice(0, 80) + '…'
+            : order.description}
+          confirmLabel="Удалить"
+          loading={deleting}
+          onConfirm={handleDelete}
+          onCancel={() => setShowDelete(false)}
         />
       )}
     </div>

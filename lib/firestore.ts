@@ -6,6 +6,7 @@ import {
   setDoc,
   updateDoc,
   addDoc,
+  deleteDoc,
   query,
   where,
   orderBy,
@@ -167,6 +168,10 @@ export async function addResponse(
   await updateDoc(doc(db, 'orders', orderId), {
     [`responses.${masterId}`]: clean,
   });
+}
+
+export async function deleteOrder(orderId: string): Promise<void> {
+  await deleteDoc(doc(db, 'orders', orderId));
 }
 
 export async function selectMaster(
