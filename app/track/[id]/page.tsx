@@ -92,6 +92,7 @@ export default function TrackPage() {
 
   async function handleConfirm() {
     if (!order) return;
+    console.log('[handleConfirm] called, orderId:', order.id, 'status:', order.status, 'selectedMasterId:', order.selectedMasterId);
     setActing(true);
     try {
       await confirmDelivery(order.id);
