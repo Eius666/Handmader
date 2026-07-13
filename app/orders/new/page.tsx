@@ -65,7 +65,7 @@ function NewOrderFormInner() {
     const remaining = MAX_PHOTOS - photos.length;
     const selected = Array.from(files).slice(0, remaining);
     e.target.value = '';
-    const compressed = await Promise.all(selected.map(compressImage));
+    const compressed = await Promise.all(selected.map((file) => compressImage(file)));
     setPhotos((prev) => [...prev, ...compressed]);
   }
 
