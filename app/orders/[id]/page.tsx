@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Wallet, CalendarClock, Ruler } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { MasterResponseCard } from '@/components/ui/MasterResponseCard';
-import { PhotoStrip } from '@/components/ui/PhotoStrip';
+import { ImageCarousel } from '@/components/ui/ImageCarousel';
 import { Toast } from '@/components/ui/Toast';
 import { getOrder, selectMaster } from '@/lib/firestore';
 import { Order, OrderResponse, CATEGORY_LABELS } from '@/types';
@@ -104,7 +104,7 @@ export default function OrderDetailPage() {
 
           {/* Photos */}
           {order.photos && order.photos.length > 0 && (
-            <PhotoStrip photos={order.photos} />
+            <ImageCarousel photos={order.photos} />
           )}
         </section>
 

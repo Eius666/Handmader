@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Clock, SlidersHorizontal } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { BottomNav } from '@/components/layout/BottomNav';
-import { PhotoStrip } from '@/components/ui/PhotoStrip';
+import { ImageCarousel } from '@/components/ui/ImageCarousel';
 import { getAvailableOrders } from '@/lib/firestore';
 import { Order, OrderCategory, CATEGORY_LABELS } from '@/types';
 import { cn } from '@/lib/utils';
@@ -184,7 +184,7 @@ function BrowseOrderCard({
       </p>
 
       {order.photos && order.photos.length > 0 && (
-        <PhotoStrip photos={order.photos} />
+        <ImageCarousel photos={order.photos} height="h-44" />
       )}
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">

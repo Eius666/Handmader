@@ -7,7 +7,7 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { Spinner } from '@/components/ui/Spinner';
 import { Ruler } from 'lucide-react';
 import { getOrder, addResponse } from '@/lib/firestore';
-import { PhotoStrip } from '@/components/ui/PhotoStrip';
+import { ImageCarousel } from '@/components/ui/ImageCarousel';
 import { Order, CATEGORY_LABELS } from '@/types';
 
 export default function RespondPage() {
@@ -150,7 +150,7 @@ export default function RespondPage() {
             <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
               Фото от клиента
             </span>
-            <PhotoStrip photos={order.photos} />
+            <ImageCarousel photos={order.photos} height="h-40" />
           </div>
         )}
 

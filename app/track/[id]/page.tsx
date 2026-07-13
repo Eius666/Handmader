@@ -8,7 +8,7 @@ import { StarRating } from '@/components/ui/StarRating';
 import { Toast } from '@/components/ui/Toast';
 import { RatingModal } from '@/components/RatingModal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
-import { PhotoStrip } from '@/components/ui/PhotoStrip';
+import { ImageCarousel } from '@/components/ui/ImageCarousel';
 import { getOrder, startWork, markReady, confirmDelivery, submitRating, deleteOrder } from '@/lib/firestore';
 import { useAuth } from '@/hooks/useAuth';
 import { useTelegram } from '@/hooks/useTelegram';
@@ -279,7 +279,7 @@ export default function TrackPage() {
           <p className="text-base leading-relaxed text-foreground">{order.description}</p>
 
           {order.photos && order.photos.length > 0 && (
-            <PhotoStrip photos={order.photos} />
+            <ImageCarousel photos={order.photos} />
           )}
 
           <div className="flex items-center justify-between border-t border-border pt-4">
