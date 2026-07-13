@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Shirt, HardHat, Wind, Baby, Sparkles, Package, Plus } from 'lucide-react';
+import { Shirt, HardHat, Wind, Baby, Sparkles, Package, Plus, Star } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { StatusBadge } from '@/components/ui/StatusBadge';
-import { getCustomerOrders } from '@/lib/firestore';
+import { RatingModal } from '@/components/RatingModal';
+import { getCustomerOrders, submitRating } from '@/lib/firestore';
 import { Order, OrderCategory, CATEGORY_LABELS, OrderStatus } from '@/types';
 
 const CATEGORY_ICONS: Record<OrderCategory, LucideIcon> = {
@@ -27,6 +28,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<'active' | 'completed'>('active');
+  const [ratingOrder, setRatingOrder] = useState<Order | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -48,6 +50,19 @@ export default function OrdersPage() {
     } else {
       router.push(`/orders/${order.id}`);
     }
+  }
+
+  async function handleRatingSend(rating: number, comment: string) {
+    if (!ratingOrder?.selectedMasterId || !user) return;
+    await submitRating(ratingOrder.id, ratingOrder.selectedMasterId, user.uid, rating, comment);
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === ratingOrder.id
+          ? { ...o, ratings: [...(o.ratings ?? []), { rating, comment, createdAt: new Date(), userId: user.uid }] }
+          : o,
+      ),
+    );
+    setRatingOrder(null);
   }
 
   return (
@@ -133,18 +148,45 @@ export default function OrdersPage() {
             )}
           </div>
         ) : (
-          filtered.map((order) => (
-            <OrderListCard key={order.id} order={order} onClick={() => handleCardClick(order)} />
-          ))
+          filtered.map((order) => {
+            const canRate =
+              order.status === 'completed' &&
+              !!order.selectedMasterId &&
+              !order.ratings?.some((r) => r.userId === user?.uid);
+            return (
+              <OrderListCard
+                key={order.id}
+                order={order}
+                onClick={() => handleCardClick(order)}
+                canRate={canRate}
+                onRate={() => setRatingOrder(order)}
+              />
+            );
+          })
         )}
       </section>
 
       <BottomNav />
+
+      {ratingOrder && (
+        <RatingModal
+          masterName={ratingOrder.selectedMasterName}
+          onSend={handleRatingSend}
+          onSkip={() => setRatingOrder(null)}
+        />
+      )}
     </main>
   );
 }
 
-function OrderListCard({ order, onClick }: { order: Order; onClick: () => void }) {
+function OrderListCard({
+  order, onClick, canRate, onRate,
+}: {
+  order: Order;
+  onClick: () => void;
+  canRate?: boolean;
+  onRate?: () => void;
+}) {
   const Icon = CATEGORY_ICONS[order.category] ?? Package;
   const responseCount = Object.keys(order.responses ?? {}).length;
 
@@ -191,6 +233,17 @@ function OrderListCard({ order, onClick }: { order: Order; onClick: () => void }
         <span>до {formatDate(order.deadline)}</span>
         {responseCount > 0 && (
           <span className="font-bold text-primary ml-auto">{responseCount} откл.</span>
+        )}
+        {canRate && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onRate?.(); }}
+            className="ml-auto inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold text-white transition-all active:scale-95"
+            style={{ background: '#C2703E', boxShadow: '0 2px 8px rgba(194,112,62,0.35)' }}
+          >
+            <Star className="size-3 fill-current" aria-hidden="true" />
+            Оценить
+          </button>
         )}
       </div>
     </button>

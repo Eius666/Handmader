@@ -102,8 +102,8 @@ export default function TrackPage() {
   }
 
   async function handleRatingSend(rating: number, comment: string) {
-    if (!order?.selectedMasterId) return;
-    await submitRating(order.id, order.selectedMasterId, rating, comment);
+    if (!order?.selectedMasterId || !user) return;
+    await submitRating(order.id, order.selectedMasterId, user.uid, rating, comment);
     setShowRating(false);
     setToast('Спасибо за оценку!');
   }

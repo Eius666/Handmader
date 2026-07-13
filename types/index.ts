@@ -31,6 +31,7 @@ export interface OrderRating {
   rating: number;
   comment?: string;
   createdAt: Date;
+  userId?: string;
 }
 
 export interface User {

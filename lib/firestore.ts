@@ -109,10 +109,11 @@ export async function confirmDelivery(orderId: string): Promise<void> {
 export async function submitRating(
   orderId: string,
   masterId: string,
+  userId: string,
   rating: number,
   comment?: string,
 ): Promise<void> {
-  const entry: Record<string, unknown> = { rating, createdAt: Timestamp.now() };
+  const entry: Record<string, unknown> = { rating, userId, createdAt: Timestamp.now() };
   if (comment) entry.comment = comment;
 
   await updateDoc(doc(db, 'orders', orderId), { ratings: arrayUnion(entry) });
