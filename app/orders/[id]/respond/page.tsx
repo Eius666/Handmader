@@ -55,6 +55,7 @@ export default function RespondPage() {
         masterName: user.displayName,
         masterPhoto: masterProfile?.portfolioPhotos?.[0],
         masterRating: masterProfile?.rating ?? 0,
+        masterCompletedOrders: masterProfile?.completedOrders ?? 0,
         price: priceNum,
         timeline: timeline.trim(),
         comment: comment.trim(),

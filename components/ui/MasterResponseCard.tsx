@@ -63,6 +63,11 @@ export function MasterResponseCard({ masterId, response, onSelect, isSelecting, 
                 <Star className="size-3.5 fill-current" aria-hidden="true" />
                 {response.masterRating > 0 ? response.masterRating.toFixed(1) : '—'}
               </span>
+              {(response.masterCompletedOrders ?? 0) > 0 && (
+                <span className="text-[11px] font-medium text-muted-foreground">
+                  {response.masterCompletedOrders} завершено
+                </span>
+              )}
             </div>
             <div className="flex flex-col items-end shrink-0">
               <span className="text-[17px] font-extrabold tracking-[-0.02em] text-foreground">

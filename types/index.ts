@@ -49,6 +49,7 @@ export interface OrderResponse {
   masterName: string;
   masterPhoto?: string;
   masterRating: number;
+  masterCompletedOrders?: number;
   price: number;
   timeline: string;
   comment: string;

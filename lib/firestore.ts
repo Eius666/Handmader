@@ -11,6 +11,7 @@ import {
   orderBy,
   serverTimestamp,
   arrayUnion,
+  increment,
   Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
@@ -104,6 +105,13 @@ export async function markReady(orderId: string): Promise<void> {
 
 export async function confirmDelivery(orderId: string): Promise<void> {
   await updateDoc(doc(db, 'orders', orderId), { status: 'completed', deliveredAt: serverTimestamp() });
+  const snap = await getDoc(doc(db, 'orders', orderId));
+  const masterId = snap.exists() ? (snap.data().selectedMasterId as string | undefined) : undefined;
+  if (masterId) {
+    await updateDoc(doc(db, 'users', masterId), {
+      'masterProfile.completedOrders': increment(1),
+    });
+  }
 }
 
 export async function submitRating(
