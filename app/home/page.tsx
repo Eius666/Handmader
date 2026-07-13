@@ -37,7 +37,7 @@ export default function HomePage() {
   useEffect(() => {
     if (!user) return;
     getCustomerOrders(user.uid)
-      .then((o) => setOrders(o.slice(0, 5)))
+      .then((o) => setOrders(o.filter((x) => x.status !== 'completed').slice(0, 5)))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [user]);

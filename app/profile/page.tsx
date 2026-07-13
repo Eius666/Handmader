@@ -194,12 +194,8 @@ export default function ProfilePage() {
                     onChange={(e) => setBio(e.target.value)}
                     placeholder="Расскажите об опыте, стиле и техниках..."
                     rows={3}
-                    style={{
-                      width: '100%', padding: '10px 14px', borderRadius: 10,
-                      border: '1.5px solid var(--border)', background: 'var(--bg)',
-                      fontSize: 14, color: 'var(--text)', resize: 'vertical',
-                      fontFamily: 'inherit', lineHeight: 1.4, boxSizing: 'border-box',
-                    }}
+                    className="input-field"
+                    style={{ resize: 'vertical' }}
                   />
                 </div>
 
