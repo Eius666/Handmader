@@ -29,8 +29,18 @@ export default function ProfilePage() {
 
   // Always fetch fresh profile on mount so completedOrders/rating are up to date
   useEffect(() => {
-    refreshProfile().catch(console.error);
+    refreshProfile()
+      .then(() => console.log('[Profile] refreshProfile done'))
+      .catch(console.error);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Log every time user state changes (fires after refreshProfile resolves)
+  useEffect(() => {
+    if (!user) return;
+    console.log('[Profile] user state updated — uid:', user.uid);
+    console.log('[Profile] masterProfile.completedOrders:', user.masterProfile?.completedOrders);
+    console.log('[Profile] full masterProfile:', JSON.stringify(user.masterProfile));
+  }, [user]);
 
   // Initialise form from Firestore data once user loads
   useEffect(() => {

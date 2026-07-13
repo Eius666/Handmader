@@ -104,16 +104,24 @@ export async function markReady(orderId: string): Promise<void> {
 }
 
 export async function confirmDelivery(orderId: string): Promise<void> {
+  console.log('[confirmDelivery] called for order:', orderId);
+
   await updateDoc(doc(db, 'orders', orderId), { status: 'completed', deliveredAt: serverTimestamp() });
+
   const snap = await getDoc(doc(db, 'orders', orderId));
-  const masterId = snap.exists() ? (snap.data().selectedMasterId as string | undefined) : undefined;
+  const orderData = snap.exists() ? snap.data() : null;
+  console.log('[confirmDelivery] order snapshot:', JSON.stringify(orderData));
+  console.log('[confirmDelivery] selectedMasterId:', orderData?.selectedMasterId);
+
+  const masterId = orderData?.selectedMasterId as string | undefined;
   if (masterId) {
     await updateDoc(doc(db, 'users', masterId), {
       'masterProfile.completedOrders': increment(1),
     });
-    console.log('[confirmDelivery] incremented completedOrders for master', masterId);
+    const updatedProfile = await getDoc(doc(db, 'users', masterId));
+    console.log('[confirmDelivery] updated masterProfile:', JSON.stringify(updatedProfile.data()?.masterProfile));
   } else {
-    console.warn('[confirmDelivery] no selectedMasterId on order', orderId);
+    console.warn('[confirmDelivery] no selectedMasterId — increment skipped');
   }
 }
 
