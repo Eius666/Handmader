@@ -233,6 +233,6 @@ function getCategoryEmoji(cat: OrderCategory): string {
 }
 
 function formatDate(s: string) {
-  try { return new Date(s).toLocaleDateString('ru', { day: 'numeric', month: 'short' }); }
+  try { return new Date(s).toLocaleDateString('ru', { day: 'numeric', month: 'long' }); }
   catch { return s; }
 }

@@ -241,7 +241,7 @@ export default function RespondPage() {
 function formatDate(dateStr: string): string {
   if (!dateStr) return '—';
   try {
-    return new Date(dateStr).toLocaleDateString('ru', { day: 'numeric', month: 'short' });
+    return new Date(dateStr).toLocaleDateString('ru', { day: 'numeric', month: 'long' });
   } catch {
     return dateStr;
   }

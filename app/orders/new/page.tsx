@@ -3,10 +3,11 @@
 import { useRef, useState, Suspense } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Camera, Calendar, Ruler, X } from 'lucide-react';
+import { ArrowLeft, Camera, Ruler, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { createOrder } from '@/lib/firestore';
+import { DatePicker } from '@/components/ui/DatePicker';
 import { OrderCategory, CATEGORY_LABELS } from '@/types';
 
 const CATEGORIES: { key: OrderCategory; label: string }[] = [
@@ -86,8 +87,6 @@ function NewOrderFormInner() {
       setSubmitting(false);
     }
   }
-
-  const today = new Date().toISOString().split('T')[0];
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-background">
@@ -237,21 +236,14 @@ function NewOrderFormInner() {
 
         {/* Deadline */}
         <section className="flex flex-col gap-3">
-          <label htmlFor="deadline" className="text-base font-bold text-foreground">
+          <label className="text-base font-bold text-foreground">
             Срок выполнения
           </label>
-          <div className="relative">
-            <input
-              id="deadline"
-              type="date"
-              min={today}
-              value={deadline}
-              onChange={(e) => setDeadline(e.target.value)}
-              className="w-full appearance-none rounded-2xl bg-card py-4 pl-5 pr-12 text-base font-semibold text-foreground shadow-[0_4px_16px_rgba(45,45,45,0.05)] outline-none focus:ring-2 focus:ring-primary/40 [&::-webkit-calendar-picker-indicator]:opacity-0"
-              required
-            />
-            <Calendar className="pointer-events-none absolute right-5 top-1/2 size-5 -translate-y-1/2 text-primary" aria-hidden="true" />
-          </div>
+          <DatePicker
+            value={deadline}
+            onChange={setDeadline}
+            placeholder="Выберите дату"
+          />
         </section>
 
         {/* Measurements */}
