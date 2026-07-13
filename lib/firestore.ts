@@ -139,6 +139,10 @@ export async function addResponse(
   masterId: string,
   response: Omit<OrderResponse, 'createdAt'>
 ): Promise<void> {
+  const snap = await getDoc(doc(db, 'orders', orderId));
+  if (snap.exists() && snap.data().responses && masterId in snap.data().responses) {
+    throw new Error('Вы уже откликнулись на этот заказ');
+  }
   const clean = stripUndefined({ ...response, createdAt: serverTimestamp() });
   await updateDoc(doc(db, 'orders', orderId), {
     [`responses.${masterId}`]: clean,

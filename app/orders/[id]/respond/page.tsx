@@ -63,7 +63,7 @@ export default function RespondPage() {
       setTimeout(() => router.replace(`/orders/${order.id}`), 1500);
     } catch (err) {
       console.error(err);
-      setError('Не удалось отправить отклик. Попробуйте снова.');
+      setError(err instanceof Error ? err.message : 'Не удалось отправить отклик. Попробуйте снова.');
     } finally {
       setSubmitting(false);
     }
@@ -83,6 +83,43 @@ export default function RespondPage() {
     return (
       <PageLayout showBack title="Откликнуться">
         <p style={{ textAlign: 'center', paddingTop: 60 }}>Заказ не найден</p>
+      </PageLayout>
+    );
+  }
+
+  const alreadyResponded = Boolean(user && order.responses && user.uid in order.responses);
+
+  if (alreadyResponded) {
+    return (
+      <PageLayout showBack title="Отклик на заказ">
+        <div
+          className="mx-5 mt-10 flex flex-col items-center gap-4 rounded-2xl p-8 text-center"
+          style={{
+            background: '#ffffff',
+            border: '1px solid rgba(180,100,70,0.08)',
+            boxShadow: '0 4px 16px rgba(45,45,45,0.06)',
+          }}
+        >
+          <div
+            className="flex size-16 items-center justify-center rounded-full text-3xl"
+            style={{ background: 'rgba(194,112,62,0.1)' }}
+          >
+            ✓
+          </div>
+          <h2 className="text-lg font-extrabold text-foreground">Вы уже откликнулись</h2>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Вы уже отправили отклик на этот заказ.
+            <br />
+            Заказчик рассматривает его.
+          </p>
+          <button
+            onClick={() => router.back()}
+            className="mt-2 rounded-xl px-8 py-3 text-sm font-bold text-white transition-all active:scale-95"
+            style={{ background: '#C2703E', boxShadow: '0 4px 14px rgba(194,112,62,0.35)' }}
+          >
+            Назад
+          </button>
+        </div>
       </PageLayout>
     );
   }
