@@ -195,7 +195,7 @@ export default function HomePage() {
                   key={order.id}
                   order={order}
                   onClick={() => {
-                    if (['in_progress', 'ready', 'delivered'].includes(order.status)) {
+                    if (['master_selected', 'in_progress', 'ready', 'delivered'].includes(order.status)) {
                       router.push(`/track/${order.id}`);
                     } else {
                       router.push(`/orders/${order.id}`);

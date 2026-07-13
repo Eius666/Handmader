@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Wallet, CalendarClock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { MasterResponseCard } from '@/components/ui/MasterResponseCard';
+import { Toast } from '@/components/ui/Toast';
 import { getOrder, selectMaster } from '@/lib/firestore';
 import { Order, OrderResponse, CATEGORY_LABELS } from '@/types';
 
@@ -17,6 +18,7 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectingMaster, setSelectingMaster] = useState<string | null>(null);
+  const [toast, setToast] = useState('');
 
   const isOwner = order?.customerId === user?.uid;
 
@@ -32,9 +34,8 @@ export default function OrderDetailPage() {
     setSelectingMaster(masterId);
     try {
       await selectMaster(order.id, masterId, resp.masterName, resp.price);
-      setOrder((prev) =>
-        prev ? { ...prev, status: 'master_selected', selectedMasterId: masterId, selectedMasterName: resp.masterName, selectedPrice: resp.price } : prev
-      );
+      setToast('Мастер выбран!');
+      setTimeout(() => router.replace(`/track/${order.id}`), 1500);
     } finally {
       setSelectingMaster(null);
     }
@@ -199,6 +200,8 @@ export default function OrderDetailPage() {
           </button>
         )}
       </div>
+
+      {toast && <Toast message={toast} onClose={() => setToast('')} />}
     </div>
   );
 }

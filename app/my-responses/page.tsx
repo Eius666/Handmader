@@ -87,46 +87,67 @@ export default function MyResponsesPage() {
             </button>
           </div>
         ) : (
-          entries.map(({ order, myPrice, myTimeline, isSelected }) => (
-            <button
-              key={order.id}
-              type="button"
-              onClick={() =>
-                isSelected
-                  ? router.push(`/track/${order.id}`)
-                  : router.push(`/orders/${order.id}`)
-              }
-              className="flex flex-col gap-3 w-full text-left transition-all duration-200 active:scale-[0.98]"
-              style={{
-                borderRadius: 18,
-                padding: '14px 16px',
-                background: isSelected ? 'rgba(74,124,89,0.07)' : '#ffffff',
-                border: isSelected ? '1px solid rgba(74,124,89,0.2)' : '1px solid rgba(180,100,70,0.08)',
-                boxShadow: '0 2px 10px rgba(140,80,50,0.06)',
-              }}
-            >
-              <div className="flex items-start gap-3">
-                <span className="text-2xl shrink-0">{getCategoryEmoji(order.category)}</span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-muted-foreground">
-                    {CATEGORY_LABELS[order.category]}
-                  </p>
-                  <p className="line-clamp-2 text-sm font-bold leading-snug text-foreground">
-                    {order.description}
-                  </p>
+          entries.map(({ order, myPrice, myTimeline, isSelected }) => {
+            const isRejected = order.status === 'master_selected' && !isSelected;
+            return (
+              <button
+                key={order.id}
+                type="button"
+                onClick={() =>
+                  isSelected
+                    ? router.push(`/track/${order.id}`)
+                    : router.push(`/orders/${order.id}`)
+                }
+                className="flex flex-col gap-3 w-full text-left transition-all duration-200 active:scale-[0.98]"
+                style={{
+                  borderRadius: 18,
+                  padding: '14px 16px',
+                  background: isSelected
+                    ? 'rgba(74,124,89,0.07)'
+                    : isRejected
+                    ? 'rgba(120,113,108,0.04)'
+                    : '#ffffff',
+                  border: isSelected
+                    ? '1px solid rgba(74,124,89,0.2)'
+                    : isRejected
+                    ? '1px solid rgba(120,113,108,0.12)'
+                    : '1px solid rgba(180,100,70,0.08)',
+                  boxShadow: '0 2px 10px rgba(140,80,50,0.06)',
+                  opacity: isRejected ? 0.6 : 1,
+                }}
+              >
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl shrink-0">{getCategoryEmoji(order.category)}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-medium text-muted-foreground">
+                      {CATEGORY_LABELS[order.category]}
+                    </p>
+                    <p className="line-clamp-2 text-sm font-bold leading-snug text-foreground">
+                      {order.description}
+                    </p>
+                  </div>
+                  {isRejected ? (
+                    <span
+                      className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wide"
+                      style={{ background: 'rgba(120,113,108,0.1)', color: '#78716c' }}
+                    >
+                      Не выбран
+                    </span>
+                  ) : (
+                    <StatusBadge status={order.status} />
+                  )}
                 </div>
-                <StatusBadge status={order.status} />
-              </div>
 
-              <div className="flex flex-wrap gap-x-4 gap-y-1 border-t border-border pt-3 text-xs font-medium text-muted-foreground">
-                <span>💰 Ваша цена: {myPrice.toLocaleString('ru-RU')} ₽</span>
-                <span>⏱️ {myTimeline}</span>
-                {isSelected && (
-                  <span className="font-bold text-status-progress">✓ Вас выбрали!</span>
-                )}
-              </div>
-            </button>
-          ))
+                <div className="flex flex-wrap gap-x-4 gap-y-1 border-t border-border pt-3 text-xs font-medium text-muted-foreground">
+                  <span>💰 Ваша цена: {myPrice.toLocaleString('ru-RU')} ₽</span>
+                  <span>⏱️ {myTimeline}</span>
+                  {isSelected && (
+                    <span className="font-bold text-status-progress">✓ Вас выбрали!</span>
+                  )}
+                </div>
+              </button>
+            );
+          })
         )}
       </section>
 

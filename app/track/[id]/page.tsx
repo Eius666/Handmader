@@ -5,7 +5,8 @@ import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Check, Send, Wallet, Package } from 'lucide-react';
 import { StarRating } from '@/components/ui/StarRating';
-import { getOrder, updateOrderStatus } from '@/lib/firestore';
+import { Toast } from '@/components/ui/Toast';
+import { getOrder, startWork, markReady, confirmDelivery } from '@/lib/firestore';
 import { useAuth } from '@/hooks/useAuth';
 import { useTelegram } from '@/hooks/useTelegram';
 import { Order, OrderStatus, CATEGORY_LABELS } from '@/types';
@@ -21,9 +22,9 @@ interface Step {
 
 function buildSteps(currentStatus: OrderStatus): Step[] {
   const steps: { id: string; label: string; status: OrderStatus }[] = [
-    { id: 'accepted',   label: 'Принят',    status: 'master_selected' },
-    { id: 'inprogress', label: 'В работе',  status: 'in_progress' },
-    { id: 'ready',      label: 'Готов',     status: 'ready' },
+    { id: 'accepted',   label: 'Принят',   status: 'master_selected' },
+    { id: 'inprogress', label: 'В работе', status: 'in_progress' },
+    { id: 'ready',      label: 'Готов',    status: 'ready' },
     { id: 'delivered',  label: 'Доставлен', status: 'delivered' },
   ];
 
@@ -39,7 +40,7 @@ function buildSteps(currentStatus: OrderStatus): Step[] {
   });
 }
 
-const STATUS_LABELS_TRACKING: Partial<Record<OrderStatus, { icon: string; text: string; sub: string }>> = {
+const STATUS_META: Partial<Record<OrderStatus, { icon: string; text: string; sub: string }>> = {
   master_selected: { icon: '🤝', text: 'Принят',   sub: 'Мастер подтвердил заказ и готовится приступить' },
   in_progress:     { icon: '🧶', text: 'В работе', sub: 'Мастер приступил к вязанию вашего заказа' },
   ready:           { icon: '✅', text: 'Готово!',  sub: 'Ваш заказ выполнен и ждёт передачи' },
@@ -53,24 +54,48 @@ export default function TrackPage() {
   const { openTelegramChat } = useTelegram();
   const router = useRouter();
 
-  const [order, setOrder] = useState<Order | null>(null);
+  const [order,  setOrder]  = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
-  const [confirming, setConfirming] = useState(false);
+  const [acting,  setActing]  = useState(false);
+  const [toast,   setToast]   = useState('');
 
   useEffect(() => {
     if (!id) return;
     getOrder(id).then(setOrder).finally(() => setLoading(false));
   }, [id]);
 
+  const isOwner  = order?.customerId     === user?.uid;
+  const isMaster = !isOwner && order?.selectedMasterId === user?.uid;
+  const canConfirm = isOwner && (order?.status === 'ready' || order?.status === 'delivered');
+
+  async function handleStart() {
+    if (!order) return;
+    setActing(true);
+    try {
+      await startWork(order.id);
+      setOrder((p) => p ? { ...p, status: 'in_progress' } : p);
+      setToast('Статус обновлён: В работе');
+    } finally { setActing(false); }
+  }
+
+  async function handleReady() {
+    if (!order) return;
+    setActing(true);
+    try {
+      await markReady(order.id);
+      setOrder((p) => p ? { ...p, status: 'ready' } : p);
+      setToast('Мастер сообщил что заказ готов');
+    } finally { setActing(false); }
+  }
+
   async function handleConfirm() {
     if (!order) return;
-    setConfirming(true);
+    setActing(true);
     try {
-      await updateOrderStatus(order.id, 'completed');
+      await confirmDelivery(order.id);
       setOrder((p) => p ? { ...p, status: 'completed' } : p);
-    } finally {
-      setConfirming(false);
-    }
+      setToast('Заказ завершён');
+    } finally { setActing(false); }
   }
 
   if (loading) {
@@ -90,11 +115,9 @@ export default function TrackPage() {
     );
   }
 
-  const steps = buildSteps(order.status);
-  const statusInfo = STATUS_LABELS_TRACKING[order.status] ?? { icon: '🧶', text: order.status, sub: '' };
+  const steps     = buildSteps(order.status);
+  const statusInfo = STATUS_META[order.status] ?? { icon: '🧶', text: order.status, sub: '' };
   const selectedResp = order.selectedMasterId ? order.responses?.[order.selectedMasterId] : null;
-  const isOwner = order.customerId === user?.uid;
-  const canConfirm = isOwner && (order.status === 'ready' || order.status === 'delivered');
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-background pb-28">
@@ -112,13 +135,13 @@ export default function TrackPage() {
       </header>
 
       <div className="flex flex-col gap-6 px-5 pt-4">
-        {/* Big status */}
+        {/* Status icon */}
         <section className="flex flex-col items-center gap-3 pt-2">
           <div className="flex size-28 items-center justify-center rounded-full bg-primary shadow-[0_10px_30px_rgba(224,122,95,0.4)] text-5xl">
             {statusInfo.icon}
           </div>
           <p className="text-2xl font-extrabold text-foreground">{statusInfo.text}</p>
-          <p className="text-sm text-muted-foreground text-center px-4">{statusInfo.sub}</p>
+          <p className="px-4 text-center text-sm text-muted-foreground">{statusInfo.sub}</p>
         </section>
 
         {/* Stepper */}
@@ -194,11 +217,11 @@ export default function TrackPage() {
                 <span className="text-xs text-muted-foreground">· ваш мастер</span>
               </div>
             </div>
-            {order.selectedMasterId && (
+            {isOwner && order.selectedMasterId && (
               <button
                 type="button"
                 onClick={() => openTelegramChat(order.selectedMasterId!)}
-                className="flex items-center gap-2 rounded-full bg-[#229ED9] px-4 py-2.5 text-sm font-bold text-white shadow-[0_4px_14px_rgba(34,158,217,0.35)] transition-transform active:scale-95 shrink-0"
+                className="flex shrink-0 items-center gap-2 rounded-full bg-[#229ED9] px-4 py-2.5 text-sm font-bold text-white shadow-[0_4px_14px_rgba(34,158,217,0.35)] transition-transform active:scale-95"
               >
                 <Send className="size-4" aria-hidden="true" />
                 Связаться
@@ -213,10 +236,7 @@ export default function TrackPage() {
             <Package className="size-5 text-primary" aria-hidden="true" />
             Детали заказа
           </h2>
-          <div className="flex flex-col gap-1">
-            <span className="text-sm text-muted-foreground">Описание</span>
-            <p className="text-base leading-relaxed text-foreground">{order.description}</p>
-          </div>
+          <p className="text-base leading-relaxed text-foreground">{order.description}</p>
           <div className="flex items-center justify-between border-t border-border pt-4">
             <span className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
               <Wallet className="size-4 text-primary" aria-hidden="true" />
@@ -231,20 +251,41 @@ export default function TrackPage() {
 
       {/* Fixed bottom CTA */}
       <div className="fixed inset-x-0 bottom-0 mx-auto max-w-md border-t border-border bg-background/95 px-5 py-4 backdrop-blur">
-        {canConfirm ? (
-          <button
-            type="button"
-            onClick={handleConfirm}
-            disabled={confirming}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-success py-4 text-lg font-bold text-success-foreground shadow-[0_8px_24px_rgba(76,175,80,0.4)] transition-transform active:scale-[0.98] disabled:opacity-60"
-          >
-            <Check className="size-5" strokeWidth={3} aria-hidden="true" />
-            {confirming ? 'Подтверждаем...' : 'Подтвердить получение'}
-          </button>
-        ) : order.status === 'completed' ? (
+        {order.status === 'completed' ? (
           <div className="flex w-full items-center justify-center gap-2 rounded-xl bg-status-progress/15 py-4 text-lg font-bold text-status-progress">
             ✓ Заказ завершён
           </div>
+        ) : isMaster && order.status === 'master_selected' ? (
+          <button
+            type="button"
+            onClick={handleStart}
+            disabled={acting}
+            className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-bold text-white shadow-[0_8px_24px_rgba(224,122,95,0.4)] transition-transform active:scale-[0.98] disabled:opacity-60"
+            style={{ background: '#d96c52' }}
+          >
+            {acting ? 'Обновляем...' : '▶ Начать работу'}
+          </button>
+        ) : isMaster && order.status === 'in_progress' ? (
+          <button
+            type="button"
+            onClick={handleReady}
+            disabled={acting}
+            className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-bold text-white shadow-[0_8px_24px_rgba(74,124,89,0.4)] transition-transform active:scale-[0.98] disabled:opacity-60"
+            style={{ background: '#4a7c59' }}
+          >
+            {acting ? 'Обновляем...' : '✓ Заказ готов'}
+          </button>
+        ) : canConfirm ? (
+          <button
+            type="button"
+            onClick={handleConfirm}
+            disabled={acting}
+            className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-bold text-white shadow-[0_8px_24px_rgba(74,124,89,0.4)] transition-transform active:scale-[0.98] disabled:opacity-60"
+            style={{ background: '#4a7c59' }}
+          >
+            <Check className="size-5" strokeWidth={3} aria-hidden="true" />
+            {acting ? 'Подтверждаем...' : 'Подтвердить получение'}
+          </button>
         ) : (
           <button
             type="button"
@@ -255,6 +296,8 @@ export default function TrackPage() {
           </button>
         )}
       </div>
+
+      {toast && <Toast message={toast} onClose={() => setToast('')} />}
     </div>
   );
 }

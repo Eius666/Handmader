@@ -93,6 +93,18 @@ export async function updateOrderStatus(
   await updateDoc(doc(db, 'orders', orderId), { status, ...extra });
 }
 
+export async function startWork(orderId: string): Promise<void> {
+  await updateDoc(doc(db, 'orders', orderId), { status: 'in_progress', startedAt: serverTimestamp() });
+}
+
+export async function markReady(orderId: string): Promise<void> {
+  await updateDoc(doc(db, 'orders', orderId), { status: 'ready', readyAt: serverTimestamp() });
+}
+
+export async function confirmDelivery(orderId: string): Promise<void> {
+  await updateDoc(doc(db, 'orders', orderId), { status: 'completed', deliveredAt: serverTimestamp() });
+}
+
 function stripUndefined(obj: Record<string, unknown>): Record<string, unknown> {
   return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
 }
