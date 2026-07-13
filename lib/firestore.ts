@@ -112,7 +112,7 @@ export async function submitRating(
   rating: number,
   comment?: string,
 ): Promise<void> {
-  const entry: Record<string, unknown> = { rating, createdAt: serverTimestamp() };
+  const entry: Record<string, unknown> = { rating, createdAt: Timestamp.now() };
   if (comment) entry.comment = comment;
 
   await updateDoc(doc(db, 'orders', orderId), { ratings: arrayUnion(entry) });
