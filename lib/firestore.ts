@@ -111,6 +111,9 @@ export async function confirmDelivery(orderId: string): Promise<void> {
     await updateDoc(doc(db, 'users', masterId), {
       'masterProfile.completedOrders': increment(1),
     });
+    console.log('[confirmDelivery] incremented completedOrders for master', masterId);
+  } else {
+    console.warn('[confirmDelivery] no selectedMasterId on order', orderId);
   }
 }
 

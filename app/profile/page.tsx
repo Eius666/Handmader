@@ -13,7 +13,7 @@ import { OrderCategory, CATEGORY_LABELS, MasterProfile } from '@/types';
 const MASTER_CATS: OrderCategory[] = ['hat', 'sweater', 'scarf', 'toy', 'accessory', 'other'];
 
 export default function ProfilePage() {
-  const { user, refreshUser, logout } = useAuth();
+  const { user, refreshUser, refreshProfile, logout } = useAuth();
   const router = useRouter();
 
   const [loggingOut,    setLoggingOut]    = useState(false);
@@ -26,6 +26,11 @@ export default function ProfilePage() {
   const [cats, setCats] = useState<OrderCategory[]>([]);
   const [urls, setUrls] = useState(['', '', '']);
   const [city, setCity] = useState('');
+
+  // Always fetch fresh profile on mount so completedOrders/rating are up to date
+  useEffect(() => {
+    refreshProfile().catch(console.error);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Initialise form from Firestore data once user loads
   useEffect(() => {
