@@ -10,6 +10,7 @@ import {
   where,
   orderBy,
   serverTimestamp,
+  arrayUnion,
   Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
@@ -103,6 +104,30 @@ export async function markReady(orderId: string): Promise<void> {
 
 export async function confirmDelivery(orderId: string): Promise<void> {
   await updateDoc(doc(db, 'orders', orderId), { status: 'completed', deliveredAt: serverTimestamp() });
+}
+
+export async function submitRating(
+  orderId: string,
+  masterId: string,
+  rating: number,
+  comment?: string,
+): Promise<void> {
+  const entry: Record<string, unknown> = { rating, createdAt: serverTimestamp() };
+  if (comment) entry.comment = comment;
+
+  await updateDoc(doc(db, 'orders', orderId), { ratings: arrayUnion(entry) });
+
+  const masterSnap = await getDoc(doc(db, 'users', masterId));
+  if (!masterSnap.exists()) return;
+  const mp = (masterSnap.data().masterProfile ?? {}) as { rating?: number; ratingCount?: number };
+  const oldCount  = mp.ratingCount ?? 0;
+  const newCount  = oldCount + 1;
+  const newRating = ((mp.rating ?? 0) * oldCount + rating) / newCount;
+
+  await updateDoc(doc(db, 'users', masterId), {
+    'masterProfile.rating':      newRating,
+    'masterProfile.ratingCount': newCount,
+  });
 }
 
 function stripUndefined(obj: Record<string, unknown>): Record<string, unknown> {

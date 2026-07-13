@@ -6,7 +6,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Check, Send, Wallet, Package } from 'lucide-react';
 import { StarRating } from '@/components/ui/StarRating';
 import { Toast } from '@/components/ui/Toast';
-import { getOrder, startWork, markReady, confirmDelivery } from '@/lib/firestore';
+import { RatingModal } from '@/components/RatingModal';
+import { getOrder, startWork, markReady, confirmDelivery, submitRating } from '@/lib/firestore';
 import { useAuth } from '@/hooks/useAuth';
 import { useTelegram } from '@/hooks/useTelegram';
 import { Order, OrderStatus, CATEGORY_LABELS } from '@/types';
@@ -54,10 +55,11 @@ export default function TrackPage() {
   const { openTelegramChat } = useTelegram();
   const router = useRouter();
 
-  const [order,  setOrder]  = useState<Order | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [acting,  setActing]  = useState(false);
-  const [toast,   setToast]   = useState('');
+  const [order,      setOrder]      = useState<Order | null>(null);
+  const [loading,    setLoading]    = useState(true);
+  const [acting,     setActing]     = useState(false);
+  const [toast,      setToast]      = useState('');
+  const [showRating, setShowRating] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -95,7 +97,15 @@ export default function TrackPage() {
       await confirmDelivery(order.id);
       setOrder((p) => p ? { ...p, status: 'completed' } : p);
       setToast('Заказ завершён');
+      if (order.selectedMasterId) setShowRating(true);
     } finally { setActing(false); }
+  }
+
+  async function handleRatingSend(rating: number, comment: string) {
+    if (!order?.selectedMasterId) return;
+    await submitRating(order.id, order.selectedMasterId, rating, comment);
+    setShowRating(false);
+    setToast('Спасибо за оценку!');
   }
 
   if (loading) {
@@ -298,6 +308,14 @@ export default function TrackPage() {
       </div>
 
       {toast && <Toast message={toast} onClose={() => setToast('')} />}
+
+      {showRating && (
+        <RatingModal
+          masterName={order?.responses?.[order.selectedMasterId!]?.masterName}
+          onSend={handleRatingSend}
+          onSkip={() => setShowRating(false)}
+        />
+      )}
     </div>
   );
 }

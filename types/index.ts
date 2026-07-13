@@ -21,9 +21,16 @@ export interface MasterProfile {
   categories: OrderCategory[];
   portfolioPhotos: string[];
   rating: number;
+  ratingCount?: number;
   completedOrders: number;
   location?: string;
   telegramId?: string;
+}
+
+export interface OrderRating {
+  rating: number;
+  comment?: string;
+  createdAt: Date;
 }
 
 export interface User {
@@ -64,6 +71,7 @@ export interface Order {
   selectedMasterName?: string;
   selectedPrice?: number;
   responses: Record<string, OrderResponse>;
+  ratings?: OrderRating[];
   location?: string;
 }
 
