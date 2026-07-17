@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Check, Send, Wallet, Package, Trash2 } from 'lucide-react';
+import { ArrowLeft, Check, Send, Wallet, Package, Trash2, MessageSquare } from 'lucide-react';
 import { StarRating } from '@/components/ui/StarRating';
 import { Toast } from '@/components/ui/Toast';
 import { RatingModal } from '@/components/RatingModal';
@@ -130,7 +130,7 @@ export default function TrackPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-background">
+      <div className="flex h-full items-center justify-center bg-background">
         <span className="size-9 rounded-full border-2 border-secondary border-t-primary animate-spin" />
       </div>
     );
@@ -138,7 +138,7 @@ export default function TrackPage() {
 
   if (!order) {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background">
+      <div className="flex h-full flex-col items-center justify-center gap-4 bg-background">
         <p className="text-muted-foreground">Заказ не найден</p>
         <button onClick={() => router.back()} className="text-primary font-semibold">← Назад</button>
       </div>
@@ -150,8 +150,8 @@ export default function TrackPage() {
   const selectedResp = order.selectedMasterId ? order.responses?.[order.selectedMasterId] : null;
 
   return (
-    <div className="flex min-h-dvh w-full flex-col bg-background pb-28">
-      <header className="flex items-center gap-4 px-5 pb-2 pt-4">
+    <div className="flex h-full w-full flex-col overflow-hidden bg-background">
+      <header className="shrink-0 flex items-center gap-4 px-5 pb-2 pt-4">
         <button
           onClick={() => router.back()}
           aria-label="Назад"
@@ -162,6 +162,16 @@ export default function TrackPage() {
         <h1 className="flex-1 text-2xl font-extrabold text-foreground">
           {CATEGORY_LABELS[order.category]}
         </h1>
+        {order.selectedMasterId && (isOwner || isMaster) && (
+          <button
+            type="button"
+            aria-label="Открыть чат"
+            onClick={() => router.push(`/chat/${order.id}`)}
+            className="flex size-10 items-center justify-center rounded-full bg-card text-primary shadow-[0_4px_16px_rgba(45,45,45,0.06)] transition-all active:scale-95"
+          >
+            <MessageSquare className="size-4" aria-hidden="true" />
+          </button>
+        )}
         {canDelete && (
           <button
             type="button"
@@ -174,6 +184,7 @@ export default function TrackPage() {
         )}
       </header>
 
+      <div className="flex-1 overflow-y-auto pb-28 [&::-webkit-scrollbar]:hidden">
       <div className="flex flex-col gap-6 px-5 pt-4">
         {/* Status icon */}
         <section className="flex flex-col items-center gap-3 pt-2">
@@ -292,6 +303,7 @@ export default function TrackPage() {
             </span>
           </div>
         </section>
+      </div>
       </div>
 
       {/* Fixed bottom CTA */}

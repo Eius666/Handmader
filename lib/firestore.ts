@@ -13,10 +13,21 @@ import {
   serverTimestamp,
   arrayUnion,
   increment,
+  onSnapshot,
+  writeBatch,
+  limit,
   Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { Order, OrderResponse, User, Review, OrderCategory } from '@/types';
+import { Order, OrderResponse, User, Review, OrderCategory, Chat, ChatMessage } from '@/types';
+import {
+  notifyMastersAboutOrder,
+  notifyCustomerNewResponse,
+  notifyMasterSelected,
+  notifyCustomerWorkStarted,
+  notifyCustomerOrderReady,
+  notifyMasterOrderCompleted,
+} from './notifications';
 
 // ─── Users ────────────────────────────────────────────────────────────────────
 
@@ -51,6 +62,8 @@ export async function createOrder(
     responses: {},
     createdAt: serverTimestamp(),
   });
+  // fire-and-forget — notify relevant masters
+  notifyMastersAboutOrder(ref.id, order.category, order.description, order.budgetMin, order.budgetMax).catch(console.error);
   return ref.id;
 }
 
@@ -98,10 +111,12 @@ export async function updateOrderStatus(
 
 export async function startWork(orderId: string): Promise<void> {
   await updateDoc(doc(db, 'orders', orderId), { status: 'in_progress', startedAt: serverTimestamp() });
+  notifyCustomerWorkStarted(orderId).catch(console.error);
 }
 
 export async function markReady(orderId: string): Promise<void> {
   await updateDoc(doc(db, 'orders', orderId), { status: 'ready', readyAt: serverTimestamp() });
+  notifyCustomerOrderReady(orderId).catch(console.error);
 }
 
 export async function confirmDelivery(orderId: string): Promise<void> {
@@ -124,6 +139,7 @@ export async function confirmDelivery(orderId: string): Promise<void> {
   } else {
     console.warn('[confirmDelivery] no selectedMasterId — increment skipped');
   }
+  notifyMasterOrderCompleted(orderId, masterId ?? null).catch(console.error);
 }
 
 export async function submitRating(
@@ -164,10 +180,21 @@ export async function addResponse(
   if (snap.exists() && snap.data().responses && masterId in snap.data().responses) {
     throw new Error('Вы уже откликнулись на этот заказ');
   }
+  const orderData = snap.exists() ? snap.data() : null;
   const clean = stripUndefined({ ...response, createdAt: serverTimestamp() });
   await updateDoc(doc(db, 'orders', orderId), {
     [`responses.${masterId}`]: clean,
   });
+  if (orderData) {
+    notifyCustomerNewResponse(
+      orderData.customerId as string,
+      orderId,
+      orderData.description as string,
+      response.masterName,
+      response.price,
+      response.timeline,
+    ).catch(console.error);
+  }
 }
 
 export async function deleteOrder(orderId: string): Promise<void> {
@@ -186,6 +213,7 @@ export async function selectMaster(
     selectedMasterName: masterName,
     selectedPrice,
   });
+  notifyMasterSelected(masterId, orderId).catch(console.error);
 }
 
 // ─── Reviews ──────────────────────────────────────────────────────────────────
@@ -197,6 +225,142 @@ export async function createReview(
     ...review,
     createdAt: serverTimestamp(),
   });
+}
+
+// ─── Chat ─────────────────────────────────────────────────────────────────────
+
+/**
+ * Send a message. Creates the chat document on first call (with createdAt),
+ * then only updates lastMessage + increments the receiver's unread counter.
+ */
+export async function sendMessage(
+  orderId: string,
+  senderId: string,
+  senderName: string,
+  text: string,
+  customerId: string,
+  masterId: string,
+  customerName = '',
+  masterName = '',
+): Promise<void> {
+  const chatRef = doc(db, 'chats', orderId);
+  const chatSnap = await getDoc(chatRef);
+  const unreadField = senderId === customerId ? 'unreadMaster' : 'unreadCustomer';
+
+  if (!chatSnap.exists()) {
+    await setDoc(chatRef, {
+      orderId,
+      customerId,
+      masterId,
+      customerName,
+      masterName,
+      lastMessage: text.slice(0, 100),
+      lastMessageAt: serverTimestamp(),
+      unreadCustomer: senderId === customerId ? 0 : 1,
+      unreadMaster:   senderId === customerId ? 1 : 0,
+      createdAt: serverTimestamp(),
+    });
+  } else {
+    await updateDoc(chatRef, {
+      lastMessage: text.slice(0, 100),
+      lastMessageAt: serverTimestamp(),
+      [unreadField]: increment(1),
+    });
+  }
+
+  await addDoc(collection(db, 'chats', orderId, 'messages'), {
+    senderId,
+    senderName,
+    text,
+    createdAt: serverTimestamp(),
+    read: false,
+  });
+}
+
+/**
+ * Subscribe to chat messages in real time. Returns the unsubscribe function.
+ */
+export function subscribeToChatMessages(
+  orderId: string,
+  callback: (messages: ChatMessage[]) => void,
+  limitCount = 50,
+): () => void {
+  const q = query(
+    collection(db, 'chats', orderId, 'messages'),
+    orderBy('createdAt', 'asc'),
+    limit(limitCount),
+  );
+  return onSnapshot(q, (snap) => {
+    const messages: ChatMessage[] = snap.docs.map((d) => ({
+      id: d.id,
+      senderId:   d.data().senderId   as string,
+      senderName: d.data().senderName as string,
+      text:       d.data().text       as string,
+      read:       d.data().read       as boolean,
+      createdAt:  (d.data().createdAt as Timestamp)?.toDate() ?? new Date(),
+    }));
+    callback(messages);
+  });
+}
+
+/**
+ * Mark all messages from the other party as read and reset the reader's unread counter.
+ */
+export async function markMessagesAsRead(orderId: string, readerId: string): Promise<void> {
+  const [unreadSnap, chatSnap] = await Promise.all([
+    getDocs(query(
+      collection(db, 'chats', orderId, 'messages'),
+      where('read', '==', false),
+    )),
+    getDoc(doc(db, 'chats', orderId)),
+  ]);
+
+  const batch = writeBatch(db);
+  let hasUpdates = false;
+  for (const msgDoc of unreadSnap.docs) {
+    if ((msgDoc.data().senderId as string) !== readerId) {
+      batch.update(msgDoc.ref, { read: true });
+      hasUpdates = true;
+    }
+  }
+  if (hasUpdates) await batch.commit();
+
+  if (chatSnap.exists()) {
+    const isCustomer = (chatSnap.data().customerId as string) === readerId;
+    await updateDoc(doc(db, 'chats', orderId), {
+      [isCustomer ? 'unreadCustomer' : 'unreadMaster']: 0,
+    });
+  }
+}
+
+/**
+ * Get all chats for a user (as customer or master), sorted by lastMessageAt desc.
+ */
+export async function getChatList(uid: string): Promise<Chat[]> {
+  // Two simple where-only queries (no orderBy) to avoid requiring composite indexes.
+  // Client-side sort by lastMessageAt desc.
+  const [asCustomer, asMaster] = await Promise.all([
+    getDocs(query(collection(db, 'chats'), where('customerId', '==', uid))),
+    getDocs(query(collection(db, 'chats'), where('masterId',   '==', uid))),
+  ]);
+
+  const all = [...asCustomer.docs, ...asMaster.docs].map((d) => {
+    const data = d.data();
+    return {
+      orderId:        d.id,
+      customerId:     data.customerId    as string,
+      masterId:       data.masterId      as string,
+      customerName:   data.customerName  as string | undefined,
+      masterName:     data.masterName    as string | undefined,
+      lastMessage:    data.lastMessage   as string ?? '',
+      unreadCustomer: (data.unreadCustomer as number) ?? 0,
+      unreadMaster:   (data.unreadMaster   as number) ?? 0,
+      lastMessageAt:  (data.lastMessageAt  as Timestamp)?.toDate() ?? new Date(),
+      createdAt:      (data.createdAt      as Timestamp)?.toDate() ?? new Date(),
+    } satisfies Chat;
+  });
+
+  return all.sort((a, b) => b.lastMessageAt.getTime() - a.lastMessageAt.getTime());
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
+import { MessageSquare } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { BottomNav } from '@/components/layout/BottomNav';
@@ -59,12 +60,13 @@ export default function MyResponsesPage() {
   }, [user]);
 
   return (
-    <main className="flex min-h-dvh w-full flex-col bg-background pb-28">
-      <header className="px-5 pb-3 pt-8">
+    <main className="flex h-full w-full flex-col overflow-hidden bg-background">
+      <header className="shrink-0 px-5 pb-3 pt-8">
         <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-0.5">Мои</p>
         <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-foreground leading-none">Отклики</h1>
       </header>
 
+      <div className="flex-1 overflow-y-auto pb-28 [&::-webkit-scrollbar]:hidden">
       <section className="flex flex-col gap-3 px-5 pt-2">
         {loading ? (
           <div className="flex justify-center py-16">
@@ -90,15 +92,9 @@ export default function MyResponsesPage() {
           entries.map(({ order, myPrice, myTimeline, isSelected }) => {
             const isRejected = order.status === 'master_selected' && !isSelected;
             return (
-              <button
+              <div
                 key={order.id}
-                type="button"
-                onClick={() =>
-                  isSelected
-                    ? router.push(`/track/${order.id}`)
-                    : router.push(`/orders/${order.id}`)
-                }
-                className="flex flex-col gap-3 w-full text-left transition-all duration-200 active:scale-[0.98]"
+                className="flex flex-col gap-3 w-full"
                 style={{
                   borderRadius: 18,
                   padding: '14px 16px',
@@ -116,40 +112,63 @@ export default function MyResponsesPage() {
                   opacity: isRejected ? 0.6 : 1,
                 }}
               >
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl shrink-0">{getCategoryEmoji(order.category)}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium text-muted-foreground">
-                      {CATEGORY_LABELS[order.category]}
-                    </p>
-                    <p className="line-clamp-2 text-sm font-bold leading-snug text-foreground">
-                      {order.description}
-                    </p>
+                <button
+                  type="button"
+                  onClick={() =>
+                    isSelected
+                      ? router.push(`/track/${order.id}`)
+                      : router.push(`/orders/${order.id}`)
+                  }
+                  className="flex flex-col gap-3 w-full text-left transition-all duration-200 active:scale-[0.98]"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl shrink-0">{getCategoryEmoji(order.category)}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-muted-foreground">
+                        {CATEGORY_LABELS[order.category]}
+                      </p>
+                      <p className="line-clamp-2 text-sm font-bold leading-snug text-foreground">
+                        {order.description}
+                      </p>
+                    </div>
+                    {isRejected ? (
+                      <span
+                        className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wide"
+                        style={{ background: 'rgba(120,113,108,0.1)', color: '#78716c' }}
+                      >
+                        Не выбран
+                      </span>
+                    ) : (
+                      <StatusBadge status={order.status} />
+                    )}
                   </div>
-                  {isRejected ? (
-                    <span
-                      className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wide"
-                      style={{ background: 'rgba(120,113,108,0.1)', color: '#78716c' }}
-                    >
-                      Не выбран
-                    </span>
-                  ) : (
-                    <StatusBadge status={order.status} />
-                  )}
-                </div>
 
-                <div className="flex flex-wrap gap-x-4 gap-y-1 border-t border-border pt-3 text-xs font-medium text-muted-foreground">
-                  <span>💰 Ваша цена: {myPrice.toLocaleString('ru-RU')} ₽</span>
-                  <span>⏱️ {myTimeline}</span>
-                  {isSelected && (
-                    <span className="font-bold text-status-progress">✓ Вас выбрали!</span>
-                  )}
-                </div>
-              </button>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 border-t border-border pt-3 text-xs font-medium text-muted-foreground">
+                    <span>💰 Ваша цена: {myPrice.toLocaleString('ru-RU')} ₽</span>
+                    <span>⏱️ {myTimeline}</span>
+                    {isSelected && (
+                      <span className="font-bold text-status-progress">✓ Вас выбрали!</span>
+                    )}
+                  </div>
+                </button>
+
+                {isSelected && (
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/chat/${order.id}`)}
+                    className="flex items-center justify-center gap-2 rounded-xl py-2.5 text-[13px] font-bold text-white transition-all active:scale-95"
+                    style={{ background: '#C2703E', boxShadow: '0 3px 10px rgba(194,112,62,0.3)' }}
+                  >
+                    <MessageSquare className="size-4" aria-hidden="true" />
+                    Чат с клиентом
+                  </button>
+                )}
+              </div>
             );
           })
         )}
       </section>
+      </div>
 
       <BottomNav />
     </main>

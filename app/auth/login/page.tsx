@@ -28,7 +28,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background">
+    <div className="flex h-full flex-col overflow-y-auto bg-background [&::-webkit-scrollbar]:hidden">
       {/* Logo */}
       <div className="flex flex-col items-center px-5 pb-8 pt-16 text-center">
         <span className="text-5xl leading-none">🧶</span>

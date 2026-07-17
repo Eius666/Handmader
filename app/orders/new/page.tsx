@@ -104,7 +104,7 @@ function NewOrderFormInner() {
   }
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-background">
+    <div className="flex h-full flex-col overflow-hidden bg-background">
       <header className="flex shrink-0 items-center gap-4 px-5 pb-2 pt-4">
         <button
           type="button"
@@ -301,7 +301,7 @@ function NewOrderFormInner() {
 
 export default function NewOrderPage() {
   return (
-    <Suspense fallback={<div className="flex min-h-dvh items-center justify-center bg-background"><span className="text-muted-foreground">Загрузка...</span></div>}>
+    <Suspense fallback={<div className="flex h-full items-center justify-center bg-background"><span className="text-muted-foreground">Загрузка...</span></div>}>
       <NewOrderFormInner />
     </Suspense>
   );

@@ -39,10 +39,10 @@ export function PageLayout({
   }, [showBack, webApp, onBack, router]);
 
   return (
-    <div className="flex h-full flex-col bg-background">
+    <div className="flex h-full flex-col overflow-hidden bg-background">
       {title && (
         <header
-          className="flex shrink-0 items-center gap-3 px-5 pb-3 pt-5"
+          className="shrink-0 flex items-center gap-3 px-5 pb-3 pt-5"
           style={{ borderBottom: '1px solid rgba(180,100,70,0.08)' }}
         >
           {showBack && !webApp && (
@@ -66,10 +66,13 @@ export function PageLayout({
       )}
 
       <div
-        className="scrollable flex-1"
+        className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden"
         style={{ paddingBottom: hideNav ? 0 : 'calc(var(--nav-height) + env(safe-area-inset-bottom))' }}
       >
-        {children}
+        {/* page-enter wraps children so the scroll container itself doesn't shift */}
+        <div className="page-enter min-h-full">
+          {children}
+        </div>
       </div>
 
       {!hideNav && <BottomNav />}

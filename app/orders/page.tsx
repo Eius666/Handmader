@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation';
 import { Shirt, HardHat, Wind, Baby, Sparkles, Package, Plus, Star, Trash2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { BottomNav } from '@/components/layout/BottomNav';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { RatingModal } from '@/components/RatingModal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { Toast } from '@/components/ui/Toast';
 import { getCustomerOrders, submitRating, deleteOrder } from '@/lib/firestore';
+import { ImageCarousel } from '@/components/ui/ImageCarousel';
 import { Order, OrderCategory, CATEGORY_LABELS, OrderStatus } from '@/types';
 
 const CATEGORY_ICONS: Record<OrderCategory, LucideIcon> = {
@@ -87,31 +88,22 @@ export default function OrdersPage() {
     setRatingOrder(null);
   }
 
-  return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-5xl flex-col bg-background">
-      {/* Header */}
-      <header className="flex items-center justify-between px-5 sm:px-8 lg:px-12 pb-3 pt-8">
-        <div>
-          <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-0.5">
-            Мои
-          </p>
-          <h1 className="text-[26px] sm:text-[30px] font-extrabold tracking-[-0.03em] text-foreground leading-none">
-            Заказы
-          </h1>
-        </div>
-        <button
-          onClick={() => router.push('/orders/new')}
-          aria-label="Новый заказ"
-          className="flex size-11 items-center justify-center rounded-full text-white transition-all duration-200 active:scale-95"
-          style={{ background: '#d96c52', boxShadow: '0 4px 14px rgba(217,108,82,0.35)' }}
-        >
-          <Plus className="size-5" aria-hidden="true" />
-        </button>
-      </header>
+  const newOrderBtn = (
+    <button
+      onClick={() => router.push('/orders/new')}
+      aria-label="Новый заказ"
+      className="flex size-11 items-center justify-center rounded-full text-white transition-all duration-200 active:scale-95"
+      style={{ background: '#d96c52', boxShadow: '0 4px 14px rgba(217,108,82,0.35)' }}
+    >
+      <Plus className="size-5" aria-hidden="true" />
+    </button>
+  );
 
+  return (
+    <PageLayout title="Заказы" headerRight={newOrderBtn}>
       {/* Tabs */}
       <div
-        className="mx-5 sm:mx-8 lg:mx-12 mt-1 mb-4 flex w-fit gap-1 rounded-xl p-1 min-w-[240px] max-w-sm"
+        className="mx-5 mt-4 mb-4 flex w-fit gap-1 rounded-xl p-1 min-w-[240px] max-w-sm"
         style={{ background: 'rgba(180,100,70,0.07)' }}
       >
         {(['active', 'completed'] as const).map((t) => (
@@ -131,7 +123,7 @@ export default function OrdersPage() {
         ))}
       </div>
 
-      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 px-5 sm:px-8 lg:px-12 pb-28 items-start">
+      <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 px-5 items-start">
         {loading ? (
           <>
             {[...Array(3)].map((_, i) => (
@@ -191,8 +183,6 @@ export default function OrdersPage() {
         )}
       </section>
 
-      <BottomNav />
-
       {ratingOrder && (
         <RatingModal
           masterName={ratingOrder.selectedMasterName}
@@ -215,7 +205,7 @@ export default function OrdersPage() {
       )}
 
       {toast && <Toast message={toast} onClose={() => setToast('')} />}
-    </main>
+    </PageLayout>
   );
 }
 
@@ -263,7 +253,7 @@ function OrderListCard({
             {order.description}
           </p>
         </div>
-        <div className="flex shrink-0 flex-col items-end gap-1.5">
+        <div className="flex shrink-0 items-center gap-2">
           <StatusBadge status={order.status} />
           {canDelete && (
             <button

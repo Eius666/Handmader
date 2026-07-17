@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { auth } from '@/lib/firebase';
+import { setUser } from '@/lib/firestore';
 
 interface TelegramUser {
   id: number;
@@ -49,10 +51,17 @@ export function useTelegram() {
   useEffect(() => {
     if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
       const wa = window.Telegram.WebApp;
-      wa.ready();
-      wa.expand();
       setWebApp(wa);
-      setTgUser(wa.initDataUnsafe?.user ?? null);
+      const tgUsr = wa.initDataUnsafe?.user ?? null;
+      setTgUser(tgUsr);
+
+      // Save Telegram ID to Firestore so notifications can reach this user
+      if (tgUsr?.id) {
+        const uid = auth.currentUser?.uid;
+        if (uid) {
+          setUser(uid, { telegramId: tgUsr.id }).catch(console.error);
+        }
+      }
     }
   }, []);
 

@@ -4,11 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Clock, SlidersHorizontal } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { BottomNav } from '@/components/layout/BottomNav';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { ImageCarousel } from '@/components/ui/ImageCarousel';
 import { getAvailableOrders } from '@/lib/firestore';
 import { Order, OrderCategory, CATEGORY_LABELS } from '@/types';
-import { cn } from '@/lib/utils';
 
 const FILTERS: { key: OrderCategory | ''; label: string }[] = [
   { key: '',          label: 'Все' },
@@ -30,44 +29,40 @@ export default function FeedPage() {
 
   useEffect(() => {
     setLoading(true);
-    getAvailableOrders(filter || undefined)
+    getAvailableOrders()
       .then(setOrders)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [filter]);
+  }, []);
+
+  const displayed = filter ? orders.filter((o) => o.category === filter) : orders;
+
+  const isFilterActive = filter !== '';
+  const filterButton = (
+    <button
+      type="button"
+      aria-label="Фильтр"
+      onClick={() => setShowFilters((v) => !v)}
+      className="flex size-11 items-center justify-center rounded-full transition-all duration-200 active:scale-95"
+      style={{
+        background: showFilters || isFilterActive ? '#d96c52' : '#ffffff',
+        color:      showFilters || isFilterActive ? '#ffffff' : '#1c1917',
+        border: '1px solid rgba(180,100,70,0.12)',
+        boxShadow: showFilters || isFilterActive
+          ? '0 4px 14px rgba(217,108,82,0.35)'
+          : '0 2px 8px rgba(140,80,50,0.08)',
+        transition: 'all 0.25s cubic-bezier(0.32, 0.72, 0, 1)',
+      }}
+    >
+      <SlidersHorizontal className="size-5" aria-hidden="true" />
+    </button>
+  );
 
   return (
-    <main className="flex min-h-dvh w-full flex-col bg-background pb-28">
-      {/* Header */}
-      <header className="flex items-center justify-between px-5 pb-3 pt-8">
-        <div>
-          <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-0.5">
-            Биржа
-          </p>
-          <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-foreground leading-none">
-            Заказы
-          </h1>
-        </div>
-        <button
-          type="button"
-          aria-label="Фильтр"
-          onClick={() => setShowFilters((v) => !v)}
-          className="flex size-11 items-center justify-center rounded-full transition-all duration-200 active:scale-95"
-          style={{
-            background: showFilters ? '#d96c52' : '#ffffff',
-            color:      showFilters ? '#ffffff' : '#1c1917',
-            border: '1px solid rgba(180,100,70,0.12)',
-            boxShadow: '0 2px 8px rgba(140,80,50,0.08)',
-            transition: 'all 0.25s cubic-bezier(0.32, 0.72, 0, 1)',
-          }}
-        >
-          <SlidersHorizontal className="size-5" aria-hidden="true" />
-        </button>
-      </header>
-
-      {/* Filter chips */}
+    <PageLayout title="Заказы" headerRight={filterButton}>
+      {/* Filter chips panel */}
       {showFilters && (
-        <div className="-mx-0 flex gap-2 overflow-x-auto px-5 pb-3 pt-1 scrollbar-none">
+        <div className="flex gap-2 overflow-x-auto px-5 pb-3 pt-2 scrollbar-none">
           {FILTERS.map(({ key, label }) => (
             <button
               key={key}
@@ -90,6 +85,22 @@ export default function FeedPage() {
         </div>
       )}
 
+      {/* Active filter badge */}
+      {isFilterActive && !showFilters && (
+        <div className="flex items-center gap-2 px-5 pb-3 pt-1">
+          <span className="text-[12px] text-muted-foreground">Категория:</span>
+          <button
+            type="button"
+            onClick={() => setFilter('')}
+            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold text-white active:scale-95"
+            style={{ background: '#d96c52', boxShadow: '0 2px 8px rgba(217,108,82,0.3)' }}
+          >
+            {FILTERS.find((f) => f.key === filter)?.label}
+            <span className="text-[10px] opacity-80">✕</span>
+          </button>
+        </div>
+      )}
+
       <section className="flex flex-col gap-3 px-5 pt-2" aria-label="Список доступных заказов">
         {loading ? (
           <div className="flex flex-col gap-3">
@@ -101,7 +112,7 @@ export default function FeedPage() {
               />
             ))}
           </div>
-        ) : orders.length === 0 ? (
+        ) : displayed.length === 0 ? (
           <div
             className="flex flex-col items-center gap-3 rounded-2xl py-14 text-center"
             style={{
@@ -115,7 +126,7 @@ export default function FeedPage() {
             <p className="text-[12px] text-muted-foreground">Попробуйте другую категорию</p>
           </div>
         ) : (
-          orders.map((order) => (
+          displayed.map((order) => (
             <BrowseOrderCard
               key={order.id}
               order={order}
@@ -125,9 +136,7 @@ export default function FeedPage() {
           ))
         )}
       </section>
-
-      <BottomNav />
-    </main>
+    </PageLayout>
   );
 }
 

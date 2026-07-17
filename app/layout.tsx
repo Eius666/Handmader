@@ -24,8 +24,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className={jakarta.variable} style={{ height: '100%' }}>
-      <body style={{ height: '100%', margin: 0 }}>
+    <html lang="ru" className={jakarta.variable}>
+      <body>
         <AppShell>{children}</AppShell>
       </body>
     </html>

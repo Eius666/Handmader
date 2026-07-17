@@ -42,6 +42,7 @@ export interface User {
   createdAt: Date;
   hasSelectedRole: boolean;   // false = show onboarding; true = skip it
   masterProfile?: MasterProfile;
+  telegramId?: number;
 }
 
 export interface OrderResponse {
@@ -86,6 +87,28 @@ export interface Review {
   rating: number;
   text: string;
   createdAt: Date;
+}
+
+export interface Chat {
+  orderId: string;
+  customerId: string;
+  masterId: string;
+  customerName?: string;
+  masterName?: string;
+  lastMessage: string;
+  lastMessageAt: Date;
+  unreadCustomer: number;
+  unreadMaster: number;
+  createdAt: Date;
+}
+
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  text: string;
+  createdAt: Date;
+  read: boolean;
 }
 
 export const CATEGORY_LABELS: Record<OrderCategory, string> = {

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Shirt, HardHat, Wind, Baby, Sparkles, Package, Plus, ChevronRight } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { BottomNav } from '@/components/layout/BottomNav';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { getCustomerOrders } from '@/lib/firestore';
 import { Order, OrderCategory, CATEGORY_LABELS } from '@/types';
@@ -45,8 +45,8 @@ export default function HomePage() {
   const firstName = user?.displayName?.split(' ')[0] ?? 'друг';
 
   return (
-    <main className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col bg-background">
-      <div className="flex flex-1 flex-col gap-6 px-5 pb-28 pt-5">
+    <PageLayout>
+      <div className="flex flex-col gap-6 px-5 pt-5">
 
         {/* ── Greeting ── */}
         <header className="flex items-start justify-between">
@@ -207,16 +207,13 @@ export default function HomePage() {
           )}
         </section>
       </div>
-
-      <BottomNav />
-    </main>
+    </PageLayout>
   );
 }
 
 function OrderCard({ order, onClick }: { order: Order; onClick: () => void }) {
   const Icon = CATEGORY_ICONS[order.category] ?? Package;
   return (
-    /* Double-bezel card */
     <div
       className="w-56 shrink-0 snap-start"
       style={{
@@ -229,7 +226,7 @@ function OrderCard({ order, onClick }: { order: Order; onClick: () => void }) {
       <button
         type="button"
         onClick={onClick}
-        className="flex w-full flex-col gap-3 text-left transition-all duration-200 active:scale-[0.98]"
+        className="flex h-[152px] w-full flex-col justify-between text-left transition-all duration-200 active:scale-[0.98]"
         style={{
           background: '#ffffff',
           borderRadius: 16,
@@ -250,10 +247,8 @@ function OrderCard({ order, onClick }: { order: Order; onClick: () => void }) {
           <span className="text-[11px] font-medium text-muted-foreground tracking-wide">
             {CATEGORY_LABELS[order.category]}
           </span>
-          <h3 className="text-[13px] font-bold leading-snug text-foreground">
-            {order.description.length > 55
-              ? order.description.slice(0, 55) + '…'
-              : order.description}
+          <h3 className="line-clamp-2 text-[13px] font-bold leading-snug text-foreground">
+            {order.description}
           </h3>
         </div>
       </button>

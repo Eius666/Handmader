@@ -89,13 +89,15 @@
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
   }
-  html { height: 100%; }
+  html {
+    height: 100%;
+  }
   body {
     @apply bg-background text-foreground;
+    height: 100%;
     margin: 0;
     padding: 0;
-    height: 100%;
-    overflow-x: hidden;
+    overflow: hidden;
     font-family: var(--font-jakarta, 'Plus Jakarta Sans', -apple-system, sans-serif);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -126,8 +128,7 @@ body::after {
 
 /* ── App shell ── */
 #app-root {
-  height: 100vh;
-  height: 100dvh;
+  height: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -215,7 +216,28 @@ body::after {
 textarea.input-field { resize: none; min-height: 100px; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Page enter — applied to content wrapper inside PageLayout */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-enter {
+  animation: page-enter 0.25s ease-out both;
+}
+
+/* Toast slide-in from below final position */
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Staggered list items — add class + inline animationDelay */
+.stagger-item {
+  animation: fade-up 0.22s ease-out both;
 }

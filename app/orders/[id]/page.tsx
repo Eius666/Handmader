@@ -43,7 +43,7 @@ export default function OrderDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-background">
+      <div className="flex h-full items-center justify-center bg-background">
         <span className="size-9 rounded-full border-2 border-secondary border-t-primary animate-spin" />
       </div>
     );
@@ -51,7 +51,7 @@ export default function OrderDetailPage() {
 
   if (!order) {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center bg-background gap-4">
+      <div className="flex h-full flex-col items-center justify-center bg-background gap-4">
         <p className="text-muted-foreground">Заказ не найден</p>
         <button onClick={() => router.back()} className="text-primary font-semibold">← Назад</button>
       </div>
@@ -68,8 +68,8 @@ export default function OrderDetailPage() {
   }
 
   return (
-    <div className="flex min-h-dvh w-full flex-col bg-background pb-10">
-      <header className="flex items-center gap-4 px-5 pb-2 pt-4">
+    <div className="flex h-full w-full flex-col overflow-hidden bg-background">
+      <header className="shrink-0 flex items-center gap-4 px-5 pb-2 pt-4">
         <button
           onClick={() => router.back()}
           aria-label="Назад"
@@ -82,6 +82,7 @@ export default function OrderDetailPage() {
         </h1>
       </header>
 
+      <div className="flex-1 overflow-y-auto pb-10 [&::-webkit-scrollbar]:hidden">
       <div className="flex flex-col gap-6 px-5 pt-4">
         {/* Order info card */}
         <section className="flex flex-col gap-4 rounded-2xl bg-card p-5 shadow-[0_4px_20px_rgba(45,45,45,0.06)]">
@@ -204,6 +205,7 @@ export default function OrderDetailPage() {
             Откликнуться на заказ
           </button>
         )}
+      </div>
       </div>
 
       {toast && <Toast message={toast} onClose={() => setToast('')} />}
