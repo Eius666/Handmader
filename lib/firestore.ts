@@ -27,6 +27,7 @@ import {
   notifyCustomerWorkStarted,
   notifyCustomerOrderReady,
   notifyMasterOrderCompleted,
+  notifyNewChatMessage,
 } from './notifications';
 
 // ─── Users ────────────────────────────────────────────────────────────────────
@@ -275,6 +276,22 @@ export async function sendMessage(
     createdAt: serverTimestamp(),
     read: false,
   });
+
+  // Fire-and-forget: notify the other party about the new message
+  const recipientUid = senderId === customerId ? masterId : customerId;
+  if (recipientUid) {
+    (async () => {
+      const [recipientSnap, orderSnap] = await Promise.all([
+        getDoc(doc(db, 'users', recipientUid)),
+        getDoc(doc(db, 'orders', orderId)),
+      ]);
+      const tgId = recipientSnap.data()?.telegramId as number | undefined;
+      if (!tgId) return;
+      const desc = String(orderSnap.data()?.description ?? '');
+      const title = desc.length > 40 ? desc.slice(0, 40) + '…' : desc;
+      await notifyNewChatMessage(tgId, senderName, title, text, orderId);
+    })().catch(console.error);
+  }
 }
 
 /**

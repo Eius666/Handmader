@@ -26,7 +26,34 @@ async function sendNotify(telegramId: number, message: string): Promise<void> {
   });
 }
 
+function chatLink(orderId: string) {
+  return `https://t.me/${BOT_USERNAME}?startapp=chat_${orderId}`;
+}
+
 // ─── Public notify functions (all fire-and-forget safe) ───────────────────────
+
+/**
+ * Notify a chat participant about a new incoming message.
+ * Called fire-and-forget from sendMessage in firestore.ts.
+ */
+export async function notifyNewChatMessage(
+  recipientTelegramId: number,
+  senderName: string,
+  orderTitle: string,
+  messageText: string,
+  orderId: string,
+): Promise<void> {
+  const shortText = messageText.length > 50
+    ? messageText.slice(0, 50) + '...'
+    : messageText;
+  const link = chatLink(orderId);
+  const message =
+    `💬 <b>Новое сообщение от ${senderName}</b>\n\n` +
+    `Заказ: «${orderTitle}»\n` +
+    `${shortText}\n\n` +
+    `<a href="${link}">Открыть чат →</a>`;
+  await sendNotify(recipientTelegramId, message);
+}
 
 /**
  * Notify all masters whose categories match the new order.

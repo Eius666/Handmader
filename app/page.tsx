@@ -18,6 +18,18 @@ export default function RootPage() {
     }
     // hasSelectedRole: false → stay here; OnboardingRole renders below
     if (!user.hasSelectedRole) return;
+
+    // Deep-link via Telegram startapp param: chat_<orderId>
+    const tg = (window as Window & { Telegram?: { WebApp?: { initDataUnsafe?: { start_param?: string } } } });
+    const startParam = tg.Telegram?.WebApp?.initDataUnsafe?.start_param ?? '';
+    if (startParam.startsWith('chat_')) {
+      const chatOrderId = startParam.slice(5);
+      if (chatOrderId) {
+        router.replace(`/chat/${chatOrderId}`);
+        return;
+      }
+    }
+
     // Role is set — route by role
     router.replace(user.role === 'master' ? '/feed' : '/home');
   }, [user, loading, router]);
