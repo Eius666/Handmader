@@ -9,6 +9,7 @@ import { ImageCarousel } from '@/components/ui/ImageCarousel';
 import { Toast } from '@/components/ui/Toast';
 import { getOrder, selectMaster } from '@/lib/firestore';
 import { Order, OrderResponse, CATEGORY_LABELS } from '@/types';
+import { NotificationBell } from '@/components/ui/NotificationBell';
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -77,9 +78,10 @@ export default function OrderDetailPage() {
         >
           <ArrowLeft className="size-5" aria-hidden="true" />
         </button>
-        <h1 className="text-2xl font-extrabold text-foreground">
+        <h1 className="flex-1 text-2xl font-extrabold text-foreground">
           {CATEGORY_LABELS[order.category]}
         </h1>
+        <NotificationBell />
       </header>
 
       <div className="flex-1 overflow-y-auto pb-10 [&::-webkit-scrollbar]:hidden">

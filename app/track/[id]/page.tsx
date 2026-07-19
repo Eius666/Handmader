@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Check, Send, Wallet, Package, Trash2, MessageSquare } from 'lucide-react';
+import { NotificationBell } from '@/components/ui/NotificationBell';
 import { StarRating } from '@/components/ui/StarRating';
 import { Toast } from '@/components/ui/Toast';
 import { RatingModal } from '@/components/RatingModal';
@@ -162,6 +163,7 @@ export default function TrackPage() {
         <h1 className="flex-1 text-2xl font-extrabold text-foreground">
           {CATEGORY_LABELS[order.category]}
         </h1>
+        <NotificationBell />
         {order.selectedMasterId && (isOwner || isMaster) && (
           <button
             type="button"

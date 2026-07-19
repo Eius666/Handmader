@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Send } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTelegram } from '@/hooks/useTelegram';
+import { NotificationBell } from '@/components/ui/NotificationBell';
 import {
   getOrder,
   sendMessage,
@@ -166,7 +167,7 @@ export default function ChatPage() {
           {otherName[0]?.toUpperCase() ?? '?'}
         </div>
 
-        <div className="flex min-w-0 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col">
           <span className="truncate text-[15px] font-bold leading-tight text-foreground">
             {otherName}
           </span>
@@ -176,6 +177,7 @@ export default function ChatPage() {
             </span>
           )}
         </div>
+        <NotificationBell />
       </header>
 
       {/* ── Messages ── */}
@@ -251,8 +253,8 @@ export default function ChatPage() {
             onKeyDown={handleKeyDown}
             placeholder="Сообщение..."
             rows={1}
-            className="flex-1 resize-none bg-transparent text-[14px] leading-snug text-foreground outline-none placeholder:text-muted-foreground"
-            style={{ maxHeight: 96, paddingTop: 3, paddingBottom: 3 }}
+            className="min-w-0 flex-1 resize-none bg-transparent text-[14px] leading-snug text-foreground outline-none placeholder:text-muted-foreground"
+            style={{ maxHeight: 96, paddingTop: 3, paddingBottom: 3, overflowY: 'auto' }}
           />
           <button
             type="button"

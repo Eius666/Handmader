@@ -7,6 +7,7 @@ import { MessageSquare } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { BottomNav } from '@/components/layout/BottomNav';
+import { NotificationBell } from '@/components/ui/NotificationBell';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Order, CATEGORY_LABELS } from '@/types';
 
@@ -61,9 +62,12 @@ export default function MyResponsesPage() {
 
   return (
     <main className="flex h-full w-full flex-col overflow-hidden bg-background">
-      <header className="shrink-0 px-5 pb-3 pt-8">
-        <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-0.5">Мои</p>
-        <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-foreground leading-none">Отклики</h1>
+      <header className="shrink-0 flex items-center justify-between px-5 pb-3 pt-8">
+        <div>
+          <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-0.5">Мои</p>
+          <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-foreground leading-none">Отклики</h1>
+        </div>
+        <NotificationBell />
       </header>
 
       <div className="flex-1 overflow-y-auto pb-28 [&::-webkit-scrollbar]:hidden">

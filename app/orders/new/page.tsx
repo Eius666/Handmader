@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { createOrder } from '@/lib/firestore';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { OrderCategory, CATEGORY_LABELS } from '@/types';
+import { NotificationBell } from '@/components/ui/NotificationBell';
 
 const CATEGORIES: { key: OrderCategory; label: string }[] = [
   { key: 'hat',       label: 'Шапки' },
@@ -114,7 +115,8 @@ function NewOrderFormInner() {
         >
           <ArrowLeft className="size-5" aria-hidden="true" />
         </button>
-        <h1 className="text-2xl font-extrabold text-foreground">Новый заказ</h1>
+        <h1 className="flex-1 text-2xl font-extrabold text-foreground">Новый заказ</h1>
+        <NotificationBell />
       </header>
 
       {/* Scrollable form area — header stays fixed, submit button is `fixed` at bottom */}
