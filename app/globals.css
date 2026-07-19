@@ -37,52 +37,55 @@
 :root {
   color-scheme: light;
 
-  /* ── Core palette (warmer, less clinical) ── */
-  --background:              #FFFBF5;
-  --foreground:              #44403c;   /* stone-700: warm, less harsh than near-black */
-  --card:                    #ffffff;
-  --card-foreground:         #44403c;
-  --popover:                 #ffffff;
-  --popover-foreground:      #44403c;
+  /* ─── Palette ─────────────────────────────────────────────────────────── */
+  /* Warm parchment — like unbleached paper, not clinical white */
+  --background:    #F8F2EA;
+  --foreground:    #2A1A0E;   /* deep warm brown, not pure black */
+  --card:          #FFFFFF;
+  --card-foreground: #2A1A0E;
+  --popover:       #FFFFFF;
+  --popover-foreground: #2A1A0E;
 
-  /* ── Accent: terracotta ── */
-  --primary:                 #C2703E;
-  --primary-foreground:      #ffffff;
+  /* Terracotta — keep as-is, it's the soul of the brand */
+  --primary:       #C2703E;
+  --primary-foreground: #FFFFFF;
 
-  /* ── Neutrals: warm-tinted ── */
-  --secondary:               #F5EDE4;
-  --secondary-foreground:    #44403c;
-  --muted:                   #F5EDE4;
-  --muted-foreground:        #a8a29e;   /* stone-400: lighter, airy */
+  /* Warm pale terracotta for secondary elements */
+  --secondary:     #F2E4D0;
+  --secondary-foreground: #5A3520;
 
-  /* ── Borders ── */
-  --border:                  #EDE4D9;
-  --input:                   #EDE4D9;
-  --ring:                    #C2703E;
+  /* Muted: warm beige, not gray */
+  --muted:         #EDE3D6;
+  --muted-foreground: #9C7E68;
 
-  /* ── Status ── */
-  --status-progress:         #5B8C5A;   /* softer forest green */
-  --status-progress-foreground: #ffffff;
-  --status-waiting:          #C2703E;
-  --status-waiting-foreground:  #ffffff;
-  --success:                 #5B8C5A;
-  --success-foreground:      #ffffff;
+  /* Borders: warm honey-beige */
+  --border:  #E2D0BC;
+  --input:   #E2D0BC;
+  --ring:    #C2703E;
+
+  /* Status — intentional, not default green/red */
+  --status-progress:            #5E8A65;   /* sage green */
+  --status-progress-foreground: #FFFFFF;
+  --status-waiting:             #C2703E;
+  --status-waiting-foreground:  #FFFFFF;
+  --success:                    #5E8A65;
+  --success-foreground:         #FFFFFF;
 
   --radius: 0.75rem;
 
-  /* ── Legacy aliases ── */
-  --bg:          #FFFBF5;
+  /* Legacy aliases kept for compatibility */
+  --bg:          #F8F2EA;
   --accent:      #C2703E;
-  --accent-dark: #9E5A30;
-  --text:        #44403c;
-  --text-muted:  #a8a29e;
-  --nav-height:  72px;
+  --accent-dark: #9D5530;
+  --text:        #2A1A0E;
+  --text-muted:  #9C7E68;
+  --nav-height:  58px;   /* full-width bar is shorter than the old floating pill */
 
-  /* ── Shadows (warmer tint) ── */
-  --shadow-card:    0 2px 12px rgba(160,90,50,0.07), 0 0 0 1px rgba(160,90,50,0.04);
-  --shadow-float:   0 8px 32px rgba(160,90,50,0.10), 0 2px 8px rgba(160,90,50,0.05);
-  --shadow-primary: 0 6px 20px rgba(194,112,62,0.30);
-  --shadow-inset:   inset 0 1px 1px rgba(255,255,255,0.85);
+  /* Warm shadow palette */
+  --shadow-sm:      0 1px 3px rgba(100,55,20,0.08);
+  --shadow-card:    0 2px 4px rgba(100,55,20,0.06), 0 8px 24px rgba(100,55,20,0.09);
+  --shadow-float:   0 4px 8px rgba(100,55,20,0.08), 0 16px 40px rgba(100,55,20,0.12);
+  --shadow-primary: 0 4px 16px rgba(194,112,62,0.32), 0 1px 4px rgba(194,112,62,0.20);
 }
 
 @layer base {
@@ -90,9 +93,7 @@
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
   }
-  html {
-    height: 100%;
-  }
+  html { height: 100%; }
   body {
     @apply text-foreground;
     background: var(--background);
@@ -108,17 +109,36 @@
   }
 }
 
-/* ── Display font (Comfortaa — round, warm, handcrafted feel) ── */
+/* ─── Font utilities ───────────────────────────────────────────────────── */
+
+/* Playfair Display — editorial serif for headings, brand name, prices */
 .font-display {
-  font-family: var(--font-comfortaa, 'Comfortaa', 'Plus Jakarta Sans', sans-serif);
+  font-family: var(--font-playfair, Georgia, 'Times New Roman', serif);
 }
 
-/* ── Global icon style: thinner stroke = more elegant ── */
-.lucide {
-  stroke-width: 1.8;
+/* All Lucide icons: slightly thinner stroke for elegance */
+.lucide { stroke-width: 1.8; }
+
+/* ─── App shell ─────────────────────────────────────────────────────────── */
+#app-root {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  /* Warm amber haze at top fades to parchment — adds depth, subtle warmth */
+  background: linear-gradient(180deg, #F0E4D0 0%, #F8F2EA 24%, #F8F2EA 100%);
 }
 
-/* ── Subtle noise grain overlay ── */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+@utility transition-spring {
+  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── Subtle noise grain overlay (adds tactile texture) ─────────────────── */
 body::after {
   content: '';
   position: fixed;
@@ -127,52 +147,12 @@ body::after {
   pointer-events: none;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
   background-size: 180px 180px;
-  opacity: 0.025;
+  opacity: 0.022;
 }
 
-@utility scrollbar-none {
-  scrollbar-width: none;
-  &::-webkit-scrollbar { display: none; }
-}
-
-/* ── Spring transition utility ── */
-@utility transition-spring {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* ── App shell ── */
-#app-root {
-  height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  /* Warm top gradient gives depth without hurting scroll performance */
-  background: linear-gradient(180deg, #FEF0DE 0%, #FFFBF5 28%, #FFFBF5 100%);
-}
-
-.scrollable {
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
-.scrollable::-webkit-scrollbar { display: none; }
-
-/* ── Double-bezel card ── */
-.card-bezel {
-  background: rgba(160, 90, 50, 0.04);
-  border: 1px solid rgba(160, 90, 50, 0.07);
-  border-radius: 24px;
-  padding: 4px;
-}
-.card-bezel-inner {
-  background: #ffffff;
-  border-radius: 20px;
-  box-shadow: inset 0 1px 1px rgba(255,255,255,0.9);
-}
-
-/* ── Primary button — gradient, not flat ── */
+/* ─── Buttons ───────────────────────────────────────────────────────────── */
 .btn-primary {
-  background: linear-gradient(160deg, #d97152 0%, #C2703E 100%);
+  background: linear-gradient(160deg, #D07548 0%, #B86838 100%);
   color: #fff;
   border-radius: 14px;
   padding: 15px 24px;
@@ -189,13 +169,12 @@ body::after {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .btn-primary:active {
-  background: linear-gradient(160deg, #C2703E 0%, #9E5A30 100%);
+  background: linear-gradient(160deg, #B86838 0%, #9D5530 100%);
   transform: scale(0.97);
-  box-shadow: 0 3px 10px rgba(194,112,62,0.18);
+  box-shadow: 0 2px 8px rgba(194,112,62,0.18);
 }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-/* ── Outlined button ── */
 .btn-outline {
   background: transparent;
   color: #C2703E;
@@ -205,7 +184,7 @@ body::after {
   font-weight: 600;
   letter-spacing: 0.01em;
   width: 100%;
-  border: 2px solid rgba(194,112,62,0.4);
+  border: 1.5px solid rgba(194,112,62,0.35);
   cursor: pointer;
   display: block;
   text-align: center;
@@ -217,7 +196,6 @@ body::after {
   transform: scale(0.97);
 }
 
-/* ── Secondary button ── */
 .btn-secondary {
   background: var(--secondary);
   color: var(--text);
@@ -235,8 +213,9 @@ body::after {
 }
 .btn-secondary:active { background: var(--border); transform: scale(0.97); }
 
+/* ─── Inputs ────────────────────────────────────────────────────────────── */
 .input-field {
-  background: #FFFBF5;
+  background: #FFFDF9;
   border: 1.5px solid var(--border);
   border-radius: 12px;
   padding: 13px 16px;
@@ -254,7 +233,7 @@ body::after {
 .input-field::placeholder { color: var(--text-muted); }
 textarea.input-field { resize: none; min-height: 100px; }
 
-/* ── Keyframes ── */
+/* ─── Keyframes ─────────────────────────────────────────────────────────── */
 @keyframes spin { to { transform: rotate(360deg); } }
 
 @keyframes shimmer {
@@ -267,7 +246,6 @@ textarea.input-field { resize: none; min-height: 100px; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Page enter — slide up + fade in on every navigation */
 @keyframes page-enter {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -276,13 +254,19 @@ textarea.input-field { resize: none; min-height: 100px; }
   animation: page-enter 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
-/* Toast slide in from below its resting position */
 @keyframes toast-in {
   from { opacity: 0; transform: translateX(-50%) translateY(10px); }
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
-/* Staggered list items — add class + inline animationDelay */
+/* Staggered list items */
 .stagger-item {
   animation: fade-up 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
 }
+
+.scrollable {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+.scrollable::-webkit-scrollbar { display: none; }

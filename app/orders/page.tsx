@@ -93,7 +93,7 @@ export default function OrdersPage() {
       onClick={() => router.push('/orders/new')}
       aria-label="Новый заказ"
       className="flex size-11 items-center justify-center rounded-full text-white transition-all duration-200 active:scale-95"
-      style={{ background: '#d96c52', boxShadow: '0 4px 14px rgba(217,108,82,0.35)' }}
+      style={{ background: '#C2703E', boxShadow: 'var(--shadow-primary)' }}
     >
       <Plus className="size-5" aria-hidden="true" />
     </button>
@@ -113,7 +113,7 @@ export default function OrdersPage() {
             className="flex-1 rounded-lg py-2.5 text-[13px] font-bold transition-all duration-250"
             style={{
               background: tab === t ? '#ffffff' : 'transparent',
-              color: tab === t ? '#d96c52' : '#78716c',
+              color: tab === t ? '#C2703E' : '#9C7E68',
               boxShadow: tab === t ? '0 2px 8px rgba(140,80,50,0.1)' : 'none',
               transition: 'all 0.25s cubic-bezier(0.32, 0.72, 0, 1)',
             }}
@@ -155,7 +155,7 @@ export default function OrdersPage() {
               <button
                 onClick={() => router.push('/orders/new')}
                 className="mt-1 rounded-full px-6 py-2.5 text-[13px] font-bold text-white transition-all active:scale-95"
-                style={{ background: '#d96c52', boxShadow: '0 4px 14px rgba(217,108,82,0.3)' }}
+                style={{ background: '#C2703E', boxShadow: 'var(--shadow-primary)' }}
               >
                 Создать заказ
               </button>
@@ -230,11 +230,11 @@ function OrderListCard({
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
       className="flex flex-col gap-3 w-full text-left cursor-pointer transition-all duration-200 active:scale-[0.99]"
       style={{
-        background:   '#ffffff',
-        border:       '1px solid rgba(194,112,62,0.07)',
+        background:   '#FFFDF9',
+        border:       '1px solid rgba(194,112,62,0.09)',
         borderRadius: 20,
         padding:      '14px 16px',
-        boxShadow:    '0 1px 4px rgba(160,90,50,0.05), 0 4px 14px rgba(160,90,50,0.06)',
+        boxShadow:    'var(--shadow-card)',
       }}
     >
       {/* Top row */}

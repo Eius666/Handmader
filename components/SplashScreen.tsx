@@ -73,11 +73,11 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
         <p
           className="font-display"
           style={{
-            fontSize:      32,
+            fontSize:      34,
             fontWeight:    700,
-            color:         '#44403c',
+            color:         '#2A1A0E',
             margin:        0,
-            letterSpacing: '-0.01em',
+            letterSpacing: '0.01em',
             lineHeight:    1,
           }}
         >
@@ -86,10 +86,11 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
         <p
           style={{
             fontSize:      13,
-            color:         '#a8a29e',
+            color:         '#9C7E68',
             margin:        '6px 0 0',
-            letterSpacing: '0.04em',
+            letterSpacing: '0.05em',
             fontWeight:    500,
+            textTransform: 'uppercase',
           }}
         >
           ручная работа с душой

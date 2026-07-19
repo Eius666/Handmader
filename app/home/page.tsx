@@ -62,8 +62,8 @@ export default function HomePage() {
             onClick={() => router.push('/profile')}
             className="flex size-11 items-center justify-center rounded-full text-base font-bold text-white transition-all duration-200 active:scale-95"
             style={{
-              background: 'linear-gradient(135deg, #d96c52, #f2a47e)',
-              boxShadow: '0 4px 14px rgba(217,108,82,0.35)',
+              background: 'linear-gradient(135deg, #C2703E, #D98B5E)',
+              boxShadow: 'var(--shadow-primary)',
               letterSpacing: '-0.01em',
             }}
             aria-label="Профиль"
@@ -77,8 +77,8 @@ export default function HomePage() {
           onClick={() => router.push('/orders/new')}
           className="flex items-center gap-3 w-full text-left transition-all duration-300 active:scale-[0.98]"
           style={{
-            background: 'rgba(217,108,82,0.06)',
-            border: '1.5px dashed rgba(217,108,82,0.3)',
+            background: 'rgba(194,112,62,0.05)',
+            border: '1.5px dashed rgba(194,112,62,0.28)',
             borderRadius: 18,
             padding: '16px 20px',
           }}
@@ -86,7 +86,7 @@ export default function HomePage() {
         >
           <div
             className="flex size-9 items-center justify-center rounded-full shrink-0"
-            style={{ background: 'rgba(217,108,82,0.12)' }}
+            style={{ background: 'rgba(194,112,62,0.10)' }}
           >
             <Plus className="size-4 text-primary" aria-hidden="true" />
           </div>
@@ -117,9 +117,9 @@ export default function HomePage() {
                   onClick={() => router.push(`/orders/new?category=${cat}`)}
                   className="flex shrink-0 flex-col items-center gap-2 rounded-2xl px-4 py-3.5 transition-all duration-200 active:scale-95"
                   style={{
-                    background: '#ffffff',
-                    border: '1px solid rgba(180,100,70,0.08)',
-                    boxShadow: '0 2px 8px rgba(140,80,50,0.06)',
+                    background: '#FFFDF9',
+                    border: '1px solid rgba(194,112,62,0.08)',
+                    boxShadow: 'var(--shadow-sm)',
                     animationDelay: `${idx * 40}ms`,
                   }}
                 >
@@ -183,7 +183,7 @@ export default function HomePage() {
               <button
                 onClick={() => router.push('/orders/new')}
                 className="rounded-full px-5 py-2 text-[13px] font-bold text-primary-foreground transition-all active:scale-95"
-                style={{ background: '#d96c52', boxShadow: '0 4px 14px rgba(217,108,82,0.3)' }}
+                style={{ background: '#C2703E', boxShadow: 'var(--shadow-primary)' }}
               >
                 Создать первый
               </button>

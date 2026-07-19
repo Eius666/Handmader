@@ -45,12 +45,12 @@ export default function FeedPage() {
       onClick={() => setShowFilters((v) => !v)}
       className="flex size-11 items-center justify-center rounded-full transition-all duration-200 active:scale-95"
       style={{
-        background: showFilters || isFilterActive ? '#d96c52' : '#ffffff',
-        color:      showFilters || isFilterActive ? '#ffffff' : '#1c1917',
-        border: '1px solid rgba(180,100,70,0.12)',
+        background: showFilters || isFilterActive ? '#C2703E' : '#FFFDF9',
+        color:      showFilters || isFilterActive ? '#ffffff' : '#2A1A0E',
+        border: '1px solid rgba(194,112,62,0.12)',
         boxShadow: showFilters || isFilterActive
-          ? '0 4px 14px rgba(217,108,82,0.35)'
-          : '0 2px 8px rgba(140,80,50,0.08)',
+          ? 'var(--shadow-primary)'
+          : 'var(--shadow-sm)',
         transition: 'all 0.25s cubic-bezier(0.32, 0.72, 0, 1)',
       }}
     >
@@ -70,12 +70,12 @@ export default function FeedPage() {
               onClick={() => { setFilter(key); setShowFilters(false); }}
               className="shrink-0 rounded-full px-4 py-2 text-[13px] font-semibold transition-all duration-200 active:scale-95"
               style={{
-                background: filter === key ? '#d96c52' : '#ffffff',
-                color:      filter === key ? '#ffffff' : '#78716c',
-                border: '1px solid rgba(180,100,70,0.12)',
+                background: filter === key ? '#C2703E' : '#FFFDF9',
+                color:      filter === key ? '#ffffff' : '#9C7E68',
+                border: `1px solid ${filter === key ? 'transparent' : 'rgba(194,112,62,0.12)'}`,
                 boxShadow: filter === key
-                  ? '0 4px 14px rgba(217,108,82,0.3)'
-                  : '0 1px 4px rgba(140,80,50,0.06)',
+                  ? 'var(--shadow-primary)'
+                  : 'var(--shadow-sm)',
                 transition: 'all 0.2s cubic-bezier(0.32, 0.72, 0, 1)',
               }}
             >
@@ -93,7 +93,7 @@ export default function FeedPage() {
             type="button"
             onClick={() => setFilter('')}
             className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold text-white active:scale-95"
-            style={{ background: '#d96c52', boxShadow: '0 2px 8px rgba(217,108,82,0.3)' }}
+            style={{ background: '#C2703E', boxShadow: 'var(--shadow-primary)' }}
           >
             {FILTERS.find((f) => f.key === filter)?.label}
             <span className="text-[10px] opacity-80">✕</span>
@@ -153,11 +153,11 @@ function BrowseOrderCard({
     <article
       className="flex flex-col gap-3 transition-all duration-200 active:scale-[0.99]"
       style={{
-        background:   '#ffffff',
-        border:       '1px solid rgba(194,112,62,0.07)',
+        background:   '#FFFDF9',
+        border:       '1px solid rgba(194,112,62,0.09)',
         borderRadius: 22,
         padding:      '16px',
-        boxShadow:    '0 1px 4px rgba(160,90,50,0.06), 0 4px 16px rgba(160,90,50,0.06)',
+        boxShadow:    'var(--shadow-card)',
       }}
     >
       <div className="flex items-start gap-3">

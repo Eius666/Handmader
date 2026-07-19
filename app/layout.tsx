@@ -1,8 +1,9 @@
 import type { Metadata, Viewport } from 'next';
-import { Plus_Jakarta_Sans, Comfortaa } from 'next/font/google';
+import { Plus_Jakarta_Sans, Playfair_Display } from 'next/font/google';
 import { AppShell } from '@/components/AppShell';
 import './globals.css';
 
+// Body — clean, highly legible, modern
 const jakarta = Plus_Jakarta_Sans({
   subsets:  ['latin', 'latin-ext'],
   weight:   ['400', '500', '600', '700', '800'],
@@ -10,11 +11,12 @@ const jakarta = Plus_Jakarta_Sans({
   display:  'swap',
 });
 
-// Warm round font for headings and logo — gives a handcrafted feel
-const comfortaa = Comfortaa({
+// Display — editorial serif with Cyrillic, gives the handmade/boutique feel
+const playfair = Playfair_Display({
   subsets:  ['latin', 'cyrillic'],
-  weight:   ['400', '600', '700'],
-  variable: '--font-comfortaa',
+  weight:   ['400', '500', '600', '700', '800', '900'],
+  style:    ['normal', 'italic'],
+  variable: '--font-playfair',
   display:  'swap',
 });
 
@@ -32,7 +34,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className={`${jakarta.variable} ${comfortaa.variable}`}>
+    <html lang="ru" className={`${jakarta.variable} ${playfair.variable}`}>
       <body>
         <AppShell>{children}</AppShell>
       </body>

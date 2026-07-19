@@ -1,30 +1,45 @@
 'use client';
 
+import { Clock, UserCheck, Scissors, Sparkles, CheckCheck, Truck } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { OrderStatus } from '@/types';
 
-const STATUS_CONFIG: Record<OrderStatus, { label: string; bg: string; color: string; dot: string }> = {
-  awaiting_responses: { label: 'ожидает',   bg: 'rgba(200,124,62,0.12)', color: '#c87c3e', dot: '#c87c3e' },
-  master_selected:    { label: 'мастер',     bg: 'rgba(74,124,89,0.12)',  color: '#4a7c59', dot: '#4a7c59' },
-  in_progress:        { label: 'в работе',   bg: 'rgba(74,124,89,0.12)',  color: '#4a7c59', dot: '#4a7c59' },
-  ready:              { label: 'готов',      bg: 'rgba(217,108,82,0.12)', color: '#d96c52', dot: '#d96c52' },
-  delivered:          { label: 'доставлен',  bg: 'rgba(200,124,62,0.12)', color: '#c87c3e', dot: '#c87c3e' },
-  completed:          { label: 'завершён',   bg: 'rgba(74,124,89,0.12)',  color: '#4a7c59', dot: '#4a7c59' },
+interface StatusCfg {
+  label:   string;
+  Icon:    LucideIcon;
+  bg:      string;
+  color:   string;
+}
+
+const STATUS_CONFIG: Record<OrderStatus, StatusCfg> = {
+  awaiting_responses: { label: 'ожидает',       Icon: Clock,      bg: '#FEF0E2', color: '#B85E28' },
+  master_selected:    { label: 'мастер выбран',  Icon: UserCheck,  bg: '#E8F2EA', color: '#3E7A4A' },
+  in_progress:        { label: 'в работе',       Icon: Scissors,   bg: '#E8F2EA', color: '#3E7A4A' },
+  ready:              { label: 'готово',          Icon: Sparkles,   bg: '#FEF0E2', color: '#B85E28' },
+  delivered:          { label: 'доставлен',       Icon: Truck,      bg: '#FEF0E2', color: '#B85E28' },
+  completed:          { label: 'завершён',        Icon: CheckCheck, bg: '#E8F2EA', color: '#3E7A4A' },
 };
 
 export function StatusBadge({ status }: { status: OrderStatus }) {
   const cfg = STATUS_CONFIG[status] ?? {
-    label: status, bg: 'rgba(120,113,108,0.1)', color: '#78716c', dot: '#78716c',
+    label: status, Icon: Clock, bg: '#F0ECE8', color: '#9C7E68',
   };
+  const { Icon } = cfg;
+
   return (
     <span
-      className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wide"
-      style={{ background: cfg.bg, color: cfg.color }}
+      className="inline-flex items-center gap-1 whitespace-nowrap rounded-full"
+      style={{
+        background:    cfg.bg,
+        color:         cfg.color,
+        fontSize:      10,
+        fontWeight:    700,
+        letterSpacing: '0.03em',
+        padding:       '4px 9px',
+        lineHeight:    1.2,
+      }}
     >
-      <span
-        className="size-1.5 rounded-full"
-        style={{ background: cfg.dot, opacity: 0.8 }}
-        aria-hidden="true"
-      />
+      <Icon size={10} strokeWidth={2.5} aria-hidden="true" />
       {cfg.label}
     </span>
   );
