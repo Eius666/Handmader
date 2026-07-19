@@ -1,5 +1,7 @@
 export type UserRole = 'customer' | 'master' | 'both';
 
+export type VerificationStatus = 'none' | 'pending' | 'verified' | 'rejected';
+
 export type OrderStatus =
   | 'awaiting_responses'
   | 'master_selected'
@@ -38,11 +40,17 @@ export interface User {
   uid: string;
   email: string;
   displayName: string;
-  role: UserRole | null;      // null = new user who hasn't picked a role yet
+  role: UserRole | null;
   createdAt: Date;
-  hasSelectedRole: boolean;   // false = show onboarding; true = skip it
+  hasSelectedRole: boolean;
   masterProfile?: MasterProfile;
   telegramId?: number;
+  verificationStatus?: VerificationStatus;
+  verificationSubmittedAt?: Date;
+  verificationRejectionReason?: string;
+  verificationExperience?: string;
+  verificationSocialLinks?: string[];
+  verificationPortfolioPhotos?: string[];
 }
 
 export interface OrderResponse {
@@ -51,6 +59,7 @@ export interface OrderResponse {
   masterPhoto?: string;
   masterRating: number;
   masterCompletedOrders?: number;
+  masterVerified?: boolean;
   price: number;
   timeline: string;
   comment: string;

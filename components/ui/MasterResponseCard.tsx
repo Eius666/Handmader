@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { Star, Clock } from 'lucide-react';
 import { OrderResponse } from '@/types';
+import { VerifiedBadge } from './VerifiedBadge';
 
 interface Props {
   masterId: string;
@@ -56,16 +57,19 @@ export function MasterResponseCard({ masterId, response, onSelect, isSelecting, 
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <h3 className="truncate text-[14px] font-bold tracking-[-0.01em] text-foreground">
-                {response.masterName}
-              </h3>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="truncate text-[14px] font-bold tracking-[-0.01em] text-foreground">
+                  {response.masterName}
+                </h3>
+                {response.masterVerified && <VerifiedBadge size="sm" />}
+              </div>
               <span className="inline-flex items-center gap-1 text-[12px] font-semibold" style={{ color: '#c87c3e' }}>
                 <Star className="size-3.5 fill-current" aria-hidden="true" />
                 {response.masterRating > 0 ? response.masterRating.toFixed(1) : '—'}
               </span>
               {(response.masterCompletedOrders ?? 0) > 0 && (
                 <span className="text-[11px] font-medium text-muted-foreground">
-                  {response.masterCompletedOrders} завершено
+                  {' · '}{response.masterCompletedOrders} завершено
                 </span>
               )}
             </div>

@@ -19,7 +19,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { Order, OrderResponse, User, Review, OrderCategory, Chat, ChatMessage } from '@/types';
+import { Order, OrderResponse, User, Review, OrderCategory, Chat, ChatMessage, VerificationStatus } from '@/types';
 import {
   notifyMastersAboutOrder,
   notifyCustomerNewResponse,
@@ -28,6 +28,7 @@ import {
   notifyCustomerOrderReady,
   notifyMasterOrderCompleted,
   notifyNewChatMessage,
+  notifyAdminVerificationRequest,
 } from './notifications';
 
 // ─── Users ────────────────────────────────────────────────────────────────────
@@ -38,18 +39,49 @@ export async function getUser(uid: string): Promise<User | null> {
   const data = snap.data();
   return {
     uid,
-    email:          data.email          ?? '',
-    displayName:    data.displayName    ?? '',
-    role:           data.role           ?? null,
-    // old docs pre-dating hasSelectedRole default to true (they already picked a role)
+    email:           data.email          ?? '',
+    displayName:     data.displayName    ?? '',
+    role:            data.role           ?? null,
     hasSelectedRole: data.hasSelectedRole ?? true,
-    createdAt:      (data.createdAt as Timestamp)?.toDate() ?? new Date(),
-    masterProfile:  data.masterProfile,
-  } as User;
+    createdAt:       (data.createdAt as Timestamp)?.toDate() ?? new Date(),
+    masterProfile:   data.masterProfile,
+    telegramId:      data.telegramId as number | undefined,
+    verificationStatus:         data.verificationStatus        as VerificationStatus | undefined,
+    verificationSubmittedAt:    (data.verificationSubmittedAt  as Timestamp)?.toDate(),
+    verificationRejectionReason: data.verificationRejectionReason as string | undefined,
+    verificationExperience:     data.verificationExperience    as string | undefined,
+    verificationSocialLinks:    data.verificationSocialLinks   as string[] | undefined,
+    verificationPortfolioPhotos: data.verificationPortfolioPhotos as string[] | undefined,
+  };
 }
 
 export async function setUser(uid: string, data: Partial<User>): Promise<void> {
   await setDoc(doc(db, 'users', uid), { ...data, updatedAt: serverTimestamp() }, { merge: true });
+}
+
+export async function submitVerification(
+  uid: string,
+  displayName: string,
+  data: { experience: string; socialLinks: string[]; portfolioPhotos: string[] },
+): Promise<void> {
+  const snap = await getDoc(doc(db, 'users', uid));
+  if (!snap.exists()) throw new Error('Пользователь не найден');
+
+  const current = snap.data().verificationStatus as string | undefined;
+  if (current === 'pending') throw new Error('Заявка уже на рассмотрении');
+
+  const update: Record<string, unknown> = {
+    verificationStatus:          'pending',
+    verificationSubmittedAt:     serverTimestamp(),
+    verificationExperience:      data.experience,
+    verificationSocialLinks:     data.socialLinks.filter(Boolean),
+    verificationPortfolioPhotos: data.portfolioPhotos.filter(Boolean),
+  };
+  if (current === 'rejected') update.verificationRejectionReason = null;
+
+  await updateDoc(doc(db, 'users', uid), update);
+
+  notifyAdminVerificationRequest(displayName, uid).catch(console.error);
 }
 
 // ─── Orders ───────────────────────────────────────────────────────────────────

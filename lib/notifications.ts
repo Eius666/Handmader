@@ -174,6 +174,28 @@ export async function notifyCustomerOrderReady(orderId: string): Promise<void> {
 }
 
 /**
+ * Notify admin that a master submitted a verification request.
+ * Called fire-and-forget from submitVerification in firestore.ts.
+ */
+export async function notifyAdminVerificationRequest(
+  masterName: string,
+  masterId: string,
+): Promise<void> {
+  const adminIdStr = process.env.NEXT_PUBLIC_ADMIN_TELEGRAM_ID;
+  if (!adminIdStr) return;
+  const adminId = Number(adminIdStr);
+  if (!adminId) return;
+  const message =
+    `📝 <b>Новая заявка на верификацию</b>\n\n` +
+    `Мастер: <b>${masterName}</b>\n` +
+    `ID: <code>${masterId}</code>\n\n` +
+    `Одобрить или отклонить:\n` +
+    `Firebase Console → users → ${masterId}\n` +
+    `Поле: <code>verificationStatus</code> → <code>verified</code> / <code>rejected</code>`;
+  await sendNotify(adminId, message);
+}
+
+/**
  * Notify master that the order was completed by the customer.
  * Called after confirmDelivery.
  */

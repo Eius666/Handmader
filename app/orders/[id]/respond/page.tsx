@@ -57,6 +57,7 @@ export default function RespondPage() {
         masterPhoto: masterProfile?.portfolioPhotos?.[0],
         masterRating: masterProfile?.rating ?? 0,
         masterCompletedOrders: masterProfile?.completedOrders ?? 0,
+        masterVerified: user.verificationStatus === 'verified',
         price: priceNum,
         timeline: timeline.trim(),
         comment: comment.trim(),

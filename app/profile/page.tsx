@@ -3,14 +3,76 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Settings } from 'lucide-react';
+import { Settings, BadgeCheck, Clock, ChevronRight, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { StarRating } from '@/components/ui/StarRating';
+import { VerifiedBadge } from '@/components/ui/VerifiedBadge';
 import { setUser } from '@/lib/firestore';
 import { OrderCategory, CATEGORY_LABELS, MasterProfile } from '@/types';
 
 const MASTER_CATS: OrderCategory[] = ['hat', 'sweater', 'scarf', 'toy', 'accessory', 'other'];
+
+function VerificationBlock({ status }: { status: import('@/types').VerificationStatus }) {
+  if (status === 'verified') {
+    return (
+      <div
+        className="mt-4 flex items-center gap-3 rounded-2xl p-3"
+        style={{ background: '#EBF5EE', border: '1px solid rgba(62,122,74,0.15)' }}
+      >
+        <BadgeCheck size={22} strokeWidth={1.8} style={{ color: '#3E7A4A', flexShrink: 0 }} />
+        <div className="flex-1">
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#2A4A30' }}>Проверенный мастер</p>
+          <p style={{ margin: 0, fontSize: 11, color: '#4A7A50' }}>Ваш профиль подтверждён командой Handmader</p>
+        </div>
+        <VerifiedBadge />
+      </div>
+    );
+  }
+
+  if (status === 'pending') {
+    return (
+      <div
+        className="mt-4 flex items-center gap-3 rounded-2xl p-3"
+        style={{ background: 'rgba(194,112,62,0.06)', border: '1px solid rgba(194,112,62,0.14)' }}
+      >
+        <Clock size={20} strokeWidth={1.8} style={{ color: '#C2703E', flexShrink: 0 }} />
+        <div className="flex-1">
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#7A4020' }}>Заявка на рассмотрении</p>
+          <p style={{ margin: 0, fontSize: 11, color: '#9C7E68' }}>Обычно 1-3 дня</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Link
+      href="/verify"
+      className="mt-4 flex items-center gap-3 rounded-2xl p-3 transition-all active:scale-[0.98]"
+      style={{
+        background:     'rgba(62,122,74,0.05)',
+        border:         '1px dashed rgba(62,122,74,0.25)',
+        textDecoration: 'none',
+        display:        'flex',
+      }}
+    >
+      {status === 'rejected' ? (
+        <AlertCircle size={20} strokeWidth={1.8} style={{ color: '#B04040', flexShrink: 0 }} />
+      ) : (
+        <BadgeCheck size={20} strokeWidth={1.8} style={{ color: '#3E7A4A', flexShrink: 0 }} />
+      )}
+      <div className="flex-1">
+        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#2A4A30' }}>
+          {status === 'rejected' ? 'Заявка отклонена — подать снова' : 'Стать проверенным мастером'}
+        </p>
+        <p style={{ margin: 0, fontSize: 11, color: '#4A7A50' }}>
+          Получите бейдж и больше доверия от клиентов
+        </p>
+      </div>
+      <ChevronRight size={16} style={{ color: '#3E7A4A', flexShrink: 0 }} aria-hidden="true" />
+    </Link>
+  );
+}
 
 export default function ProfilePage() {
   const { user, refreshUser, refreshProfile, logout } = useAuth();
@@ -337,6 +399,9 @@ export default function ProfilePage() {
                     Профиль пуст — нажмите «Редактировать», чтобы заполнить
                   </p>
                 )}
+
+                {/* ── Verification block ────────────────── */}
+                <VerificationBlock status={user.verificationStatus ?? 'none'} />
               </div>
             ) : null}
           </div>
