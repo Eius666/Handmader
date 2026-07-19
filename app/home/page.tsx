@@ -51,10 +51,10 @@ export default function HomePage() {
         {/* ── Greeting ── */}
         <header className="flex items-start justify-between">
           <div className="flex flex-col gap-0.5">
-            <span className="text-[13px] font-medium text-muted-foreground tracking-wide">
+            <span className="text-[13px] font-medium text-muted-foreground">
               {getGreeting()}, {firstName}
             </span>
-            <span className="text-[22px] font-extrabold tracking-[-0.03em] text-foreground leading-tight">
+            <span className="font-display text-[23px] font-bold tracking-[-0.02em] text-foreground leading-tight">
               Уютная мастерская
             </span>
           </div>
@@ -104,7 +104,7 @@ export default function HomePage() {
         {/* ── Categories ── */}
         <section className="flex flex-col gap-3">
           <div className="flex items-center justify-between px-0.5">
-            <h2 className="text-[13px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            <h2 className="text-[11px] font-bold uppercase tracking-[0.10em] text-muted-foreground">
               Категории
             </h2>
           </div>
@@ -141,7 +141,7 @@ export default function HomePage() {
         {/* ── Active orders ── */}
         <section className="flex flex-col gap-3">
           <div className="flex items-center justify-between px-0.5">
-            <h2 className="text-[13px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            <h2 className="text-[11px] font-bold uppercase tracking-[0.10em] text-muted-foreground">
               Активные заказы
             </h2>
             <button
@@ -244,10 +244,10 @@ function OrderCard({ order, onClick }: { order: Order; onClick: () => void }) {
           <StatusBadge status={order.status} />
         </div>
         <div className="flex flex-col gap-0.5">
-          <span className="text-[11px] font-medium text-muted-foreground tracking-wide">
+          <span className="text-[10px] font-bold uppercase tracking-[0.07em] text-muted-foreground">
             {CATEGORY_LABELS[order.category]}
           </span>
-          <h3 className="line-clamp-2 text-[13px] font-bold leading-snug text-foreground">
+          <h3 className="line-clamp-2 text-[13px] font-semibold leading-snug text-foreground">
             {order.description}
           </h3>
         </div>

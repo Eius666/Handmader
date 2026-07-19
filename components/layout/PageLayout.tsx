@@ -56,7 +56,7 @@ export function PageLayout({
             </button>
           )}
           <h1
-            className="flex-1 text-[19px] font-bold tracking-[-0.02em] text-foreground"
+            className="font-display flex-1 text-[20px] font-bold tracking-[-0.02em] text-foreground"
             style={{ margin: 0 }}
           >
             {title}

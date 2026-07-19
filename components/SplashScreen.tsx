@@ -71,12 +71,13 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
       {/* Wordmark */}
       <div style={{ textAlign: 'center' }}>
         <p
+          className="font-display"
           style={{
-            fontSize:      30,
-            fontWeight:    800,
-            color:         '#1c1917',
+            fontSize:      32,
+            fontWeight:    700,
+            color:         '#44403c',
             margin:        0,
-            letterSpacing: '-0.04em',
+            letterSpacing: '-0.01em',
             lineHeight:    1,
           }}
         >

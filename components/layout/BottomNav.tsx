@@ -58,11 +58,11 @@ export function BottomNav() {
       <div
         className="flex w-full max-w-sm items-center justify-around rounded-[22px] px-2 py-2"
         style={{
-          background:          'rgba(255,255,255,0.88)',
-          backdropFilter:      'blur(20px)',
-          WebkitBackdropFilter:'blur(20px)',
-          border:              '1px solid rgba(180,100,70,0.1)',
-          boxShadow:           '0 8px 32px rgba(140,80,50,0.12), 0 1px 0 rgba(255,255,255,0.8) inset',
+          background:          'rgba(255,251,245,0.92)',
+          backdropFilter:      'blur(24px)',
+          WebkitBackdropFilter:'blur(24px)',
+          border:              '1px solid rgba(194,112,62,0.08)',
+          boxShadow:           '0 -2px 16px rgba(140,80,50,0.06), 0 8px 28px rgba(140,80,50,0.10), 0 1px 0 rgba(255,255,255,0.9) inset',
           pointerEvents:       'auto',
         }}
       >

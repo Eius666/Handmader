@@ -228,13 +228,13 @@ function OrderListCard({
       tabIndex={0}
       onClick={onClick}
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
-      className="flex flex-col gap-3 w-full text-left cursor-pointer transition-all duration-200 active:scale-[0.98]"
+      className="flex flex-col gap-3 w-full text-left cursor-pointer transition-all duration-200 active:scale-[0.99]"
       style={{
-        background: '#ffffff',
-        border: '1px solid rgba(180,100,70,0.08)',
-        borderRadius: 18,
-        padding: '14px 16px',
-        boxShadow: '0 2px 10px rgba(140,80,50,0.06)',
+        background:   '#ffffff',
+        border:       '1px solid rgba(194,112,62,0.07)',
+        borderRadius: 20,
+        padding:      '14px 16px',
+        boxShadow:    '0 1px 4px rgba(160,90,50,0.05), 0 4px 14px rgba(160,90,50,0.06)',
       }}
     >
       {/* Top row */}
@@ -246,10 +246,10 @@ function OrderListCard({
           <Icon className="size-5 text-primary" aria-hidden="true" />
         </span>
         <div className="flex-1 min-w-0">
-          <span className="text-[11px] font-medium text-muted-foreground tracking-wide">
+          <span className="text-[10px] font-bold uppercase tracking-[0.07em] text-muted-foreground">
             {CATEGORY_LABELS[order.category]}
           </span>
-          <p className="line-clamp-2 text-[13px] font-bold leading-snug text-foreground">
+          <p className="line-clamp-2 text-[13px] font-semibold leading-snug text-foreground">
             {order.description}
           </p>
         </div>
@@ -276,7 +276,7 @@ function OrderListCard({
         className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-3 text-[11px] font-medium text-muted-foreground"
         style={{ borderTop: '1px solid rgba(180,100,70,0.08)' }}
       >
-        <span>
+        <span className="font-display font-bold" style={{ color: '#C2703E' }}>
           {order.budgetMin.toLocaleString('ru-RU')} — {order.budgetMax.toLocaleString('ru-RU')} ₽
         </span>
         <span>до {formatDate(order.deadline)}</span>

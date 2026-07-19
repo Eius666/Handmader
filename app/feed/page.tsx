@@ -151,37 +151,34 @@ function BrowseOrderCard({
 
   return (
     <article
-      className="flex flex-col gap-3"
+      className="flex flex-col gap-3 transition-all duration-200 active:scale-[0.99]"
       style={{
-        background: '#ffffff',
-        border: '1px solid rgba(180,100,70,0.08)',
-        borderRadius: 20,
-        padding: '16px',
-        boxShadow: '0 2px 12px rgba(140,80,50,0.06)',
+        background:   '#ffffff',
+        border:       '1px solid rgba(194,112,62,0.07)',
+        borderRadius: 22,
+        padding:      '16px',
+        boxShadow:    '0 1px 4px rgba(160,90,50,0.06), 0 4px 16px rgba(160,90,50,0.06)',
       }}
     >
       <div className="flex items-start gap-3">
         <span
-          className="flex size-11 shrink-0 items-center justify-center rounded-full text-lg"
-          style={{ background: 'rgba(217,108,82,0.1)' }}
+          className="flex size-11 shrink-0 items-center justify-center rounded-2xl text-lg"
+          style={{ background: 'linear-gradient(135deg, rgba(194,112,62,0.12) 0%, rgba(194,112,62,0.06) 100%)' }}
         >
           {getCategoryEmoji(order.category)}
         </span>
         <div className="min-w-0 flex-1">
-          <span className="text-[11px] font-medium text-muted-foreground tracking-wide">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">
             {CATEGORY_LABELS[order.category]}
           </span>
-          <h3 className="text-[14px] font-bold leading-snug text-foreground">
-            от {order.customerName}
+          <h3 className="font-display text-[15px] font-semibold leading-snug text-foreground">
+            {order.customerName}
           </h3>
         </div>
         {responseCount > 0 && (
           <span
             className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold"
-            style={{
-              background: 'rgba(217,108,82,0.1)',
-              color: '#d96c52',
-            }}
+            style={{ background: 'rgba(194,112,62,0.1)', color: '#C2703E' }}
           >
             {responseCount} откл.
           </span>
@@ -197,7 +194,7 @@ function BrowseOrderCard({
       )}
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-        <span className="text-[15px] font-extrabold text-foreground tracking-[-0.02em]">
+        <span className="font-display text-[16px] font-bold tracking-[-0.02em]" style={{ color: '#C2703E' }}>
           {order.budgetMin.toLocaleString('ru-RU')} — {order.budgetMax.toLocaleString('ru-RU')} ₽
         </span>
         <span className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
@@ -210,10 +207,12 @@ function BrowseOrderCard({
         <button
           type="button"
           onClick={onDetail}
-          className="flex-1 rounded-xl py-2.5 text-[13px] font-bold text-foreground transition-all duration-200 active:scale-[0.98]"
+          className="flex-1 rounded-xl py-2.5 text-[13px] font-semibold transition-all duration-200 active:scale-[0.97]"
           style={{
-            background: 'rgba(180,100,70,0.07)',
-            border: '1px solid rgba(180,100,70,0.1)',
+            background:  'transparent',
+            border:      '1.5px solid rgba(194,112,62,0.3)',
+            color:       '#C2703E',
+            letterSpacing: '0.01em',
           }}
         >
           Подробнее
@@ -221,10 +220,11 @@ function BrowseOrderCard({
         <button
           type="button"
           onClick={onRespond}
-          className="flex-1 rounded-xl py-2.5 text-[13px] font-bold text-white transition-all duration-200 active:scale-[0.98]"
+          className="flex-1 rounded-xl py-2.5 text-[13px] font-semibold text-white transition-all duration-200 active:scale-[0.97]"
           style={{
-            background: '#d96c52',
-            boxShadow: '0 4px 12px rgba(217,108,82,0.3)',
+            background: 'linear-gradient(160deg, #d97152 0%, #C2703E 100%)',
+            boxShadow:  '0 4px 14px rgba(194,112,62,0.32)',
+            letterSpacing: '0.01em',
           }}
         >
           Откликнуться
