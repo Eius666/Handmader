@@ -29,6 +29,7 @@ import {
   notifyMasterOrderCompleted,
   notifyNewChatMessage,
   notifyAdminVerificationRequest,
+  createInAppNotification,
 } from './notifications';
 
 // ─── Users ────────────────────────────────────────────────────────────────────
@@ -317,11 +318,19 @@ export async function sendMessage(
         getDoc(doc(db, 'users', recipientUid)),
         getDoc(doc(db, 'orders', orderId)),
       ]);
-      const tgId = recipientSnap.data()?.telegramId as number | undefined;
-      if (!tgId) return;
       const desc = String(orderSnap.data()?.description ?? '');
       const title = desc.length > 40 ? desc.slice(0, 40) + '…' : desc;
-      await notifyNewChatMessage(tgId, senderName, title, text, orderId);
+
+      const tgId = recipientSnap.data()?.telegramId as number | undefined;
+      if (tgId) await notifyNewChatMessage(tgId, senderName, title, text, orderId);
+
+      void createInAppNotification(
+        recipientUid,
+        'new_message',
+        senderName,
+        text.slice(0, 100),
+        { orderId, chatId: orderId },
+      );
     })().catch(console.error);
   }
 }

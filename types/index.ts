@@ -1,5 +1,28 @@
 export type UserRole = 'customer' | 'master' | 'both';
 
+export type NotificationType =
+  | 'new_order'
+  | 'new_response'
+  | 'master_selected'
+  | 'work_started'
+  | 'order_ready'
+  | 'order_completed'
+  | 'new_message'
+  | 'verification_approved'
+  | 'verification_rejected';
+
+export interface AppNotification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  orderId?: string;
+  chatId?: string;
+  read: boolean;
+  createdAt: Date;
+}
+
 export type VerificationStatus = 'none' | 'pending' | 'verified' | 'rejected';
 
 export type OrderStatus =
