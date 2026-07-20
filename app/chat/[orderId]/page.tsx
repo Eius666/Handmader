@@ -95,7 +95,7 @@ export default function ChatPage() {
     setText(e.target.value);
     const ta = e.target;
     ta.style.height = 'auto';
-    ta.style.height = Math.min(ta.scrollHeight, 96) + 'px';
+    ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -235,38 +235,40 @@ export default function ChatPage() {
 
       {/* ── Input form ── */}
       <div
-        className="shrink-0 px-4 py-3"
-        style={{ paddingBottom: 'calc(12px + env(safe-area-inset-bottom))' }}
+        className="shrink-0 flex items-end px-3 py-2"
+        style={{
+          background: 'var(--background)',
+          borderTop: '1px solid rgba(194,112,62,0.08)',
+          paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))',
+        }}
       >
-        <div
-          className="flex items-end gap-2 rounded-2xl px-3 py-2.5"
+        <textarea
+          ref={textareaRef}
+          value={text}
+          onChange={handleTextChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Сообщение..."
+          rows={1}
+          className="min-w-0 flex-1 resize-none rounded-xl text-[14px] leading-snug text-foreground outline-none placeholder:text-muted-foreground"
           style={{
-            background: '#ffffff',
-            border: '1.5px solid rgba(180,100,70,0.15)',
-            boxShadow: '0 2px 8px rgba(140,80,50,0.06)',
+            minHeight: 40,
+            maxHeight: 120,
+            padding: '10px 12px',
+            overflowY: 'auto',
+            background: 'rgba(226,208,188,0.22)',
+            border: '1px solid rgba(194,112,62,0.15)',
           }}
+        />
+        <button
+          type="button"
+          onClick={() => void handleSend()}
+          disabled={!text.trim() || sending}
+          aria-label="Отправить"
+          className="ml-2 flex size-10 shrink-0 items-center justify-center rounded-xl text-white transition-all duration-200 active:scale-95 disabled:opacity-40"
+          style={{ background: '#C2703E', boxShadow: '0 2px 8px rgba(194,112,62,0.35)' }}
         >
-          <textarea
-            ref={textareaRef}
-            value={text}
-            onChange={handleTextChange}
-            onKeyDown={handleKeyDown}
-            placeholder="Сообщение..."
-            rows={1}
-            className="min-w-0 flex-1 resize-none bg-transparent text-[14px] leading-snug text-foreground outline-none placeholder:text-muted-foreground"
-            style={{ maxHeight: 96, paddingTop: 3, paddingBottom: 3, overflowY: 'auto' }}
-          />
-          <button
-            type="button"
-            onClick={() => void handleSend()}
-            disabled={!text.trim() || sending}
-            aria-label="Отправить"
-            className="mb-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl text-white transition-all duration-200 active:scale-95 disabled:opacity-40"
-            style={{ background: '#C2703E', boxShadow: '0 2px 8px rgba(194,112,62,0.35)' }}
-          >
-            <Send className="size-4" aria-hidden="true" />
-          </button>
-        </div>
+          <Send className="size-4" aria-hidden="true" />
+        </button>
       </div>
     </div>
   );
