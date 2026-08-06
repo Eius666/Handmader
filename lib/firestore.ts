@@ -19,7 +19,7 @@ import {
   Timestamp,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { Order, OrderResponse, User, Review, OrderCategory, Chat, ChatMessage, VerificationStatus } from '@/types';
+import { Order, OrderResponse, User, OrderCategory, Chat, ChatMessage, VerificationStatus } from '@/types';
 import {
   notifyMastersAboutOrder,
   notifyCustomerNewResponse,
@@ -135,14 +135,6 @@ export async function getAvailableOrders(category?: OrderCategory): Promise<Orde
   return snaps.docs.map((d) => mapOrder(d.id, d.data()));
 }
 
-export async function updateOrderStatus(
-  orderId: string,
-  status: Order['status'],
-  extra?: Record<string, unknown>
-): Promise<void> {
-  await updateDoc(doc(db, 'orders', orderId), { status, ...extra });
-}
-
 export async function startWork(orderId: string): Promise<void> {
   await updateDoc(doc(db, 'orders', orderId), { status: 'in_progress', startedAt: serverTimestamp() });
   notifyCustomerWorkStarted(orderId).catch(console.error);
@@ -154,24 +146,14 @@ export async function markReady(orderId: string): Promise<void> {
 }
 
 export async function confirmDelivery(orderId: string): Promise<void> {
-  console.log('[confirmDelivery] called for order:', orderId);
-
   await updateDoc(doc(db, 'orders', orderId), { status: 'completed', deliveredAt: serverTimestamp() });
 
   const snap = await getDoc(doc(db, 'orders', orderId));
-  const orderData = snap.exists() ? snap.data() : null;
-  console.log('[confirmDelivery] order snapshot:', JSON.stringify(orderData));
-  console.log('[confirmDelivery] selectedMasterId:', orderData?.selectedMasterId);
-
-  const masterId = orderData?.selectedMasterId as string | undefined;
+  const masterId = snap.exists() ? (snap.data().selectedMasterId as string | undefined) : undefined;
   if (masterId) {
     await updateDoc(doc(db, 'users', masterId), {
       'masterProfile.completedOrders': increment(1),
     });
-    const updatedProfile = await getDoc(doc(db, 'users', masterId));
-    console.log('[confirmDelivery] updated masterProfile:', JSON.stringify(updatedProfile.data()?.masterProfile));
-  } else {
-    console.warn('[confirmDelivery] no selectedMasterId — increment skipped');
   }
   notifyMasterOrderCompleted(orderId, masterId ?? null).catch(console.error);
 }
@@ -248,17 +230,6 @@ export async function selectMaster(
     selectedPrice,
   });
   notifyMasterSelected(masterId, orderId).catch(console.error);
-}
-
-// ─── Reviews ──────────────────────────────────────────────────────────────────
-
-export async function createReview(
-  review: Omit<Review, 'id' | 'createdAt'>
-): Promise<void> {
-  await addDoc(collection(db, 'reviews'), {
-    ...review,
-    createdAt: serverTimestamp(),
-  });
 }
 
 // ─── Chat ─────────────────────────────────────────────────────────────────────
@@ -422,6 +393,11 @@ export async function getChatList(uid: string): Promise<Chat[]> {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+export async function getMasterTelegramId(masterId: string): Promise<number | null> {
+  const snap = await getDoc(doc(db, 'users', masterId));
+  return (snap.data()?.telegramId as number) ?? null;
+}
 
 function mapOrder(id: string, data: Record<string, unknown>): Order {
   return {
