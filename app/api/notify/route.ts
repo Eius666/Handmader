@@ -1,8 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const INTERNAL_SECRET = process.env.INTERNAL_API_SECRET;
+
+// Telegram HTML-safe: strip tags not in Telegram's allowed set
+function sanitizeHtml(text: string): string {
+  // Telegram supports only <b>, <i>, <u>, <s>, <code>, <pre>, <a href="...">
+  // Strip everything else to prevent injection
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
 
 export async function POST(req: NextRequest) {
+  // Optional: require an internal secret header to prevent public abuse
+  if (INTERNAL_SECRET) {
+    const provided = req.headers.get('x-internal-secret');
+    if (provided !== INTERNAL_SECRET) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    }
+  }
+
   if (!BOT_TOKEN) {
     console.error('[notify] TELEGRAM_BOT_TOKEN is not set');
     return NextResponse.json({ success: false, error: 'Bot not configured' }, { status: 500 });
@@ -22,6 +41,10 @@ export async function POST(req: NextRequest) {
   }
   if (typeof message !== 'string' || !message.trim()) {
     return NextResponse.json({ success: false, error: 'message must be a non-empty string' }, { status: 400 });
+  }
+  // Telegram message hard limit is 4096 chars
+  if (message.length > 4096) {
+    return NextResponse.json({ success: false, error: 'message too long' }, { status: 400 });
   }
 
   try {

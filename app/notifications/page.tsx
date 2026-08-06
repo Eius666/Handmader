@@ -18,8 +18,8 @@ function notifIcon(type: NotificationType): string {
     case 'order_ready':            return '✨';
     case 'order_completed':        return '🎉';
     case 'new_message':            return '💬';
-    case 'verification_approved':  return '⭐';
-    case 'verification_rejected':  return '⭐';
+    case 'verification_approved':  return '✅';
+    case 'verification_rejected':  return '❌';
     default:                       return '🔔';
   }
 }

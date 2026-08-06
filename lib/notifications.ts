@@ -28,6 +28,13 @@ function chatLink(orderId: string) {
   return `https://t.me/${BOT_USERNAME}?startapp=chat_${orderId}`;
 }
 
+// Escape user-provided strings before inserting into Telegram HTML messages.
+// Telegram's parse_mode:'HTML' renders <b>, <a>, etc. — unescaped user content
+// would be treated as markup, enabling phishing links or misleading formatting.
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 async function getUserTelegramId(uid: string): Promise<number | null> {
   try {
     const snap = await getDoc(doc(db, 'users', uid));
@@ -38,11 +45,19 @@ async function getUserTelegramId(uid: string): Promise<number | null> {
 }
 
 async function sendNotify(telegramId: number, message: string): Promise<void> {
-  await fetch('/api/notify', {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  const secret = process.env.NEXT_PUBLIC_INTERNAL_API_SECRET;
+  if (secret) headers['x-internal-secret'] = secret;
+
+  const res = await fetch('/api/notify', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify({ telegramId, message }),
   });
+  if (!res.ok) {
+    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    console.error('[notify] sendNotify failed:', data.error ?? res.status);
+  }
 }
 
 // ─── In-app notifications ─────────────────────────────────────────────────────
@@ -142,9 +157,9 @@ export async function notifyNewChatMessage(
   const shortText = messageText.length > 50 ? messageText.slice(0, 50) + '...' : messageText;
   const link = chatLink(orderId);
   const message =
-    `💬 <b>Новое сообщение от ${senderName}</b>\n\n` +
-    `Заказ: «${orderTitle}»\n` +
-    `${shortText}\n\n` +
+    `💬 <b>Новое сообщение от ${esc(senderName)}</b>\n\n` +
+    `Заказ: «${esc(orderTitle)}»\n` +
+    `${esc(shortText)}\n\n` +
     `<a href="${link}">Открыть чат →</a>`;
   await sendNotify(recipientTelegramId, message);
 }
@@ -169,8 +184,8 @@ export async function notifyMastersAboutOrder(
   const shortDesc = description.slice(0, 100) + (description.length > 100 ? '…' : '');
   const message =
     `🧵 <b>Новый заказ</b>\n` +
-    `Категория: ${categoryLabel}\n` +
-    `${shortDesc}\n` +
+    `Категория: ${esc(categoryLabel)}\n` +
+    `${esc(shortDesc)}\n` +
     `Бюджет: ${budgetMin.toLocaleString('ru-RU')} — ${budgetMax.toLocaleString('ru-RU')} ₽\n\n` +
     `<a href="${link}">Откликнуться →</a>`;
 
@@ -208,9 +223,9 @@ export async function notifyCustomerNewResponse(
 
   if (tgId) {
     const message =
-      `👤 <b>${masterName}</b> откликнулся на ваш заказ\n` +
-      `«${desc}»\n` +
-      `Цена: ${price.toLocaleString('ru-RU')} ₽ · Срок: ${timeline}\n\n` +
+      `👤 <b>${esc(masterName)}</b> откликнулся на ваш заказ\n` +
+      `«${esc(desc)}»\n` +
+      `Цена: ${price.toLocaleString('ru-RU')} ₽ · Срок: ${esc(timeline)}\n\n` +
       `<a href="${link}">Посмотреть →</a>`;
     void sendNotify(tgId, message);
   }
@@ -241,7 +256,7 @@ export async function notifyMasterSelected(masterId: string, orderId: string): P
   if (tgId) {
     const message =
       `✅ <b>Вас выбрали!</b>\n` +
-      `Заказ: «${shortDesc}»\n\n` +
+      `Заказ: «${esc(shortDesc)}»\n\n` +
       `<a href="${link}">Перейти к заказу →</a>`;
     void sendNotify(tgId, message);
   }
@@ -270,7 +285,7 @@ export async function notifyCustomerWorkStarted(orderId: string): Promise<void> 
   if (tgId) {
     const message =
       `🔧 Мастер начал работу над заказом\n` +
-      `«${desc}»\n\n` +
+      `«${esc(desc)}»\n\n` +
       `<a href="${link}">Открыть →</a>`;
     void sendNotify(tgId, message);
   }
@@ -299,7 +314,7 @@ export async function notifyCustomerOrderReady(orderId: string): Promise<void> {
   if (tgId) {
     const message =
       `✨ <b>Заказ готов!</b>\n` +
-      `«${desc}»\n\n` +
+      `«${esc(desc)}»\n\n` +
       `<a href="${link}">Подтвердить получение →</a>`;
     void sendNotify(tgId, message);
   }
@@ -356,7 +371,7 @@ export async function notifyMasterOrderCompleted(
   if (tgId) {
     const message =
       `🎉 <b>Заказ завершён!</b>\n` +
-      `«${shortDesc}»\n` +
+      `«${esc(shortDesc)}»\n` +
       `Спасибо за работу!\n\n` +
       `<a href="${link}">Открыть →</a>`;
     void sendNotify(tgId, message);

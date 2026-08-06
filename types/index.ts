@@ -111,16 +111,6 @@ export interface Order {
   location?: string;
 }
 
-export interface Review {
-  id: string;
-  orderId: string;
-  customerId: string;
-  masterId: string;
-  rating: number;
-  text: string;
-  createdAt: Date;
-}
-
 export interface Chat {
   orderId: string;
   customerId: string;

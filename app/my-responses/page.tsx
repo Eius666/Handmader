@@ -31,6 +31,7 @@ export default function MyResponsesPage() {
 
   useEffect(() => {
     if (!user) return;
+    if (user.role === 'customer') { setLoading(false); return; }
     async function load() {
       try {
         const snap = await getDocs(

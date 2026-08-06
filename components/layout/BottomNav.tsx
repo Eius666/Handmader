@@ -27,10 +27,11 @@ const MASTER_ITEMS: NavItem[] = [
 ];
 
 const BOTH_ITEMS: NavItem[] = [
-  { href: '/home',    label: 'Главная',  icon: Home },
-  { href: '/feed',    label: 'Лента',    icon: Package },
-  { href: '/chats',   label: 'Чаты',    icon: MessageSquare },
-  { href: '/profile', label: 'Профиль', icon: User },
+  { href: '/home',         label: 'Главная',  icon: Home },
+  { href: '/feed',         label: 'Лента',    icon: Package },
+  { href: '/my-responses', label: 'Отклики', icon: MessageSquareText },
+  { href: '/chats',        label: 'Чаты',    icon: MessageSquare },
+  { href: '/profile',      label: 'Профиль', icon: User },
 ];
 
 function triggerHaptic() {

@@ -2,32 +2,48 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Users: anyone can read (masters' profiles are public);
+    // only the authenticated owner can write their own document.
     match /users/{userId} {
-      allow read:  if true;
-      allow write: if true;
+      allow read:   if true;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false;
     }
 
+    // Orders: anyone can read available orders (master feed requires it);
+    // any authenticated user can create/update (business logic enforced client-side);
+    // only the order owner can delete.
     match /orders/{orderId} {
-      allow read:  if true;
-      allow write: if true;
+      allow read:   if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null
+                    && resource.data.customerId == request.auth.uid;
     }
 
+    // Chats: any authenticated user can read/write.
     match /chats/{chatId} {
-      allow read:  if true;
-      allow write: if true;
+      allow read:   if true;
+      allow write:  if request.auth != null;
 
       match /messages/{messageId} {
         allow read:   if true;
-        allow create: if true;
-        allow update: if true;
+        allow create: if request.auth != null;
+        allow update: if request.auth != null;
+        allow delete: if false;
       }
     }
 
+    // Notifications: any authenticated user can CREATE (needed for cross-user
+    // notifications, e.g. customer creates notif for a master).
+    // Only the notification owner can read / update / delete their own.
     match /notifications/{notifId} {
-      allow read,  write: if request.auth != null
-                          && resource.data.userId == request.auth.uid;
-      allow create:       if request.auth != null
-                          && request.resource.data.userId == request.auth.uid;
+      allow read:          if request.auth != null
+                           && resource.data.userId == request.auth.uid;
+      allow create:        if request.auth != null;
+      allow update, delete: if request.auth != null
+                            && resource.data.userId == request.auth.uid;
     }
   }
 }

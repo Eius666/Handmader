@@ -35,6 +35,11 @@ export default function RespondPage() {
     e.preventDefault();
     if (!order || !user) return;
 
+    if (user.role !== 'master' && user.role !== 'both') {
+      setError('Только мастера могут откликаться на заказы');
+      return;
+    }
+
     const priceNum = Number(price);
     if (!priceNum || priceNum <= 0) {
       setError('Укажите корректную цену');

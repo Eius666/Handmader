@@ -55,11 +55,19 @@ export function useTelegram() {
       const tgUsr = wa.initDataUnsafe?.user ?? null;
       setTgUser(tgUsr);
 
-      // Save Telegram ID to Firestore so notifications can reach this user
+      // Save Telegram ID to Firestore on first login or when it changes.
+      // Checked against auth.currentUser to avoid a read; the actual
+      // Firestore setDoc uses merge:true so duplicate writes are cheap.
       if (tgUsr?.id) {
-        const uid = auth.currentUser?.uid;
-        if (uid) {
-          setUser(uid, { telegramId: tgUsr.id }).catch(console.error);
+        const fbUser = auth.currentUser;
+        if (fbUser) {
+          // Store in sessionStorage so we only write once per browser session.
+          const sessionKey = `tgid_saved_${fbUser.uid}`;
+          if (!sessionStorage.getItem(sessionKey)) {
+            setUser(fbUser.uid, { telegramId: tgUsr.id })
+              .then(() => sessionStorage.setItem(sessionKey, '1'))
+              .catch(console.error);
+          }
         }
       }
     }
