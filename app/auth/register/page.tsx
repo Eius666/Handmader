@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { motion } from 'motion/react';
 import { useAuth, getFirebaseErrorMessage } from '@/hooks/useAuth';
 import { PASSWORD_CHECKS, validatePassword } from '@/lib/passwordValidation';
+import { PressableButton } from '@/components/motion/Pressable';
 
 export default function RegisterPage() {
   const [name,     setName]     = useState('');
@@ -45,14 +47,24 @@ export default function RegisterPage() {
   return (
     <div className="flex h-full flex-col overflow-y-auto bg-background [&::-webkit-scrollbar]:hidden">
       {/* Logo */}
-      <div className="flex flex-col items-center px-5 pb-6 pt-12 text-center">
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
+        className="flex flex-col items-center px-5 pb-6 pt-12 text-center"
+      >
         <span className="text-5xl leading-none">🧶</span>
-        <h1 className="mt-3 text-[28px] font-extrabold text-primary">Создать аккаунт</h1>
+        <h1 className="font-display mt-3 text-[28px] font-semibold text-primary">Создать аккаунт</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">Присоединяйтесь к Handmader</p>
-      </div>
+      </motion.div>
 
       {/* Form area */}
-      <div className="flex flex-1 flex-col gap-3 px-5 pb-10">
+      <motion.div
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.08, ease: [0.32, 0.72, 0, 1] }}
+        className="flex flex-1 flex-col gap-3 px-5 pb-10"
+      >
         <div className="rounded-2xl bg-card p-6 shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)]">
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <input
@@ -132,14 +144,14 @@ export default function RegisterPage() {
               <p className="text-sm font-semibold text-primary">{error}</p>
             )}
 
-            <button
+            <PressableButton
               className="btn-primary"
               type="submit"
               disabled={!canSubmit}
               style={{ marginTop: 4 }}
             >
               {loading ? 'Регистрируем...' : 'Зарегистрироваться'}
-            </button>
+            </PressableButton>
           </form>
         </div>
 
@@ -153,7 +165,7 @@ export default function RegisterPage() {
             Войти
           </Link>
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 }

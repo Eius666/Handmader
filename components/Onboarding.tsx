@@ -1,6 +1,9 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { PressableButton } from '@/components/motion/Pressable';
+import { Stagger, StaggerItem } from '@/components/motion/Stagger';
 
 interface Slide {
   emoji: string;
@@ -69,7 +72,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
         position:       'fixed',
         inset:          0,
         zIndex:         8000,
-        background:     '#FFF8F0',
+        background:     'var(--background)',
         display:        'flex',
         flexDirection:  'column',
         userSelect:     'none',
@@ -80,7 +83,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
     >
       {/* Skip */}
       <div style={{ position: 'absolute', top: 20, right: 20, zIndex: 1 }}>
-        <button
+        <PressableButton
           onClick={finish}
           style={{
             background:   'rgb(var(--muted-foreground-rgb) / 0.1)',
@@ -89,111 +92,119 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
             padding:      '7px 16px',
             fontSize:     13,
             fontWeight:   600,
-            color:        '#78716c',
+            color:        'var(--muted-foreground)',
             cursor:       'pointer',
             fontFamily:   'inherit',
           }}
         >
           Пропустить
-        </button>
+        </PressableButton>
       </div>
 
       {/* Content */}
-      <div
-        key={animKey}
-        style={{
-          flex:           1,
-          display:        'flex',
-          flexDirection:  'column',
-          alignItems:     'center',
-          justifyContent: 'center',
-          padding:        '0 36px',
-          gap:            28,
-          textAlign:      'center',
-          animation:      'fade-up 0.22s ease-out both',
-        }}
-      >
-        {/* Illustration */}
-        <div
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={animKey}
+          initial={{ opacity: 0, x: 24 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -24 }}
+          transition={{ duration: 0.28, ease: [0.32, 0.72, 0, 1] }}
           style={{
-            width:        104,
-            height:       104,
-            borderRadius: 32,
-            background:   'linear-gradient(145deg, #fff 0%, #ffeedd 100%)',
-            border:       '1.5px solid rgb(var(--primary-soft-rgb) / 0.15)',
-            display:      'flex',
-            alignItems:   'center',
+            flex:           1,
+            display:        'flex',
+            flexDirection:  'column',
+            alignItems:     'center',
             justifyContent: 'center',
-            fontSize:     56,
-            boxShadow:    '0 8px 32px rgb(var(--primary-soft-rgb) / 0.12)',
+            padding:        '0 36px',
+            gap:            28,
+            textAlign:      'center',
           }}
         >
-          {s.emoji}
-        </div>
-
-        {/* Text */}
-        <div style={{ maxWidth: 280 }}>
-          <p
+          {/* Illustration */}
+          <motion.div
+            initial={{ scale: 0.7, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.05 }}
             style={{
-              fontSize:      24,
-              fontWeight:    800,
-              color:         '#1c1917',
-              margin:        '0 0 14px',
-              letterSpacing: '-0.03em',
-              lineHeight:    1.2,
+              width:        104,
+              height:       104,
+              borderRadius: 32,
+              background:   'linear-gradient(145deg, #fff 0%, rgb(var(--primary-rgb) / 10%) 100%)',
+              border:       '1.5px solid rgb(var(--primary-soft-rgb) / 0.15)',
+              display:      'flex',
+              alignItems:   'center',
+              justifyContent: 'center',
+              fontSize:     56,
+              boxShadow:    '0 8px 32px rgb(var(--primary-soft-rgb) / 0.12)',
             }}
           >
-            {s.title}
-          </p>
-          {s.desc && (
-            <p style={{ fontSize: 15, color: '#78716c', margin: 0, lineHeight: 1.65 }}>
-              {s.desc}
+            {s.emoji}
+          </motion.div>
+
+          {/* Text */}
+          <div style={{ maxWidth: 280 }}>
+            <p
+              className="font-display"
+              style={{
+                fontSize:      24,
+                fontWeight:    600,
+                color:         'var(--foreground)',
+                margin:        '0 0 14px',
+                letterSpacing: '-0.02em',
+                lineHeight:    1.2,
+              }}
+            >
+              {s.title}
             </p>
-          )}
-          {s.steps && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 }}>
-              {s.steps.map((step, i) => (
-                <div
-                  key={step}
-                  style={{
-                    display:       'flex',
-                    alignItems:    'center',
-                    gap:           12,
-                    background:    '#ffffff',
-                    borderRadius:  14,
-                    padding:       '13px 16px',
-                    border:        '1px solid rgb(var(--foreground-rgb) / 0.1)',
-                    boxShadow:     '0 2px 8px rgb(var(--foreground-rgb) / 0.05)',
-                    textAlign:     'left',
-                    animation:     `fade-up 0.22s ease-out ${i * 60}ms both`,
-                  }}
-                >
-                  <div
+            {s.desc && (
+              <p style={{ fontSize: 15, color: 'var(--muted-foreground)', margin: 0, lineHeight: 1.65 }}>
+                {s.desc}
+              </p>
+            )}
+            {s.steps && (
+              <Stagger style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 }}>
+                {s.steps.map((step, i) => (
+                  <StaggerItem
+                    key={step}
                     style={{
-                      width:          28,
-                      height:         28,
-                      borderRadius:   '50%',
-                      background:     'var(--primary)',
-                      color:          '#fff',
-                      display:        'flex',
-                      alignItems:     'center',
-                      justifyContent: 'center',
-                      fontSize:       13,
-                      fontWeight:     800,
-                      flexShrink:     0,
+                      display:       'flex',
+                      alignItems:    'center',
+                      gap:           12,
+                      background:    'var(--card)',
+                      borderRadius:  14,
+                      padding:       '13px 16px',
+                      border:        '1px solid rgb(var(--foreground-rgb) / 0.1)',
+                      boxShadow:     '0 2px 8px rgb(var(--foreground-rgb) / 0.05)',
+                      textAlign:     'left',
                     }}
                   >
-                    {i + 1}
-                  </div>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1c1917' }}>
-                    {step}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+                    <div
+                      style={{
+                        width:          28,
+                        height:         28,
+                        borderRadius:   '50%',
+                        background:     'var(--primary)',
+                        color:          'var(--card)',
+                        display:        'flex',
+                        alignItems:     'center',
+                        justifyContent: 'center',
+                        fontSize:       13,
+                        fontWeight:     800,
+                        flexShrink:     0,
+                      }}
+                    >
+                      {i + 1}
+                    </div>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--foreground)' }}>
+                      {step}
+                    </span>
+                  </StaggerItem>
+                ))}
+              </Stagger>
+            )}
+          </div>
+        </motion.div>
+      </AnimatePresence>
 
       {/* Bottom nav */}
       <div
@@ -205,31 +216,27 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
         {/* Dots */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 20 }}>
           {SLIDES.map((_, i) => (
-            <button
+            <motion.button
               key={i}
               onClick={() => goTo(i)}
               aria-label={`Слайд ${i + 1}`}
-              style={{
-                width:        i === slide ? 24 : 8,
-                height:       8,
-                borderRadius: 4,
-                background:   i === slide ? 'var(--primary)' : 'rgb(var(--muted-foreground-rgb) / 0.22)',
-                border:       'none',
-                cursor:       'pointer',
-                padding:      0,
-                transition:   'all 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
+              animate={{
+                width: i === slide ? 24 : 8,
+                background: i === slide ? 'var(--primary)' : 'rgb(var(--muted-foreground-rgb) / 0.22)',
               }}
+              transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+              style={{ height: 8, borderRadius: 4, border: 'none', cursor: 'pointer', padding: 0 }}
             />
           ))}
         </div>
 
         {/* CTA */}
-        <button
+        <PressableButton
           onClick={next}
           style={{
             width:         '100%',
             background:    'var(--primary)',
-            color:         '#fff',
+            color:         'var(--card)',
             border:        'none',
             borderRadius:  14,
             padding:       '16px',
@@ -239,15 +246,10 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
             fontFamily:    'inherit',
             letterSpacing: '-0.01em',
             boxShadow:     '0 8px 24px rgb(var(--primary-soft-rgb) / 0.35)',
-            transition:    'transform 0.15s ease-out, box-shadow 0.15s ease-out',
           }}
-          onMouseDown={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.97)'; }}
-          onMouseUp={(e)   => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; }}
-          onTouchStart={(e) => { e.stopPropagation(); (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.97)'; }}
-          onTouchEnd={(e)   => { e.stopPropagation(); (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; }}
         >
           {slide === SLIDES.length - 1 ? 'Начать' : 'Далее →'}
-        </button>
+        </PressableButton>
       </div>
     </div>
   );
