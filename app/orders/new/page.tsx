@@ -3,12 +3,16 @@
 import { useRef, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, Camera, Ruler, X } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { createOrder } from '@/lib/firestore';
 import { DatePicker } from '@/components/ui/DatePicker';
 import { OrderCategory, CATEGORY_LABELS } from '@/types';
 import { NotificationBell } from '@/components/ui/NotificationBell';
+import { Stagger, StaggerItem } from '@/components/motion/Stagger';
+import { PressableButton } from '@/components/motion/Pressable';
+import { PageTransition } from '@/components/motion/PageTransition';
 
 const CATEGORIES: { key: OrderCategory; label: string }[] = [
   { key: 'hat',       label: 'Шапки' },
@@ -107,20 +111,21 @@ function NewOrderFormInner() {
   return (
     <div className="flex h-full flex-col overflow-hidden bg-background">
       <header className="flex shrink-0 items-center gap-4 px-5 pb-2 pt-4">
-        <button
+        <PressableButton
           type="button"
           onClick={() => router.back()}
           aria-label="Назад"
-          className="flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)] transition-colors active:bg-secondary"
+          className="flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)]"
         >
           <ArrowLeft className="size-5" aria-hidden="true" />
-        </button>
-        <h1 className="flex-1 text-2xl font-extrabold text-foreground">Новый заказ</h1>
+        </PressableButton>
+        <h1 className="font-display flex-1 text-2xl font-semibold text-foreground">Новый заказ</h1>
         <NotificationBell />
       </header>
 
       {/* Scrollable form area — header stays fixed, submit button is `fixed` at bottom */}
       <div className="scrollbar-none flex-1 overflow-y-auto">
+      <PageTransition>
       <form
         id="new-order-form"
         onSubmit={handleSubmit}
@@ -129,27 +134,28 @@ function NewOrderFormInner() {
         {/* Category */}
         <section className="flex flex-col gap-3">
           <label className="text-base font-bold text-foreground">Категория</label>
-          <div className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-1 scrollbar-none">
+          <Stagger className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-1 scrollbar-none">
             {CATEGORIES.map(({ key, label }) => {
               const isActive = key === selectedCategory;
               return (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => setSelectedCategory(key)}
-                  aria-pressed={isActive}
-                  className={cn(
-                    'shrink-0 rounded-full px-5 py-2.5 text-base font-semibold transition-colors',
-                    isActive
-                      ? 'bg-primary text-primary-foreground shadow-[0_4px_14px_rgb(var(--primary-rgb)_/_0.35)]'
-                      : 'bg-card text-muted-foreground',
-                  )}
-                >
-                  {label}
-                </button>
+                <StaggerItem key={key} className="shrink-0">
+                  <PressableButton
+                    type="button"
+                    onClick={() => setSelectedCategory(key)}
+                    aria-pressed={isActive}
+                    className={cn(
+                      'rounded-full px-5 py-2.5 text-base font-semibold',
+                      isActive
+                        ? 'bg-primary text-primary-foreground shadow-[0_4px_14px_rgb(var(--primary-rgb)_/_0.35)]'
+                        : 'bg-card text-muted-foreground',
+                    )}
+                  >
+                    {label}
+                  </PressableButton>
+                </StaggerItem>
               );
             })}
-          </div>
+          </Stagger>
         </section>
 
         {/* Description */}
@@ -184,37 +190,47 @@ function NewOrderFormInner() {
             className="hidden"
             onChange={handleFiles}
           />
-          <button
+          <PressableButton
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={photos.length >= MAX_PHOTOS}
-            className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 py-8 text-primary transition-colors active:bg-primary/10 disabled:opacity-50"
+            className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5 py-8 text-primary disabled:opacity-50"
           >
             <Camera className="size-8" aria-hidden="true" />
             <span className="text-base font-semibold">Добавить фото</span>
-          </button>
+          </PressableButton>
 
           {photos.length > 0 && (
-            <ul className="flex flex-wrap gap-3 pt-1">
-              {photos.map((src, i) => (
-                <li key={i} className="relative size-20 overflow-hidden rounded-2xl">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={src}
-                    alt={`Фото ${i + 1}`}
-                    className="h-full w-full object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removePhoto(i)}
-                    aria-label={`Удалить фото ${i + 1}`}
-                    className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-full bg-foreground/70 text-background"
+            <Stagger className="flex flex-wrap gap-3 pt-1">
+              <AnimatePresence>
+                {photos.map((src, i) => (
+                  <motion.div
+                    key={src}
+                    layout
+                    initial={{ opacity: 0, scale: 0.7 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.7 }}
+                    transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+                    className="relative size-20 overflow-hidden rounded-2xl"
                   >
-                    <X className="size-3.5" aria-hidden="true" />
-                  </button>
-                </li>
-              ))}
-            </ul>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={src}
+                      alt={`Фото ${i + 1}`}
+                      className="h-full w-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removePhoto(i)}
+                      aria-label={`Удалить фото ${i + 1}`}
+                      className="absolute right-1 top-1 flex size-6 items-center justify-center rounded-full bg-foreground/70 text-background"
+                    >
+                      <X className="size-3.5" aria-hidden="true" />
+                    </button>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </Stagger>
           )}
         </section>
 
@@ -284,18 +300,19 @@ function NewOrderFormInner() {
           <p className="text-center text-sm font-semibold text-primary">{error}</p>
         )}
       </form>
+      </PageTransition>
       </div>{/* end scrollable */}
 
       {/* Submit — fixed so it's always visible regardless of scroll position */}
       <div className="fixed inset-x-0 bottom-0 mx-auto max-w-md border-t border-border bg-background/95 px-5 pb-8 pt-4 backdrop-blur">
-        <button
+        <PressableButton
           type="submit"
           form="new-order-form"
           disabled={submitting}
-          className="w-full rounded-xl bg-primary py-4 text-lg font-bold text-primary-foreground shadow-[0_8px_24px_rgb(var(--primary-rgb)_/_0.4)] transition-transform active:scale-[0.98] disabled:opacity-60"
+          className="w-full rounded-xl bg-primary py-4 text-lg font-bold text-primary-foreground shadow-[0_8px_24px_rgb(var(--primary-rgb)_/_0.4)] disabled:opacity-60"
         >
           {submitting ? 'Публикуем...' : 'Опубликовать заказ 🚀'}
-        </button>
+        </PressableButton>
       </div>
     </div>
   );

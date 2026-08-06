@@ -74,20 +74,21 @@ export default function OrderDetailPage() {
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-background">
       <header className="shrink-0 flex items-center gap-4 px-5 pb-2 pt-4">
-        <button
+        <PressableButton
           onClick={() => router.back()}
           aria-label="Назад"
-          className="flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)] transition-colors active:bg-secondary"
+          className="flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)]"
         >
           <ArrowLeft className="size-5" aria-hidden="true" />
-        </button>
-        <h1 className="flex-1 text-2xl font-extrabold text-foreground">
+        </PressableButton>
+        <h1 className="font-display flex-1 text-2xl font-semibold text-foreground">
           {CATEGORY_LABELS[order.category]}
         </h1>
         <NotificationBell />
       </header>
 
       <div className="flex-1 overflow-y-auto pb-10 [&::-webkit-scrollbar]:hidden">
+      <PageTransition>
       <div className="flex flex-col gap-6 px-5 pt-4">
         {/* Order info card */}
         <section className="flex flex-col gap-4 rounded-2xl bg-card p-5 shadow-[0_4px_20px_rgb(var(--foreground-rgb)_/_0.06)]">
@@ -145,12 +146,12 @@ export default function OrderDetailPage() {
                 {order.selectedMasterName} приступит к работе
               </p>
             </div>
-            <button
+            <PressableButton
               onClick={() => router.push(`/track/${order.id}`)}
               className="ml-auto shrink-0 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground"
             >
               Трекинг
-            </button>
+            </PressableButton>
           </section>
         )}
 
@@ -173,18 +174,18 @@ export default function OrderDetailPage() {
                 </p>
               </div>
             ) : (
-              <ul className="flex flex-col gap-4">
+              <Stagger className="flex flex-col gap-4">
                 {responses.map(([masterId, resp]) => (
-                  <li key={masterId}>
+                  <StaggerItem key={masterId}>
                     <MasterResponseCard
                       masterId={masterId}
                       response={resp}
                       onSelect={isOwner ? () => handleSelectMaster(masterId, resp) : undefined}
                       isSelecting={selectingMaster === masterId}
                     />
-                  </li>
+                  </StaggerItem>
                 ))}
-              </ul>
+              </Stagger>
             )}
           </section>
         )}
@@ -203,14 +204,15 @@ export default function OrderDetailPage() {
 
         {/* Respond button for master */}
         {!isOwner && (user?.role === 'master' || user?.role === 'both') && order.status === 'awaiting_responses' && (
-          <button
+          <PressableButton
             onClick={() => router.push(`/orders/${order.id}/respond`)}
-            className="w-full rounded-xl bg-primary py-4 text-lg font-bold text-primary-foreground shadow-[0_8px_24px_rgb(var(--primary-rgb)_/_0.4)] transition-transform active:scale-[0.98]"
+            className="w-full rounded-xl bg-primary py-4 text-lg font-bold text-primary-foreground shadow-[0_8px_24px_rgb(var(--primary-rgb)_/_0.4)]"
           >
             Откликнуться на заказ
-          </button>
+          </PressableButton>
         )}
       </div>
+      </PageTransition>
       </div>
 
       {toast && <Toast message={toast} onClose={() => setToast('')} />}

@@ -8,6 +8,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { Ruler } from 'lucide-react';
 import { getOrder, addResponse } from '@/lib/firestore';
 import { ImageCarousel } from '@/components/ui/ImageCarousel';
+import { PressableButton } from '@/components/motion/Pressable';
 import { Order, CATEGORY_LABELS } from '@/types';
 
 export default function RespondPage() {
@@ -121,13 +122,13 @@ export default function RespondPage() {
             <br />
             Заказчик рассматривает его.
           </p>
-          <button
+          <PressableButton
             onClick={() => router.back()}
-            className="mt-2 rounded-xl px-8 py-3 text-sm font-bold text-white transition-all active:scale-95"
+            className="mt-2 rounded-xl px-8 py-3 text-sm font-bold text-white"
             style={{ background: 'var(--primary)', boxShadow: '0 4px 14px rgb(var(--primary-rgb) / 0.35)' }}
           >
             Назад
-          </button>
+          </PressableButton>
         </div>
       </PageLayout>
     );
