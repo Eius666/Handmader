@@ -105,7 +105,7 @@ export default function RespondPage() {
         <div
           className="mx-5 mt-10 flex flex-col items-center gap-4 rounded-2xl p-8 text-center"
           style={{
-            background: '#ffffff',
+            background: 'var(--card)',
             border: '1px solid rgb(var(--foreground-rgb) / 0.08)',
             boxShadow: '0 4px 16px rgb(var(--foreground-rgb) / 0.06)',
           }}
