@@ -34,31 +34,12 @@ export default function RootPage() {
     router.replace(user.role === 'master' ? '/feed' : '/home');
   }, [user, loading, router]);
 
-  if (loading) {
-    return (
-      <div
-        style={{
-          height: '100%',
-          display: 'flex', flexDirection: 'column',
-          alignItems: 'center', justifyContent: 'center',
-          background: 'var(--bg)', gap: 16,
-        }}
-      >
-        <div style={{ fontSize: 56 }}>🧶</div>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--accent)', margin: 0 }}>
-          Handmader
-        </h1>
-        <Spinner size={28} />
-      </div>
-    );
-  }
-
   // Show role-selection onboarding when user is authenticated but hasn't picked a role
   if (user && !user.hasSelectedRole) {
     return <OnboardingRole />;
   }
 
-  // Redirect in progress — keep showing splash
+  // Loading or redirect in progress — show splash
   return (
     <div
       style={{

@@ -10,7 +10,7 @@ import { Toast } from '@/components/ui/Toast';
 import { RatingModal } from '@/components/RatingModal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { ImageCarousel } from '@/components/ui/ImageCarousel';
-import { getOrder, startWork, markReady, confirmDelivery, submitRating, deleteOrder } from '@/lib/firestore';
+import { getOrder, startWork, markReady, confirmDelivery, submitRating, deleteOrder, getMasterTelegramId } from '@/lib/firestore';
 import { useAuth } from '@/hooks/useAuth';
 import { useTelegram } from '@/hooks/useTelegram';
 import { Order, OrderStatus, CATEGORY_LABELS } from '@/types';
@@ -58,18 +58,24 @@ export default function TrackPage() {
   const { openTelegramChat } = useTelegram();
   const router = useRouter();
 
-  const [order,       setOrder]       = useState<Order | null>(null);
-  const [loading,     setLoading]     = useState(true);
-  const [acting,      setActing]      = useState(false);
-  const [toast,       setToast]       = useState('');
-  const [showRating,  setShowRating]  = useState(false);
-  const [showDelete,  setShowDelete]  = useState(false);
-  const [deleting,    setDeleting]    = useState(false);
+  const [order,            setOrder]           = useState<Order | null>(null);
+  const [loading,          setLoading]         = useState(true);
+  const [acting,           setActing]          = useState(false);
+  const [toast,            setToast]           = useState('');
+  const [showRating,       setShowRating]      = useState(false);
+  const [showDelete,       setShowDelete]      = useState(false);
+  const [deleting,         setDeleting]        = useState(false);
+  const [masterTelegramId, setMasterTelegramId] = useState<number | null>(null);
 
   useEffect(() => {
     if (!id) return;
     getOrder(id).then(setOrder).finally(() => setLoading(false));
   }, [id]);
+
+  useEffect(() => {
+    if (!order?.selectedMasterId) return;
+    getMasterTelegramId(order.selectedMasterId).then(setMasterTelegramId).catch(console.error);
+  }, [order?.selectedMasterId]);
 
   const isOwner    = order?.customerId      === user?.uid;
   const isMaster   = !isOwner && order?.selectedMasterId === user?.uid;
@@ -98,7 +104,6 @@ export default function TrackPage() {
 
   async function handleConfirm() {
     if (!order) return;
-    console.log('[handleConfirm] called, orderId:', order.id, 'status:', order.status, 'selectedMasterId:', order.selectedMasterId);
     setActing(true);
     try {
       await confirmDelivery(order.id);
@@ -270,10 +275,10 @@ export default function TrackPage() {
                 <span className="text-xs text-muted-foreground">· ваш мастер</span>
               </div>
             </div>
-            {isOwner && order.selectedMasterId && (
+            {isOwner && masterTelegramId && (
               <button
                 type="button"
-                onClick={() => openTelegramChat(order.selectedMasterId!)}
+                onClick={() => openTelegramChat(masterTelegramId)}
                 className="flex shrink-0 items-center gap-2 rounded-full bg-[#229ED9] px-4 py-2.5 text-sm font-bold text-white shadow-[0_4px_14px_rgba(34,158,217,0.35)] transition-transform active:scale-95"
               >
                 <Send className="size-4" aria-hidden="true" />

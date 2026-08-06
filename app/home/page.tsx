@@ -6,6 +6,7 @@ import { Shirt, HardHat, Wind, Baby, Sparkles, Package, Plus, ChevronRight } fro
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { PageLayout } from '@/components/layout/PageLayout';
+import { NotificationBell } from '@/components/ui/NotificationBell';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { getCustomerOrders } from '@/lib/firestore';
 import { Order, OrderCategory, CATEGORY_LABELS } from '@/types';
@@ -49,8 +50,8 @@ export default function HomePage() {
       <div className="flex flex-col gap-6 px-5 pt-5">
 
         {/* ── Greeting ── */}
-        <header className="flex items-start justify-between">
-          <div className="flex flex-col gap-0.5">
+        <header className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 flex-1 flex-col gap-0.5">
             <span className="text-[13px] font-medium text-muted-foreground">
               {getGreeting()}, {firstName}
             </span>
@@ -58,9 +59,10 @@ export default function HomePage() {
               Уютная мастерская
             </span>
           </div>
+          <NotificationBell />
           <button
             onClick={() => router.push('/profile')}
-            className="flex size-11 items-center justify-center rounded-full text-base font-bold text-white transition-all duration-200 active:scale-95"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full text-base font-bold text-white transition-all duration-200 active:scale-95"
             style={{
               background: 'linear-gradient(135deg, #C2703E, #D98B5E)',
               boxShadow: 'var(--shadow-primary)',
