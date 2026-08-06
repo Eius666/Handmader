@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { Bell } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { PageLayout } from '@/components/layout/PageLayout';
+import { Stagger, StaggerItem } from '@/components/motion/Stagger';
+import { PressableButton } from '@/components/motion/Pressable';
 import { subscribeToNotifications, markNotificationRead, markAllNotificationsRead } from '@/lib/notifications';
 import { relativeTime } from '@/lib/relativeTime';
 import { AppNotification, NotificationType } from '@/types';
@@ -87,14 +89,14 @@ export default function NotificationsPage() {
   const hasUnread = notifications.some((n) => !n.read);
 
   const headerRight = hasUnread ? (
-    <button
+    <PressableButton
       onClick={handleMarkAll}
       disabled={markingAll}
-      className="shrink-0 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-all active:scale-95 disabled:opacity-50"
+      className="shrink-0 rounded-full px-3 py-1.5 text-[12px] font-semibold disabled:opacity-50"
       style={{ background: 'rgb(var(--primary-rgb) / 0.08)', color: 'var(--primary)' }}
     >
       {markingAll ? '...' : 'Прочитать все'}
-    </button>
+    </PressableButton>
   ) : undefined;
 
   return (
@@ -115,52 +117,53 @@ export default function NotificationsPage() {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-2 px-5 pb-8 pt-4">
+        <Stagger className="flex flex-col gap-2 px-5 pb-8 pt-4">
           {notifications.map((notif) => (
-            <button
-              key={notif.id}
-              type="button"
-              onClick={() => handleTap(notif)}
-              className="flex w-full items-start gap-3 rounded-2xl p-4 text-left transition-all duration-150 active:scale-[0.985]"
-              style={{
-                background:    notif.read ? 'var(--card)' : 'rgb(var(--primary-rgb) / 0.05)',
-                boxShadow:     'var(--shadow-card)',
-                border:        notif.read ? 'none' : '1px solid rgb(var(--primary-rgb) / 0.12)',
-              }}
-            >
-              {/* Unread dot */}
-              <div className="relative flex size-10 shrink-0 items-center justify-center rounded-full text-[20px]"
-                style={{ background: 'rgb(var(--primary-rgb) / 0.08)' }}
+            <StaggerItem key={notif.id}>
+              <PressableButton
+                type="button"
+                onClick={() => handleTap(notif)}
+                className="flex w-full items-start gap-3 rounded-2xl p-4 text-left"
+                style={{
+                  background:    notif.read ? 'var(--card)' : 'rgb(var(--primary-rgb) / 0.05)',
+                  boxShadow:     'var(--shadow-card)',
+                  border:        notif.read ? 'none' : '1px solid rgb(var(--primary-rgb) / 0.12)',
+                }}
               >
-                {notifIcon(notif.type)}
-                {!notif.read && (
-                  <span
-                    className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full"
-                    style={{ background: 'var(--primary)', border: '1.5px solid var(--background)' }}
-                  />
-                )}
-              </div>
+                {/* Unread dot */}
+                <div className="relative flex size-10 shrink-0 items-center justify-center rounded-full text-[20px]"
+                  style={{ background: 'rgb(var(--primary-rgb) / 0.08)' }}
+                >
+                  {notifIcon(notif.type)}
+                  {!notif.read && (
+                    <span
+                      className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full"
+                      style={{ background: 'var(--primary)', border: '1.5px solid var(--background)' }}
+                    />
+                  )}
+                </div>
 
-              {/* Content */}
-              <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                <div className="flex items-baseline justify-between gap-2">
-                  <span
-                    className="truncate text-[13px] text-foreground"
-                    style={{ fontWeight: notif.read ? 500 : 700 }}
-                  >
-                    {notif.title}
-                  </span>
-                  <span className="shrink-0 text-[11px] text-muted-foreground">
-                    {relativeTime(notif.createdAt)}
+                {/* Content */}
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span
+                      className="truncate text-[13px] text-foreground"
+                      style={{ fontWeight: notif.read ? 500 : 700 }}
+                    >
+                      {notif.title}
+                    </span>
+                    <span className="shrink-0 text-[11px] text-muted-foreground">
+                      {relativeTime(notif.createdAt)}
+                    </span>
+                  </div>
+                  <span className="line-clamp-2 text-[12px] leading-relaxed text-muted-foreground">
+                    {notif.body}
                   </span>
                 </div>
-                <span className="line-clamp-2 text-[12px] leading-relaxed text-muted-foreground">
-                  {notif.body}
-                </span>
-              </div>
-            </button>
+              </PressableButton>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       )}
     </PageLayout>
   );

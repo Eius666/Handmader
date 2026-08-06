@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { StarRating } from '@/components/ui/StarRating';
+import { Modal } from '@/components/motion/Modal';
+import { PressableButton } from '@/components/motion/Pressable';
 
 interface Props {
   masterName?: string;
@@ -25,44 +27,31 @@ export function RatingModal({ masterName, onSend, onSkip }: Props) {
   }
 
   return (
-    <div
-      style={{
-        position: 'fixed', inset: 0, zIndex: 1000,
-        background: 'rgba(0,0,0,0.45)',
-        display: 'flex', alignItems: 'flex-end',
-        backdropFilter: 'blur(4px)',
-        WebkitBackdropFilter: 'blur(4px)',
-      }}
-      onClick={(e) => { if (e.target === e.currentTarget) onSkip(); }}
-    >
+    <Modal open onClose={onSkip} sheet>
       <div
         style={{
-          width: '100%', maxWidth: 480, margin: '0 auto',
-          background: '#ffffff',
+          width: '100%',
+          background: 'var(--card)',
           borderRadius: '24px 24px 0 0',
           padding: '12px 20px 44px',
-          boxShadow: '0 -8px 40px rgba(0,0,0,0.15)',
+          boxShadow: 'var(--shadow-float)',
         }}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle */}
         <div
           style={{
             width: 36, height: 4, borderRadius: 2,
-            background: '#DDD0C4', margin: '0 auto 22px',
+            background: 'var(--border)', margin: '0 auto 22px',
           }}
         />
 
-        <h2
-          style={{
-            textAlign: 'center', fontSize: 20, fontWeight: 800,
-            color: '#2D2D2D', margin: '0 0 4px', letterSpacing: '-0.02em',
-          }}
-        >
+        <h2 className="font-display" style={{ textAlign: 'center', fontSize: 21, fontWeight: 600, color: 'var(--foreground)', margin: '0 0 4px' }}>
           Оцените мастера
         </h2>
 
         {masterName && (
-          <p style={{ textAlign: 'center', fontSize: 14, color: '#78716c', margin: '0 0 22px' }}>
+          <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--muted-foreground)', margin: '0 0 22px' }}>
             {masterName}
           </p>
         )}
@@ -82,42 +71,42 @@ export function RatingModal({ masterName, onSend, onSkip }: Props) {
             width: '100%', padding: '12px 14px', borderRadius: 12,
             border: '1.5px solid rgb(var(--foreground-rgb) / 0.18)',
             background: 'rgb(var(--background-rgb) / 0.8)',
-            fontSize: 14, color: '#2D2D2D', resize: 'none',
+            fontSize: 14, color: 'var(--foreground)', resize: 'none',
             fontFamily: 'inherit', lineHeight: 1.5,
             boxSizing: 'border-box', marginBottom: 14,
             outline: 'none',
           }}
         />
 
-        <button
+        <PressableButton
           type="button"
           onClick={handleSend}
           disabled={!rating || sending}
           style={{
             width: '100%', padding: '14px', borderRadius: 14,
             background: rating ? 'var(--primary)' : 'rgb(var(--primary-rgb) / 0.3)',
-            color: '#ffffff', fontSize: 16, fontWeight: 700,
+            color: 'var(--primary-foreground)', fontSize: 16, fontWeight: 700,
             border: 'none', cursor: rating ? 'pointer' : 'default',
-            boxShadow: rating ? '0 6px 20px rgb(var(--primary-rgb) / 0.35)' : 'none',
-            marginBottom: 10, transition: 'all 0.2s',
+            boxShadow: rating ? 'var(--shadow-primary)' : 'none',
+            marginBottom: 10,
             letterSpacing: '-0.01em',
           }}
         >
           {sending ? 'Отправляем...' : 'Отправить оценку'}
-        </button>
+        </PressableButton>
 
-        <button
+        <PressableButton
           type="button"
           onClick={onSkip}
           style={{
             width: '100%', padding: '12px', borderRadius: 14,
-            background: 'transparent', color: '#78716c',
+            background: 'transparent', color: 'var(--muted-foreground)',
             fontSize: 14, fontWeight: 600, border: 'none', cursor: 'pointer',
           }}
         >
           Пропустить
-        </button>
+        </PressableButton>
       </div>
-    </div>
+    </Modal>
   );
 }
