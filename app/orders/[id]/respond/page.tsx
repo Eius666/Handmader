@@ -138,7 +138,7 @@ export default function RespondPage() {
       <div className="flex flex-col gap-4 px-5 pb-8 pt-4">
 
         {/* Order summary */}
-        <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)]">
+        <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)]">
           <span className="text-xs font-medium text-muted-foreground">Заказ</span>
           <span className="text-base font-bold text-foreground">{CATEGORY_LABELS[order.category]}</span>
           <p className="text-sm leading-relaxed text-foreground" style={{ margin: 0 }}>
@@ -152,7 +152,7 @@ export default function RespondPage() {
 
         {/* Reference photos */}
         {order.photos && order.photos.length > 0 && (
-          <div className="flex flex-col gap-2 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)]">
+          <div className="flex flex-col gap-2 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)]">
             <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
               Фото от клиента
             </span>
@@ -182,14 +182,14 @@ export default function RespondPage() {
         )}
 
         {success ? (
-          <div className="flex flex-col items-center gap-3 rounded-2xl bg-card p-8 text-center shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)]">
+          <div className="flex flex-col items-center gap-3 rounded-2xl bg-card p-8 text-center shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)]">
             <span className="text-5xl">✅</span>
             <span className="text-lg font-bold text-foreground">Отклик отправлен!</span>
             <span className="text-sm text-muted-foreground">Заказчик получит уведомление</span>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)]">
+            <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)]">
               <label className="text-sm font-bold text-foreground">Ваша цена (₽)</label>
               <input
                 className="input-field"
@@ -205,7 +205,7 @@ export default function RespondPage() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)]">
+            <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)]">
               <label className="text-sm font-bold text-foreground">Срок выполнения</label>
               <input
                 className="input-field"
@@ -217,7 +217,7 @@ export default function RespondPage() {
               />
             </div>
 
-            <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)]">
+            <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)]">
               <label className="text-sm font-bold text-foreground">Комментарий</label>
               <textarea
                 className="input-field"

@@ -161,7 +161,7 @@ export default function TrackPage() {
         <button
           onClick={() => router.back()}
           aria-label="Назад"
-          className="flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)] transition-colors active:bg-secondary"
+          className="flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)] transition-colors active:bg-secondary"
         >
           <ArrowLeft className="size-5" aria-hidden="true" />
         </button>
@@ -174,7 +174,7 @@ export default function TrackPage() {
             type="button"
             aria-label="Открыть чат"
             onClick={() => router.push(`/chat/${order.id}`)}
-            className="flex size-10 items-center justify-center rounded-full bg-card text-primary shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)] transition-all active:scale-95"
+            className="flex size-10 items-center justify-center rounded-full bg-card text-primary shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)] transition-all active:scale-95"
           >
             <MessageSquare className="size-4" aria-hidden="true" />
           </button>
@@ -184,7 +184,7 @@ export default function TrackPage() {
             type="button"
             aria-label="Удалить заказ"
             onClick={() => setShowDelete(true)}
-            className="flex size-10 items-center justify-center rounded-full bg-card text-muted-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)] transition-all active:scale-95 active:text-red-600"
+            className="flex size-10 items-center justify-center rounded-full bg-card text-muted-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)] transition-all active:scale-95 active:text-red-600"
           >
             <Trash2 className="size-4" aria-hidden="true" />
           </button>
@@ -195,7 +195,7 @@ export default function TrackPage() {
       <div className="flex flex-col gap-6 px-5 pt-4">
         {/* Status icon */}
         <section className="flex flex-col items-center gap-3 pt-2">
-          <div className="flex size-28 items-center justify-center rounded-full bg-primary shadow-[0_10px_30px_rgb(var(--primary-rgb) / 0.4)] text-5xl">
+          <div className="flex size-28 items-center justify-center rounded-full bg-primary shadow-[0_10px_30px_rgb(var(--primary-rgb)_/_0.4)] text-5xl">
             {statusInfo.icon}
           </div>
           <p className="text-2xl font-extrabold text-foreground">{statusInfo.text}</p>
@@ -205,7 +205,7 @@ export default function TrackPage() {
         {/* Stepper */}
         <section
           aria-label="Прогресс заказа"
-          className="rounded-2xl bg-card p-5 shadow-[0_4px_20px_rgb(var(--foreground-rgb) / 0.06)]"
+          className="rounded-2xl bg-card p-5 shadow-[0_4px_20px_rgb(var(--foreground-rgb)_/_0.06)]"
         >
           <ol className="flex items-start justify-between">
             {steps.map((step, idx) => (
@@ -252,7 +252,7 @@ export default function TrackPage() {
 
         {/* Master card */}
         {selectedResp && (
-          <section className="flex items-center gap-4 rounded-2xl bg-card p-4 shadow-[0_4px_20px_rgb(var(--foreground-rgb) / 0.06)]">
+          <section className="flex items-center gap-4 rounded-2xl bg-card p-4 shadow-[0_4px_20px_rgb(var(--foreground-rgb)_/_0.06)]">
             <div className="relative size-14 shrink-0 overflow-hidden rounded-full bg-secondary">
               {selectedResp.masterPhoto ? (
                 <Image
@@ -289,7 +289,7 @@ export default function TrackPage() {
         )}
 
         {/* Order summary */}
-        <section className="flex flex-col gap-4 rounded-2xl bg-card p-5 shadow-[0_4px_20px_rgb(var(--foreground-rgb) / 0.06)]">
+        <section className="flex flex-col gap-4 rounded-2xl bg-card p-5 shadow-[0_4px_20px_rgb(var(--foreground-rgb)_/_0.06)]">
           <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
             <Package className="size-5 text-primary" aria-hidden="true" />
             Детали заказа
@@ -324,7 +324,7 @@ export default function TrackPage() {
             type="button"
             onClick={handleStart}
             disabled={acting}
-            className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-bold text-white shadow-[0_8px_24px_rgb(var(--primary-rgb) / 0.4)] transition-transform active:scale-[0.98] disabled:opacity-60"
+            className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-bold text-white shadow-[0_8px_24px_rgb(var(--primary-rgb)_/_0.4)] transition-transform active:scale-[0.98] disabled:opacity-60"
             style={{ background: 'var(--primary)' }}
           >
             {acting ? 'Обновляем...' : '▶ Начать работу'}

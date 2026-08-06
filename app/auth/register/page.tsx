@@ -53,7 +53,7 @@ export default function RegisterPage() {
 
       {/* Form area */}
       <div className="flex flex-1 flex-col gap-3 px-5 pb-10">
-        <div className="rounded-2xl bg-card p-6 shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)]">
+        <div className="rounded-2xl bg-card p-6 shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)]">
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <input
               className="input-field"

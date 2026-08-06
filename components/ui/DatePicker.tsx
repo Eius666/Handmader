@@ -95,7 +95,7 @@ export function DatePicker({ value, onChange, placeholder = 'Выберите д
           setViewMonth(m - 1);
           setOpen(true);
         }}
-        className="flex w-full items-center gap-3 rounded-2xl bg-card py-4 pl-5 pr-4 text-left shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.05)] transition-colors active:bg-secondary"
+        className="flex w-full items-center gap-3 rounded-2xl bg-card py-4 pl-5 pr-4 text-left shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.05)] transition-colors active:bg-secondary"
       >
         <Calendar className="size-5 shrink-0 text-primary" aria-hidden="true" />
         <span className={`flex-1 text-base font-semibold ${value ? 'text-foreground' : 'text-muted-foreground'}`}>

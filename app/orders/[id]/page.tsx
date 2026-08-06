@@ -7,6 +7,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { MasterResponseCard } from '@/components/ui/MasterResponseCard';
 import { ImageCarousel } from '@/components/ui/ImageCarousel';
 import { Toast } from '@/components/ui/Toast';
+import { Stagger, StaggerItem } from '@/components/motion/Stagger';
+import { PressableButton } from '@/components/motion/Pressable';
+import { PageTransition } from '@/components/motion/PageTransition';
 import { getOrder, selectMaster } from '@/lib/firestore';
 import { Order, OrderResponse, CATEGORY_LABELS } from '@/types';
 import { NotificationBell } from '@/components/ui/NotificationBell';
@@ -74,7 +77,7 @@ export default function OrderDetailPage() {
         <button
           onClick={() => router.back()}
           aria-label="Назад"
-          className="flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)] transition-colors active:bg-secondary"
+          className="flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)] transition-colors active:bg-secondary"
         >
           <ArrowLeft className="size-5" aria-hidden="true" />
         </button>
@@ -87,7 +90,7 @@ export default function OrderDetailPage() {
       <div className="flex-1 overflow-y-auto pb-10 [&::-webkit-scrollbar]:hidden">
       <div className="flex flex-col gap-6 px-5 pt-4">
         {/* Order info card */}
-        <section className="flex flex-col gap-4 rounded-2xl bg-card p-5 shadow-[0_4px_20px_rgb(var(--foreground-rgb) / 0.06)]">
+        <section className="flex flex-col gap-4 rounded-2xl bg-card p-5 shadow-[0_4px_20px_rgb(var(--foreground-rgb)_/_0.06)]">
           <span className="inline-flex w-fit items-center rounded-full bg-primary/12 px-3 py-1 text-sm font-bold text-primary">
             {CATEGORY_LABELS[order.category]}
           </span>
@@ -160,7 +163,7 @@ export default function OrderDetailPage() {
             </h2>
 
             {responses.length === 0 ? (
-              <div className="flex flex-col items-center gap-3 rounded-2xl bg-card p-8 text-center shadow-[0_4px_20px_rgb(var(--foreground-rgb) / 0.06)]">
+              <div className="flex flex-col items-center gap-3 rounded-2xl bg-card p-8 text-center shadow-[0_4px_20px_rgb(var(--foreground-rgb)_/_0.06)]">
                 <span className="text-5xl">⏳</span>
                 <p className="text-base font-semibold text-muted-foreground">
                   Ожидаем откликов мастеров...
@@ -202,7 +205,7 @@ export default function OrderDetailPage() {
         {!isOwner && (user?.role === 'master' || user?.role === 'both') && order.status === 'awaiting_responses' && (
           <button
             onClick={() => router.push(`/orders/${order.id}/respond`)}
-            className="w-full rounded-xl bg-primary py-4 text-lg font-bold text-primary-foreground shadow-[0_8px_24px_rgb(var(--primary-rgb) / 0.4)] transition-transform active:scale-[0.98]"
+            className="w-full rounded-xl bg-primary py-4 text-lg font-bold text-primary-foreground shadow-[0_8px_24px_rgb(var(--primary-rgb)_/_0.4)] transition-transform active:scale-[0.98]"
           >
             Откликнуться на заказ
           </button>
