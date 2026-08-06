@@ -8,6 +8,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { NotificationBell } from '@/components/ui/NotificationBell';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { Stagger, StaggerItem } from '@/components/motion/Stagger';
+import { MotionCard, PressableButton } from '@/components/motion/Pressable';
 import { getCustomerOrders } from '@/lib/firestore';
 import { Order, OrderCategory, CATEGORY_LABELS } from '@/types';
 
@@ -18,15 +20,6 @@ const CATEGORY_ICONS: Record<OrderCategory, LucideIcon> = {
   toy:       Baby,
   accessory: Sparkles,
   other:     Package,
-};
-
-const CATEGORY_COLORS: Record<OrderCategory, string> = {
-  hat:       'rgba(217,108,82,0.12)',
-  sweater:   'rgba(100,140,100,0.12)',
-  scarf:     'rgba(100,120,180,0.12)',
-  toy:       'rgba(220,160,60,0.12)',
-  accessory: 'rgba(160,100,200,0.12)',
-  other:     'rgba(120,120,120,0.1)',
 };
 
 export default function HomePage() {
@@ -55,32 +48,33 @@ export default function HomePage() {
             <span className="text-[13px] font-medium text-muted-foreground">
               {getGreeting()}, {firstName}
             </span>
-            <span className="font-display text-[23px] font-bold tracking-[-0.02em] text-foreground leading-tight">
+            <span className="font-display text-[24px] font-semibold tracking-[-0.01em] text-foreground leading-tight">
               Уютная мастерская
             </span>
           </div>
           <NotificationBell />
-          <button
+          <PressableButton
             onClick={() => router.push('/profile')}
-            className="flex size-11 shrink-0 items-center justify-center rounded-full text-base font-bold text-white transition-all duration-200 active:scale-95"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full text-base font-bold"
             style={{
-              background: 'linear-gradient(135deg, #C2703E, #D98B5E)',
+              background: 'linear-gradient(135deg, var(--primary), var(--primary-soft))',
+              color: 'var(--primary-foreground)',
               boxShadow: 'var(--shadow-primary)',
               letterSpacing: '-0.01em',
             }}
             aria-label="Профиль"
           >
             {firstName[0]?.toUpperCase() ?? '?'}
-          </button>
+          </PressableButton>
         </header>
 
         {/* ── Search / New order CTA ── */}
-        <button
+        <PressableButton
           onClick={() => router.push('/orders/new')}
-          className="flex items-center gap-3 w-full text-left transition-all duration-300 active:scale-[0.98]"
+          className="flex items-center gap-3 w-full text-left"
           style={{
-            background: 'rgba(194,112,62,0.05)',
-            border: '1.5px dashed rgba(194,112,62,0.28)',
+            background: 'rgb(var(--primary-rgb) / 5%)',
+            border: '1.5px dashed rgb(var(--primary-rgb) / 30%)',
             borderRadius: 18,
             padding: '16px 20px',
           }}
@@ -88,7 +82,7 @@ export default function HomePage() {
         >
           <div
             className="flex size-9 items-center justify-center rounded-full shrink-0"
-            style={{ background: 'rgba(194,112,62,0.10)' }}
+            style={{ background: 'rgb(var(--primary-rgb) / 10%)' }}
           >
             <Plus className="size-4 text-primary" aria-hidden="true" />
           </div>
@@ -97,11 +91,11 @@ export default function HomePage() {
           </span>
           <div
             className="flex size-7 items-center justify-center rounded-full shrink-0"
-            style={{ background: 'rgba(217,108,82,0.1)' }}
+            style={{ background: 'rgb(var(--primary-rgb) / 10%)' }}
           >
             <ChevronRight className="size-3.5 text-primary" aria-hidden="true" />
           </div>
-        </button>
+        </PressableButton>
 
         {/* ── Categories ── */}
         <section className="flex flex-col gap-3">
@@ -110,34 +104,34 @@ export default function HomePage() {
               Категории
             </h2>
           </div>
-          <div className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-0.5 scrollbar-none">
-            {(Object.keys(CATEGORY_ICONS) as OrderCategory[]).map((cat, idx) => {
+          <Stagger className="-mx-5 flex gap-2.5 overflow-x-auto px-5 pb-0.5 scrollbar-none">
+            {(Object.keys(CATEGORY_ICONS) as OrderCategory[]).map((cat) => {
               const Icon = CATEGORY_ICONS[cat];
               return (
-                <button
-                  key={cat}
-                  onClick={() => router.push(`/orders/new?category=${cat}`)}
-                  className="flex shrink-0 flex-col items-center gap-2 rounded-2xl px-4 py-3.5 transition-all duration-200 active:scale-95"
-                  style={{
-                    background: '#FFFDF9',
-                    border: '1px solid rgba(194,112,62,0.08)',
-                    boxShadow: 'var(--shadow-sm)',
-                    animationDelay: `${idx * 40}ms`,
-                  }}
-                >
-                  <span
-                    className="flex size-10 items-center justify-center rounded-xl"
-                    style={{ background: CATEGORY_COLORS[cat] }}
+                <StaggerItem key={cat} className="shrink-0">
+                  <PressableButton
+                    onClick={() => router.push(`/orders/new?category=${cat}`)}
+                    className="flex flex-col items-center gap-2 rounded-2xl px-4 py-3.5"
+                    style={{
+                      background: 'var(--card)',
+                      border: '1px solid rgb(var(--primary-rgb) / 8%)',
+                      boxShadow: 'var(--shadow-sm)',
+                    }}
                   >
-                    <Icon className="size-5 text-foreground" aria-hidden="true" style={{ opacity: 0.7 }} />
-                  </span>
-                  <span className="text-[11px] font-semibold text-foreground whitespace-nowrap tracking-tight">
-                    {CATEGORY_LABELS[cat]}
-                  </span>
-                </button>
+                    <span
+                      className="flex size-10 items-center justify-center rounded-xl"
+                      style={{ background: 'rgb(var(--primary-rgb) / 10%)' }}
+                    >
+                      <Icon className="size-5" aria-hidden="true" style={{ color: 'var(--primary)', opacity: 0.85 }} />
+                    </span>
+                    <span className="text-[11px] font-semibold text-foreground whitespace-nowrap tracking-tight">
+                      {CATEGORY_LABELS[cat]}
+                    </span>
+                  </PressableButton>
+                </StaggerItem>
               );
             })}
-          </div>
+          </Stagger>
         </section>
 
         {/* ── Active orders ── */}
@@ -162,7 +156,7 @@ export default function HomePage() {
                   className="w-52 shrink-0 rounded-2xl"
                   style={{
                     height: 140,
-                    background: 'linear-gradient(90deg, rgba(180,100,70,0.06) 0%, rgba(180,100,70,0.1) 50%, rgba(180,100,70,0.06) 100%)',
+                    background: 'linear-gradient(90deg, rgb(var(--primary-rgb) / 6%) 0%, rgb(var(--primary-rgb) / 10%) 50%, rgb(var(--primary-rgb) / 6%) 100%)',
                     backgroundSize: '200% 100%',
                     animation: 'shimmer 1.4s infinite',
                   }}
@@ -172,40 +166,37 @@ export default function HomePage() {
           ) : orders.length === 0 ? (
             <div
               className="flex flex-col items-center gap-3 rounded-2xl p-8 text-center"
-              style={{
-                background: '#ffffff',
-                border: '1px solid rgba(180,100,70,0.08)',
-                boxShadow: '0 2px 12px rgba(140,80,50,0.06)',
-              }}
+              style={{ background: 'var(--card)', border: '1px solid rgb(var(--primary-rgb) / 8%)', boxShadow: 'var(--shadow-card)' }}
             >
               <span className="text-4xl">🧶</span>
               <p className="text-[13px] font-medium text-muted-foreground leading-snug">
                 Заказов пока нет
               </p>
-              <button
+              <PressableButton
                 onClick={() => router.push('/orders/new')}
-                className="rounded-full px-5 py-2 text-[13px] font-bold text-primary-foreground transition-all active:scale-95"
-                style={{ background: '#C2703E', boxShadow: 'var(--shadow-primary)' }}
+                className="rounded-full px-5 py-2 text-[13px] font-bold"
+                style={{ background: 'var(--primary)', color: 'var(--primary-foreground)', boxShadow: 'var(--shadow-primary)' }}
               >
                 Создать первый
-              </button>
+              </PressableButton>
             </div>
           ) : (
-            <div className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1 scrollbar-none">
+            <Stagger className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1 scrollbar-none">
               {orders.map((order) => (
-                <OrderCard
-                  key={order.id}
-                  order={order}
-                  onClick={() => {
-                    if (['master_selected', 'in_progress', 'ready', 'delivered'].includes(order.status)) {
-                      router.push(`/track/${order.id}`);
-                    } else {
-                      router.push(`/orders/${order.id}`);
-                    }
-                  }}
-                />
+                <StaggerItem key={order.id} className="shrink-0 snap-start">
+                  <OrderCard
+                    order={order}
+                    onClick={() => {
+                      if (['master_selected', 'in_progress', 'ready', 'delivered'].includes(order.status)) {
+                        router.push(`/track/${order.id}`);
+                      } else {
+                        router.push(`/orders/${order.id}`);
+                      }
+                    }}
+                  />
+                </StaggerItem>
               ))}
-            </div>
+            </Stagger>
           )}
         </section>
       </div>
@@ -216,11 +207,11 @@ export default function HomePage() {
 function OrderCard({ order, onClick }: { order: Order; onClick: () => void }) {
   const Icon = CATEGORY_ICONS[order.category] ?? Package;
   return (
-    <div
-      className="w-56 shrink-0 snap-start"
+    <MotionCard
+      className="w-56"
       style={{
-        background: 'rgba(180,100,70,0.04)',
-        border: '1px solid rgba(180,100,70,0.08)',
+        background: 'rgb(var(--primary-rgb) / 4%)',
+        border: '1px solid rgb(var(--primary-rgb) / 8%)',
         borderRadius: 20,
         padding: 4,
       }}
@@ -228,9 +219,9 @@ function OrderCard({ order, onClick }: { order: Order; onClick: () => void }) {
       <button
         type="button"
         onClick={onClick}
-        className="flex h-[152px] w-full flex-col justify-between text-left transition-all duration-200 active:scale-[0.98]"
+        className="flex h-[152px] w-full flex-col justify-between text-left"
         style={{
-          background: '#ffffff',
+          background: 'var(--card)',
           borderRadius: 16,
           padding: '16px',
           boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.9)',
@@ -239,9 +230,9 @@ function OrderCard({ order, onClick }: { order: Order; onClick: () => void }) {
         <div className="flex items-start justify-between">
           <span
             className="flex size-11 items-center justify-center rounded-xl"
-            style={{ background: 'rgba(217,108,82,0.1)' }}
+            style={{ background: 'rgb(var(--primary-rgb) / 10%)' }}
           >
-            <Icon className="size-5 text-primary" aria-hidden="true" />
+            <Icon className="size-5" aria-hidden="true" style={{ color: 'var(--primary)' }} />
           </span>
           <StatusBadge status={order.status} />
         </div>
@@ -254,7 +245,7 @@ function OrderCard({ order, onClick }: { order: Order; onClick: () => void }) {
           </h3>
         </div>
       </button>
-    </div>
+    </MotionCard>
   );
 }
 
