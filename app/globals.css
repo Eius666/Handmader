@@ -19,73 +19,96 @@
   --color-border:                  var(--border);
   --color-input:                   var(--input);
   --color-ring:                    var(--ring);
+  --color-gold:                    var(--gold);
+  --color-gold-foreground:         var(--gold-foreground);
   --color-status-progress:         var(--status-progress);
   --color-status-progress-foreground: var(--status-progress-foreground);
   --color-status-waiting:          var(--status-waiting);
   --color-status-waiting-foreground: var(--status-waiting-foreground);
   --color-success:                 var(--success);
   --color-success-foreground:      var(--success-foreground);
-  --radius-sm:  calc(var(--radius) * 0.6);
-  --radius-md:  calc(var(--radius) * 0.8);
+  --color-danger:                  var(--danger);
+  --color-danger-foreground:       var(--danger-foreground);
+  --radius-sm:  calc(var(--radius) * 0.55);
+  --radius-md:  calc(var(--radius) * 0.75);
   --radius-lg:  var(--radius);
-  --radius-xl:  calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-xl:  calc(var(--radius) * 1.35);
+  --radius-2xl: calc(var(--radius) * 1.7);
+  --radius-3xl: calc(var(--radius) * 2.1);
+  --radius-4xl: calc(var(--radius) * 2.5);
 }
 
 :root {
   color-scheme: light;
 
-  /* ─── Palette ─────────────────────────────────────────────────────────── */
-  /* Warm parchment — like unbleached paper, not clinical white */
-  --background:    #F8F2EA;
-  --foreground:    #2A1A0E;   /* deep warm brown, not pure black */
-  --card:          #FFFFFF;
-  --card-foreground: #2A1A0E;
-  --popover:       #FFFFFF;
-  --popover-foreground: #2A1A0E;
+  /* ─── Palette — "Мастерская": linen canvas + spiced clay ─────────────────
+     Warmer and quieter than a typical marketplace orange. One confident
+     accent (clay), one quiet support hue (thread-gold), used sparingly. */
+  --background:        #FAF6F0;
+  --foreground:         #211B16;
+  --foreground-rgb:      33 27 22;
+  --card:               #FFFFFF;
+  --card-foreground:    #211B16;
+  --popover:            #FFFFFF;
+  --popover-foreground: #211B16;
 
-  /* Terracotta — keep as-is, it's the soul of the brand */
-  --primary:       #C2703E;
-  --primary-foreground: #FFFFFF;
+  /* Spiced clay — brand accent. Deeper & less orange than a stock terracotta. */
+  --primary:            #9C4A2E;
+  --primary-rgb:         156 74 46;
+  --primary-soft:       #C97A4A;
+  --primary-soft-rgb:    201 122 74;
+  --primary-foreground: #FFF8F1;
 
-  /* Warm pale terracotta for secondary elements */
-  --secondary:     #F2E4D0;
-  --secondary-foreground: #5A3520;
+  /* Warm sand for secondary surfaces */
+  --secondary:            #EFE2D0;
+  --secondary-rgb:         239 226 208;
+  --secondary-foreground: #5C4630;
 
-  /* Muted: warm beige, not gray */
-  --muted:         #EDE3D6;
-  --muted-foreground: #9C7E68;
+  --muted:            #F1E8DC;
+  --muted-rgb:         241 232 220;
+  --muted-foreground: #8C7A64;
+  --muted-foreground-rgb: 140 122 100;
 
-  /* Borders: warm honey-beige */
-  --border:  #E2D0BC;
-  --input:   #E2D0BC;
-  --ring:    #C2703E;
+  --border:  #E6D9C7;
+  --border-rgb: 230 217 199;
+  --input:   #E6D9C7;
+  --ring:    #9C4A2E;
+
+  /* Thread-gold — quiet second accent, used only for stars/badges/signatures */
+  --gold:            #B8862F;
+  --gold-rgb:         184 134 47;
+  --gold-foreground: #FFFFFF;
 
   /* Status — intentional, not default green/red */
-  --status-progress:            #5E8A65;   /* sage green */
+  --status-progress:            #57734C;
+  --status-progress-rgb:         87 115 76;
   --status-progress-foreground: #FFFFFF;
-  --status-waiting:             #C2703E;
-  --status-waiting-foreground:  #FFFFFF;
-  --success:                    #5E8A65;
+  --status-waiting:             #9C4A2E;
+  --status-waiting-foreground:  #FFF8F1;
+  --success:                    #57734C;
+  --success-rgb:                 87 115 76;
   --success-foreground:         #FFFFFF;
+  --danger:            #AC3B36;
+  --danger-rgb:         172 59 54;
+  --danger-foreground: #FFFFFF;
 
-  --radius: 0.75rem;
+  --radius: 1rem;
 
-  /* Legacy aliases kept for compatibility */
-  --bg:          #F8F2EA;
-  --accent:      #C2703E;
-  --accent-dark: #9D5530;
-  --text:        #2A1A0E;
-  --text-muted:  #9C7E68;
-  --nav-height:  58px;   /* full-width bar is shorter than the old floating pill */
+  /* Legacy aliases kept for compatibility with any un-migrated inline styles */
+  --bg:          #FAF6F0;
+  --accent:      #9C4A2E;
+  --accent-dark: #7A3A22;
+  --text:        #211B16;
+  --text-muted:  #8C7A64;
+  --nav-height:  60px;
 
-  /* Warm shadow palette */
-  --shadow-sm:      0 1px 3px rgba(100,55,20,0.08);
-  --shadow-card:    0 2px 4px rgba(100,55,20,0.06), 0 8px 24px rgba(100,55,20,0.09);
-  --shadow-float:   0 4px 8px rgba(100,55,20,0.08), 0 16px 40px rgba(100,55,20,0.12);
-  --shadow-primary: 0 4px 16px rgba(194,112,62,0.32), 0 1px 4px rgba(194,112,62,0.20);
+  /* Warm shadow palette — tinted with ink, not pure black */
+  --shadow-xs:      0 1px 2px rgb(var(--foreground-rgb) / 6%);
+  --shadow-sm:      0 1px 3px rgb(var(--foreground-rgb) / 8%);
+  --shadow-card:    0 1px 2px rgb(var(--foreground-rgb) / 5%), 0 10px 26px rgb(var(--foreground-rgb) / 8%);
+  --shadow-float:   0 4px 10px rgb(var(--foreground-rgb) / 8%), 0 20px 44px rgb(var(--foreground-rgb) / 12%);
+  --shadow-primary: 0 6px 18px rgb(var(--primary-rgb) / 30%), 0 1px 4px rgb(var(--primary-rgb) / 22%);
+  --shadow-gold:    0 4px 14px rgb(var(--gold-rgb) / 26%);
 }
 
 @layer base {
@@ -101,23 +124,34 @@
     margin: 0;
     padding: 0;
     overflow: hidden;
-    font-family: var(--font-jakarta, 'Plus Jakarta Sans', -apple-system, sans-serif);
+    font-family: var(--font-manrope, 'Manrope', -apple-system, sans-serif);
     font-size: 15px;
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-wrap: pretty;
   }
 }
 
 /* ─── Font utilities ───────────────────────────────────────────────────── */
 
-/* Playfair Display — editorial serif for headings, brand name, prices */
+/* Spectral — warm literary serif for headings, brand name, prices */
 .font-display {
-  font-family: var(--font-playfair, Georgia, 'Times New Roman', serif);
+  font-family: var(--font-spectral, Georgia, 'Times New Roman', serif);
+  font-feature-settings: 'ss01' 1;
 }
 
+/* Caveat — a single handwritten "signature" accent. Used sparingly, never
+   for body copy: a nod to a maker signing their own work. */
+.font-hand {
+  font-family: var(--font-caveat, cursive);
+  font-weight: 600;
+}
+
+.font-tabular { font-variant-numeric: tabular-nums; }
+
 /* All Lucide icons: slightly thinner stroke for elegance */
-.lucide { stroke-width: 1.8; }
+.lucide { stroke-width: 1.75; }
 
 /* ─── App shell ─────────────────────────────────────────────────────────── */
 #app-root {
@@ -125,8 +159,10 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  /* Warm amber haze at top fades to parchment — adds depth, subtle warmth */
-  background: linear-gradient(180deg, #F0E4D0 0%, #F8F2EA 24%, #F8F2EA 100%);
+  /* Soft warm haze at top fades to linen — adds depth without a hard edge */
+  background:
+    radial-gradient(120% 60% at 15% 0%, rgb(var(--primary-rgb) / 7%) 0%, transparent 60%),
+    linear-gradient(180deg, #F3E9DA 0%, #FAF6F0 26%, #FAF6F0 100%);
 }
 
 @utility scrollbar-none {
@@ -135,10 +171,10 @@
 }
 
 @utility transition-spring {
-  transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.28s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-/* ─── Subtle noise grain overlay (adds tactile texture) ─────────────────── */
+/* ─── Subtle noise grain overlay (adds tactile, papery texture) ──────────── */
 body::after {
   content: '';
   position: fixed;
@@ -147,14 +183,26 @@ body::after {
   pointer-events: none;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
   background-size: 180px 180px;
-  opacity: 0.022;
+  opacity: 0.025;
+}
+
+/* ─── Stitch motif — a dashed "seam" used as a section divider or card
+       accent. A small, literal nod to hand-stitching. ────────────────────── */
+.stitch-divider {
+  position: relative;
+  height: 1px;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgb(var(--primary-rgb) / 35%) 0 6px,
+    transparent 6px 12px
+  );
 }
 
 /* ─── Buttons ───────────────────────────────────────────────────────────── */
 .btn-primary {
-  background: linear-gradient(160deg, #D07548 0%, #B86838 100%);
-  color: #fff;
-  border-radius: 14px;
+  background: linear-gradient(160deg, var(--primary-soft) 0%, var(--primary) 100%);
+  color: var(--primary-foreground);
+  border-radius: var(--radius-xl);
   padding: 15px 24px;
   font-size: 15px;
   font-weight: 600;
@@ -166,40 +214,40 @@ body::after {
   text-align: center;
   font-family: inherit;
   box-shadow: var(--shadow-primary);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1);
 }
 .btn-primary:active {
-  background: linear-gradient(160deg, #B86838 0%, #9D5530 100%);
+  background: linear-gradient(160deg, var(--primary) 0%, var(--accent-dark) 100%);
   transform: scale(0.97);
-  box-shadow: 0 2px 8px rgba(194,112,62,0.18);
+  box-shadow: 0 2px 8px rgb(var(--primary-rgb) / 18%);
 }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
 .btn-outline {
   background: transparent;
-  color: #C2703E;
-  border-radius: 14px;
+  color: var(--primary);
+  border-radius: var(--radius-xl);
   padding: 14px 24px;
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.01em;
   width: 100%;
-  border: 1.5px solid rgba(194,112,62,0.35);
+  border: 1.5px solid rgb(var(--primary-rgb) / 32%);
   cursor: pointer;
   display: block;
   text-align: center;
   font-family: inherit;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1);
 }
 .btn-outline:active {
-  background: rgba(194,112,62,0.06);
+  background: rgb(var(--primary-rgb) / 6%);
   transform: scale(0.97);
 }
 
 .btn-secondary {
   background: var(--secondary);
-  color: var(--text);
-  border-radius: 14px;
+  color: var(--secondary-foreground);
+  border-radius: var(--radius-xl);
   padding: 15px 24px;
   font-size: 15px;
   font-weight: 600;
@@ -209,15 +257,15 @@ body::after {
   display: block;
   text-align: center;
   font-family: inherit;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1);
 }
 .btn-secondary:active { background: var(--border); transform: scale(0.97); }
 
 /* ─── Inputs ────────────────────────────────────────────────────────────── */
 .input-field {
-  background: #FFFDF9;
+  background: #FFFEFC;
   border: 1.5px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   padding: 13px 16px;
   font-size: 15px;
   color: var(--text);
@@ -228,7 +276,7 @@ body::after {
 }
 .input-field:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(194,112,62,0.12);
+  box-shadow: 0 0 0 3px rgb(var(--primary-rgb) / 14%);
 }
 .input-field::placeholder { color: var(--text-muted); }
 textarea.input-field { resize: none; min-height: 100px; }
@@ -251,7 +299,7 @@ textarea.input-field { resize: none; min-height: 100px; }
   to   { opacity: 1; transform: translateY(0); }
 }
 .page-enter {
-  animation: page-enter 0.28s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: page-enter 0.28s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
 
 @keyframes toast-in {
@@ -259,9 +307,10 @@ textarea.input-field { resize: none; min-height: 100px; }
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
-/* Staggered list items */
+/* Staggered list items (CSS fallback path — most lists now use the
+   Stagger/StaggerItem motion primitives in components/motion) */
 .stagger-item {
-  animation: fade-up 0.25s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation: fade-up 0.25s cubic-bezier(0.32, 0.72, 0, 1) both;
 }
 
 .scrollable {
