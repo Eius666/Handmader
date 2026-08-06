@@ -42,9 +42,9 @@ export default function VerifyPage() {
         <div className="flex flex-col items-center gap-5 px-5 pt-10 text-center">
           <div
             className="flex size-20 items-center justify-center rounded-full"
-            style={{ background: '#EBF5EE' }}
+            style={{ background: 'rgb(var(--success-rgb) / 12%)' }}
           >
-            <BadgeCheck size={44} strokeWidth={1.8} style={{ color: '#3E7A4A' }} />
+            <BadgeCheck size={44} strokeWidth={1.8} style={{ color: 'var(--success)' }} />
           </div>
           <div>
             <h2 className="font-display text-[22px] font-bold text-foreground" style={{ margin: '0 0 6px' }}>
@@ -162,12 +162,12 @@ export default function VerifyPage() {
           style={{ background: 'rgba(62,122,74,0.06)', border: '1px solid rgba(62,122,74,0.14)' }}
         >
           <div className="flex items-center gap-3">
-            <BadgeCheck size={26} strokeWidth={1.8} style={{ color: '#3E7A4A', flexShrink: 0 }} />
-            <h2 className="font-display text-[17px] font-bold" style={{ color: '#2A4A30', margin: 0 }}>
+            <BadgeCheck size={26} strokeWidth={1.8} style={{ color: 'var(--success)', flexShrink: 0 }} />
+            <h2 className="font-display text-[17px] font-bold" style={{ color: 'var(--success)', margin: 0 }}>
               Стать проверенным мастером
             </h2>
           </div>
-          <p className="text-[13px] leading-relaxed" style={{ color: '#4A6A50', margin: 0 }}>
+          <p className="text-[13px] leading-relaxed" style={{ color: 'var(--success)', margin: 0 }}>
             Проверенные мастера получают бейдж «Проверен» в откликах и профиле — это увеличивает доверие клиентов.
           </p>
         </div>
@@ -178,12 +178,12 @@ export default function VerifyPage() {
             className="flex gap-3 rounded-2xl p-4"
             style={{ background: 'rgba(200,60,60,0.06)', border: '1px solid rgba(200,60,60,0.14)' }}
           >
-            <AlertCircle size={18} strokeWidth={2} style={{ color: '#B04040', flexShrink: 0, marginTop: 1 }} />
+            <AlertCircle size={18} strokeWidth={2} style={{ color: 'var(--danger)', flexShrink: 0, marginTop: 1 }} />
             <div>
-              <p className="text-[13px] font-bold" style={{ color: '#802020', margin: '0 0 3px' }}>
+              <p className="text-[13px] font-bold" style={{ color: 'var(--danger)', margin: '0 0 3px' }}>
                 Предыдущая заявка отклонена
               </p>
-              <p className="text-[13px] leading-relaxed" style={{ color: '#803030', margin: 0 }}>
+              <p className="text-[13px] leading-relaxed" style={{ color: 'rgb(var(--danger-rgb) / 15%)', margin: 0 }}>
                 {user.verificationRejectionReason}
               </p>
             </div>
@@ -208,7 +208,7 @@ export default function VerifyPage() {
           />
           <p
             className="text-[11px]"
-            style={{ color: experience.trim().length >= MIN_EXPERIENCE_LENGTH ? '#3E7A4A' : 'var(--muted-foreground)', margin: 0 }}
+            style={{ color: experience.trim().length >= MIN_EXPERIENCE_LENGTH ? 'var(--success)' : 'var(--muted-foreground)', margin: 0 }}
           >
             {experience.trim().length} / {MIN_EXPERIENCE_LENGTH} символов минимум
           </p>

@@ -94,14 +94,14 @@ export default function RegisterPage() {
                         className="flex size-4 shrink-0 items-center justify-center rounded-full text-[10px] font-black leading-none transition-all duration-200"
                         style={{
                           background: ok ? 'rgba(74,124,89,0.12)' : 'rgba(120,113,108,0.1)',
-                          color:      ok ? '#4a7c59' : 'var(--muted-foreground)',
+                          color:      ok ? 'var(--success)' : 'var(--muted-foreground)',
                         }}
                       >
                         {ok ? '✓' : '·'}
                       </span>
                       <span
                         className="text-[12px] font-medium transition-colors duration-200"
-                        style={{ color: ok ? '#4a7c59' : 'var(--muted-foreground)' }}
+                        style={{ color: ok ? 'var(--success)' : 'var(--muted-foreground)' }}
                       >
                         {label}
                       </span>

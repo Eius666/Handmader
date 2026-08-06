@@ -12,8 +12,8 @@ export function VerifiedBadge({ size = 'sm' }: Props) {
     <span
       className="inline-flex items-center gap-1 rounded-full whitespace-nowrap"
       style={{
-        background:    '#EBF5EE',
-        color:         '#3E7A4A',
+        background:    'rgb(var(--success-rgb) / 12%)',
+        color:         'var(--success)',
         fontSize:      sm ? 10 : 12,
         fontWeight:    700,
         letterSpacing: '0.02em',

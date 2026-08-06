@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Star, Clock } from 'lucide-react';
 import { OrderResponse } from '@/types';
 import { VerifiedBadge } from './VerifiedBadge';
+import { MotionCard, PressableButton } from '@/components/motion/Pressable';
 
 interface Props {
   masterId: string;
@@ -16,10 +17,11 @@ interface Props {
 export function MasterResponseCard({ masterId, response, onSelect, isSelecting, selected }: Props) {
   return (
     /* Double-bezel */
-    <div
+    <MotionCard
+      interactive={false}
       style={{
-        background: selected ? 'rgba(74,124,89,0.06)' : 'rgb(var(--foreground-rgb) / 0.04)',
-        border: selected ? '1px solid rgba(74,124,89,0.15)' : '1px solid rgb(var(--foreground-rgb) / 0.08)',
+        background: selected ? 'rgb(var(--success-rgb) / 6%)' : 'rgb(var(--foreground-rgb) / 4%)',
+        border: selected ? '1px solid rgb(var(--success-rgb) / 15%)' : '1px solid rgb(var(--foreground-rgb) / 8%)',
         borderRadius: 22,
         padding: 4,
       }}
@@ -27,7 +29,7 @@ export function MasterResponseCard({ masterId, response, onSelect, isSelecting, 
       <article
         className="flex gap-3"
         style={{
-          background: '#ffffff',
+          background: 'var(--card)',
           borderRadius: 18,
           padding: '14px',
           boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.9)',
@@ -63,7 +65,7 @@ export function MasterResponseCard({ masterId, response, onSelect, isSelecting, 
                 </h3>
                 {response.masterVerified && <VerifiedBadge size="sm" />}
               </div>
-              <span className="inline-flex items-center gap-1 text-[12px] font-semibold" style={{ color: '#c87c3e' }}>
+              <span className="inline-flex items-center gap-1 text-[12px] font-semibold" style={{ color: 'var(--gold)' }}>
                 <Star className="size-3.5 fill-current" aria-hidden="true" />
                 {response.masterRating > 0 ? response.masterRating.toFixed(1) : '—'}
               </span>
@@ -111,30 +113,31 @@ export function MasterResponseCard({ masterId, response, onSelect, isSelecting, 
           )}
 
           {onSelect && !selected && (
-            <button
+            <PressableButton
               type="button"
               onClick={onSelect}
               disabled={isSelecting}
-              className="mt-1 w-full rounded-xl py-2.5 text-[13px] font-bold text-white transition-all duration-200 active:scale-[0.98] disabled:opacity-60"
+              className="mt-1 w-full rounded-xl py-2.5 text-[13px] font-bold disabled:opacity-60"
               style={{
-                background: '#d96c52',
-                boxShadow: '0 4px 12px rgb(var(--primary-soft-rgb) / 0.3)',
+                background: 'linear-gradient(160deg, var(--primary-soft) 0%, var(--primary) 100%)',
+                color: 'var(--primary-foreground)',
+                boxShadow: 'var(--shadow-primary)',
               }}
             >
               {isSelecting ? 'Выбираем...' : 'Выбрать мастера'}
-            </button>
+            </PressableButton>
           )}
 
           {selected && (
             <div
               className="mt-1 flex items-center justify-center gap-2 rounded-xl py-2.5 text-[13px] font-bold"
-              style={{ background: 'rgba(74,124,89,0.12)', color: '#4a7c59' }}
+              style={{ background: 'rgb(var(--success-rgb) / 12%)', color: 'var(--success)' }}
             >
               ✓ Выбран
             </div>
           )}
         </div>
       </article>
-    </div>
+    </MotionCard>
   );
 }

@@ -88,7 +88,7 @@ export default function MyResponsesPage() {
             <button
               onClick={() => router.push('/feed')}
               className="mt-2 rounded-full px-6 py-2.5 text-[13px] font-bold text-white transition-all active:scale-95"
-              style={{ background: '#d96c52', boxShadow: '0 4px 14px rgb(var(--primary-soft-rgb) / 0.3)' }}
+              style={{ background: 'var(--primary)', boxShadow: '0 4px 14px rgb(var(--primary-soft-rgb) / 0.3)' }}
             >
               Открыть ленту
             </button>

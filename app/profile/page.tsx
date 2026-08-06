@@ -19,12 +19,12 @@ function RatingStars({ value }: { value: number }) {
   const pct = Math.min(100, Math.max(0, (value / 5) * 100));
   return (
     <span style={{ position: 'relative', display: 'inline-block', lineHeight: 1 }}>
-      <span style={{ color: '#E2D0BC', fontSize: 14, letterSpacing: 2 }}>★★★★★</span>
+      <span style={{ color: 'var(--border)', fontSize: 14, letterSpacing: 2 }}>★★★★★</span>
       <span
         aria-hidden="true"
         style={{
           position: 'absolute', top: 0, left: 0, overflow: 'hidden',
-          width: `${pct}%`, color: '#E09020', fontSize: 14,
+          width: `${pct}%`, color: 'var(--gold)', fontSize: 14,
           letterSpacing: 2, whiteSpace: 'nowrap',
         }}
       >
@@ -46,7 +46,7 @@ function VerificationBlock({ status }: { status: VerificationStatus }) {
       >
         <Clock size={16} strokeWidth={1.8} style={{ color: 'var(--primary)', flexShrink: 0 }} />
         <div>
-          <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#7A4020' }}>
+          <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: 'var(--accent-dark)' }}>
             Заявка на рассмотрении
           </p>
           <p style={{ margin: 0, fontSize: 11, color: 'var(--muted-foreground)' }}>Обычно 1–3 дня</p>
@@ -66,17 +66,17 @@ function VerificationBlock({ status }: { status: VerificationStatus }) {
       }}
     >
       {status === 'rejected'
-        ? <AlertCircle size={16} strokeWidth={1.8} style={{ color: '#B04040', flexShrink: 0 }} />
-        : <BadgeCheck   size={16} strokeWidth={1.8} style={{ color: '#3E7A4A', flexShrink: 0 }} />}
+        ? <AlertCircle size={16} strokeWidth={1.8} style={{ color: 'var(--danger)', flexShrink: 0 }} />
+        : <BadgeCheck   size={16} strokeWidth={1.8} style={{ color: 'var(--success)', flexShrink: 0 }} />}
       <div className="min-w-0 flex-1">
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#2A4A30' }}>
+        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: 'var(--success)' }}>
           {status === 'rejected' ? 'Заявка отклонена — подать снова' : 'Стать проверенным мастером'}
         </p>
-        <p style={{ margin: 0, fontSize: 11, color: '#4A7A50' }}>
+        <p style={{ margin: 0, fontSize: 11, color: 'var(--success)' }}>
           Бейдж повышает доверие клиентов
         </p>
       </div>
-      <ChevronRight size={14} style={{ color: '#3E7A4A', flexShrink: 0 }} aria-hidden="true" />
+      <ChevronRight size={14} style={{ color: 'var(--success)', flexShrink: 0 }} aria-hidden="true" />
     </Link>
   );
 }
@@ -376,7 +376,7 @@ export default function ProfilePage() {
                     </span>
                     {(mp?.rating ?? 0) > 0
                       ? <RatingStars value={mp!.rating} />
-                      : <span style={{ fontSize: 14, color: '#E2D0BC', letterSpacing: 2 }}>★★★★★</span>
+                      : <span style={{ fontSize: 14, color: 'var(--border)', letterSpacing: 2 }}>★★★★★</span>
                     }
                     <span style={{ fontSize: 10, color: 'var(--muted-foreground)', marginTop: 1 }}>
                       {(mp?.ratingCount ?? 0) > 0 ? `${mp!.ratingCount} оценок` : 'нет оценок'}
@@ -495,7 +495,7 @@ export default function ProfilePage() {
           style={{
             background:    'rgba(200,60,60,0.05)',
             border:        '1px solid rgba(200,60,60,0.12)',
-            color:         '#C03030',
+            color:         'var(--danger)',
           }}
         >
           <LogOut size={16} strokeWidth={1.8} aria-hidden="true" />

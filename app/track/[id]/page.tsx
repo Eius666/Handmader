@@ -325,7 +325,7 @@ export default function TrackPage() {
             onClick={handleStart}
             disabled={acting}
             className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-bold text-white shadow-[0_8px_24px_rgb(var(--primary-rgb) / 0.4)] transition-transform active:scale-[0.98] disabled:opacity-60"
-            style={{ background: '#d96c52' }}
+            style={{ background: 'var(--primary)' }}
           >
             {acting ? 'Обновляем...' : '▶ Начать работу'}
           </button>
@@ -335,7 +335,7 @@ export default function TrackPage() {
             onClick={handleReady}
             disabled={acting}
             className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-bold text-white shadow-[0_8px_24px_rgba(74,124,89,0.4)] transition-transform active:scale-[0.98] disabled:opacity-60"
-            style={{ background: '#4a7c59' }}
+            style={{ background: 'var(--success)' }}
           >
             {acting ? 'Обновляем...' : '✓ Заказ готов'}
           </button>
@@ -345,7 +345,7 @@ export default function TrackPage() {
             onClick={handleConfirm}
             disabled={acting}
             className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-bold text-white shadow-[0_8px_24px_rgba(74,124,89,0.4)] transition-transform active:scale-[0.98] disabled:opacity-60"
-            style={{ background: '#4a7c59' }}
+            style={{ background: 'var(--success)' }}
           >
             <Check className="size-5" strokeWidth={3} aria-hidden="true" />
             {acting ? 'Подтверждаем...' : 'Подтвердить получение'}

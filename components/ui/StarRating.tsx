@@ -1,5 +1,7 @@
 'use client';
 
+import { motion } from 'motion/react';
+
 interface StarRatingProps {
   value: number;
   max?: number;
@@ -11,18 +13,20 @@ export function StarRating({ value, max = 5, size = 16, onChange }: StarRatingPr
   return (
     <span className="inline-flex" style={{ gap: 2 }}>
       {Array.from({ length: max }, (_, i) => i + 1).map((star) => (
-        <span
+        <motion.span
           key={star}
           onClick={() => onChange?.(star)}
+          whileTap={onChange ? { scale: 1.3 } : undefined}
+          transition={{ type: 'spring', stiffness: 500, damping: 20 }}
           style={{
             fontSize: size,
-            color: star <= value ? '#F2CC8F' : '#DDD0C4',
+            color: star <= value ? 'var(--gold)' : 'var(--border)',
             cursor: onChange ? 'pointer' : 'default',
             lineHeight: 1,
           }}
         >
           ★
-        </span>
+        </motion.span>
       ))}
     </span>
   );

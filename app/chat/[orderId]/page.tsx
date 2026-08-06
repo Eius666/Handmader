@@ -161,7 +161,7 @@ export default function ChatPage() {
 
         <div
           className="flex size-10 shrink-0 items-center justify-center rounded-full text-[15px] font-bold text-white"
-          style={{ background: 'linear-gradient(135deg, #d96c52, #f2a47e)' }}
+          style={{ background: 'linear-gradient(135deg, var(--primary), var(--primary-soft))' }}
           aria-hidden="true"
         >
           {otherName[0]?.toUpperCase() ?? '?'}

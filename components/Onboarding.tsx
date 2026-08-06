@@ -173,7 +173,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
                       width:          28,
                       height:         28,
                       borderRadius:   '50%',
-                      background:     '#d96c52',
+                      background:     'var(--primary)',
                       color:          '#fff',
                       display:        'flex',
                       alignItems:     'center',
@@ -213,7 +213,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
                 width:        i === slide ? 24 : 8,
                 height:       8,
                 borderRadius: 4,
-                background:   i === slide ? '#d96c52' : 'rgba(120,113,108,0.22)',
+                background:   i === slide ? 'var(--primary)' : 'rgba(120,113,108,0.22)',
                 border:       'none',
                 cursor:       'pointer',
                 padding:      0,
@@ -228,7 +228,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           onClick={next}
           style={{
             width:         '100%',
-            background:    '#d96c52',
+            background:    'var(--primary)',
             color:         '#fff',
             border:        'none',
             borderRadius:  14,
