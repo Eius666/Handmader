@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Plus, X, BadgeCheck, Clock, AlertCircle, Link as LinkIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { PageLayout } from '@/components/layout/PageLayout';
+import { PressableButton } from '@/components/motion/Pressable';
 import { submitVerification } from '@/lib/firestore';
 
 const MIN_EXPERIENCE_LENGTH = 50;
@@ -54,13 +55,13 @@ export default function VerifyPage() {
               Ваш профиль проверен командой Handmader. Клиенты видят бейдж «Проверен» рядом с вашим именем.
             </p>
           </div>
-          <button
+          <PressableButton
             onClick={() => router.back()}
             className="btn-primary"
             style={{ maxWidth: 280 }}
           >
             Назад в профиль
-          </button>
+          </PressableButton>
         </div>
       </PageLayout>
     );
@@ -95,9 +96,9 @@ export default function VerifyPage() {
           >
             Обычно рассмотрение занимает 1-3 дня. Результат придёт уведомлением в Telegram.
           </div>
-          <button onClick={() => router.back()} className="btn-outline" style={{ maxWidth: 280 }}>
+          <PressableButton onClick={() => router.back()} className="btn-outline" style={{ maxWidth: 280 }}>
             Назад
-          </button>
+          </PressableButton>
         </div>
       </PageLayout>
     );
@@ -144,9 +145,9 @@ export default function VerifyPage() {
               Мы рассмотрим вашу заявку в течение 1-3 дней и пришлём уведомление.
             </p>
           </div>
-          <button onClick={() => router.back()} className="btn-primary" style={{ maxWidth: 280 }}>
+          <PressableButton onClick={() => router.back()} className="btn-primary" style={{ maxWidth: 280 }}>
             Отлично
-          </button>
+          </PressableButton>
         </div>
       </PageLayout>
     );
@@ -159,7 +160,7 @@ export default function VerifyPage() {
         {/* Hero */}
         <div
           className="flex flex-col gap-2 rounded-2xl p-5"
-          style={{ background: 'rgba(62,122,74,0.06)', border: '1px solid rgba(62,122,74,0.14)' }}
+          style={{ background: 'rgb(var(--success-rgb) / 0.06)', border: '1px solid rgb(var(--success-rgb) / 0.14)' }}
         >
           <div className="flex items-center gap-3">
             <BadgeCheck size={26} strokeWidth={1.8} style={{ color: 'var(--success)', flexShrink: 0 }} />
@@ -176,14 +177,14 @@ export default function VerifyPage() {
         {status === 'rejected' && user.verificationRejectionReason && (
           <div
             className="flex gap-3 rounded-2xl p-4"
-            style={{ background: 'rgba(200,60,60,0.06)', border: '1px solid rgba(200,60,60,0.14)' }}
+            style={{ background: 'rgb(var(--danger-rgb) / 0.06)', border: '1px solid rgb(var(--danger-rgb) / 0.14)' }}
           >
             <AlertCircle size={18} strokeWidth={2} style={{ color: 'var(--danger)', flexShrink: 0, marginTop: 1 }} />
             <div>
               <p className="text-[13px] font-bold" style={{ color: 'var(--danger)', margin: '0 0 3px' }}>
                 Предыдущая заявка отклонена
               </p>
-              <p className="text-[13px] leading-relaxed" style={{ color: 'rgb(var(--danger-rgb) / 15%)', margin: 0 }}>
+              <p className="text-[13px] leading-relaxed" style={{ color: 'var(--danger)', margin: 0 }}>
                 {user.verificationRejectionReason}
               </p>
             </div>
@@ -243,7 +244,7 @@ export default function VerifyPage() {
                   />
                 </div>
                 {socialLinks.length > 1 && (
-                  <button
+                  <PressableButton
                     type="button"
                     onClick={() => setSocialLinks((prev) => prev.filter((_, j) => j !== i))}
                     className="flex size-10 shrink-0 items-center justify-center rounded-full transition-colors active:scale-95"
@@ -251,13 +252,13 @@ export default function VerifyPage() {
                     aria-label="Удалить ссылку"
                   >
                     <X size={14} aria-hidden="true" />
-                  </button>
+                  </PressableButton>
                 )}
               </div>
             ))}
           </div>
           {socialLinks.length < 5 && (
-            <button
+            <PressableButton
               type="button"
               onClick={() => setSocialLinks((prev) => [...prev, ''])}
               className="flex items-center gap-2 self-start rounded-full px-4 py-2 text-[13px] font-semibold transition-all active:scale-95"
@@ -265,7 +266,7 @@ export default function VerifyPage() {
             >
               <Plus size={14} aria-hidden="true" />
               Добавить ссылку
-            </button>
+            </PressableButton>
           )}
         </div>
 
@@ -292,7 +293,7 @@ export default function VerifyPage() {
             ))}
           </div>
           {portfolioPhotos.length < MAX_PHOTO_URLS && (
-            <button
+            <PressableButton
               type="button"
               onClick={() => setPortfolioPhotos((prev) => [...prev, ''])}
               className="flex items-center gap-2 self-start rounded-full px-4 py-2 text-[13px] font-semibold transition-all active:scale-95"
@@ -300,7 +301,7 @@ export default function VerifyPage() {
             >
               <Plus size={14} aria-hidden="true" />
               Ещё фото
-            </button>
+            </PressableButton>
           )}
         </div>
 
@@ -308,14 +309,14 @@ export default function VerifyPage() {
           <p className="text-center text-[13px] font-semibold text-primary">{error}</p>
         )}
 
-        <button
+        <PressableButton
           type="button"
           onClick={handleSubmit}
           disabled={!canSubmit}
           className="btn-primary"
         >
           {submitting ? 'Отправляем...' : status === 'rejected' ? 'Подать заявку повторно' : 'Отправить заявку'}
-        </button>
+        </PressableButton>
 
         <p className="text-center text-[12px] text-muted-foreground leading-relaxed">
           Рассмотрение занимает 1-3 дня. Вы получите уведомление в Telegram.

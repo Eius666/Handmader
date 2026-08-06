@@ -263,7 +263,7 @@ export default function ChatPage() {
             maxHeight: 120,
             padding: '10px 12px',
             overflowY: 'auto',
-            background: 'rgba(226,208,188,0.22)',
+            background: 'rgb(var(--border-rgb) / 0.22)',
             border: '1px solid rgb(var(--primary-rgb) / 0.15)',
           }}
         />

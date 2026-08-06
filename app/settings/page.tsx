@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { RoleSelector } from '@/components/RoleSelector';
+import { Stagger, StaggerItem } from '@/components/motion/Stagger';
+import { PressableButton } from '@/components/motion/Pressable';
 import { UserRole } from '@/types';
 
 const ROLE_LABELS: Record<UserRole, string> = {
@@ -51,7 +53,7 @@ export default function SettingsPage() {
               </div>
             </div>
             {!editingRole && (
-              <button
+              <PressableButton
                 onClick={() => { setEditingRole(true); setPendingRole(user.role ?? undefined); setRoleError(''); }}
                 style={{
                   background: 'var(--bg)', border: 'none', borderRadius: 8,
@@ -60,7 +62,7 @@ export default function SettingsPage() {
                 }}
               >
                 Изменить
-              </button>
+              </PressableButton>
             )}
           </div>
 
@@ -77,33 +79,34 @@ export default function SettingsPage() {
                 </p>
               )}
               <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
-                <button
+                <PressableButton
                   onClick={() => { setEditingRole(false); setRoleError(''); }}
                   className="btn-secondary"
                   style={{ flex: 1 }}
                 >
                   Отмена
-                </button>
-                <button
+                </PressableButton>
+                <PressableButton
                   onClick={handleSaveRole}
                   disabled={savingRole || !pendingRole || pendingRole === user.role}
                   className="btn-primary"
                   style={{ flex: 2 }}
                 >
                   {savingRole ? 'Сохраняем...' : 'Сохранить'}
-                </button>
+                </PressableButton>
               </div>
             </div>
           )}
         </div>
 
         {/* ── Stubs ─────────────────────────────────────── */}
+        <Stagger className="flex flex-col gap-4">
         {[
           { emoji: '🔔', label: 'Уведомления',  sub: 'Скоро' },
           { emoji: '🌍', label: 'Язык',          sub: 'Русский' },
           { emoji: '🎨', label: 'Тема',           sub: 'Светлая' },
         ].map((item) => (
-          <div
+          <StaggerItem
             key={item.label}
             className="flex items-center gap-3.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)]"
             style={{ opacity: 0.55, cursor: 'default' }}
@@ -114,8 +117,9 @@ export default function SettingsPage() {
               <div className="mt-0.5 text-xs text-muted-foreground">{item.sub}</div>
             </div>
             <span className="text-lg text-muted-foreground">›</span>
-          </div>
+          </StaggerItem>
         ))}
+        </Stagger>
       </div>
     </PageLayout>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { CSSProperties, ReactNode } from 'react';
 import { motion, type Variants } from 'motion/react';
 
 const EASE = [0.32, 0.72, 0, 1] as const;
@@ -18,13 +18,15 @@ export const staggerItemVariants: Variants = {
 interface StaggerProps {
   children: ReactNode;
   className?: string;
+  style?: CSSProperties;
 }
 
 /** Wraps a list/grid so its direct StaggerItem children cascade in on mount. */
-export function Stagger({ children, className }: StaggerProps) {
+export function Stagger({ children, className, style }: StaggerProps) {
   return (
     <motion.div
       className={className}
+      style={style}
       variants={staggerContainerVariants}
       initial="hidden"
       animate="show"
@@ -34,9 +36,9 @@ export function Stagger({ children, className }: StaggerProps) {
   );
 }
 
-export function StaggerItem({ children, className }: StaggerProps) {
+export function StaggerItem({ children, className, style }: StaggerProps) {
   return (
-    <motion.div className={className} variants={staggerItemVariants}>
+    <motion.div className={className} style={style} variants={staggerItemVariants}>
       {children}
     </motion.div>
   );

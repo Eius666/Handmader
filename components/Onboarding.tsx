@@ -83,7 +83,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
         <button
           onClick={finish}
           style={{
-            background:   'rgba(120,113,108,0.1)',
+            background:   'rgb(var(--muted-foreground-rgb) / 0.1)',
             border:       'none',
             borderRadius: 20,
             padding:      '7px 16px',
@@ -213,7 +213,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
                 width:        i === slide ? 24 : 8,
                 height:       8,
                 borderRadius: 4,
-                background:   i === slide ? 'var(--primary)' : 'rgba(120,113,108,0.22)',
+                background:   i === slide ? 'var(--primary)' : 'rgb(var(--muted-foreground-rgb) / 0.22)',
                 border:       'none',
                 cursor:       'pointer',
                 padding:      0,

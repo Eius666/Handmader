@@ -3,12 +3,15 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Settings, MapPin, X, ChevronRight, AlertCircle, Clock, BadgeCheck, LogOut,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { VerifiedBadge } from '@/components/ui/VerifiedBadge';
+import { Stagger, StaggerItem } from '@/components/motion/Stagger';
+import { PressableButton } from '@/components/motion/Pressable';
 import { setUser } from '@/lib/firestore';
 import { OrderCategory, CATEGORY_LABELS, MasterProfile, VerificationStatus } from '@/types';
 
@@ -60,8 +63,8 @@ function VerificationBlock({ status }: { status: VerificationStatus }) {
       href="/verify"
       className="flex items-center gap-3 rounded-2xl p-3 transition-all active:scale-[0.98]"
       style={{
-        background:     'rgba(62,122,74,0.04)',
-        border:         '1.5px solid rgba(62,122,74,0.20)',
+        background:     'rgb(var(--success-rgb) / 0.04)',
+        border:         '1.5px solid rgb(var(--success-rgb) / 0.20)',
         textDecoration: 'none',
       }}
     >
@@ -250,7 +253,7 @@ export default function ProfilePage() {
                     {MASTER_CATS.map((cat) => {
                       const on = cats.includes(cat);
                       return (
-                        <button
+                        <PressableButton
                           key={cat}
                           onClick={() => setCats((prev) => on ? prev.filter((c) => c !== cat) : [...prev, cat])}
                           style={{
@@ -259,11 +262,10 @@ export default function ProfilePage() {
                             background: on ? 'rgb(var(--primary-rgb) / 0.08)' : 'transparent',
                             color:      on ? 'var(--primary)' : 'var(--muted-foreground)',
                             fontWeight: on ? 700 : 400,
-                            transition: 'all 0.15s',
                           }}
                         >
                           {CATEGORY_LABELS[cat]}
-                        </button>
+                        </PressableButton>
                       );
                     })}
                   </div>
@@ -445,26 +447,27 @@ export default function ProfilePage() {
                     <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted-foreground)' }}>
                       Портфолио
                     </p>
-                    <div className="grid grid-cols-3 gap-2">
+                    <Stagger className="grid grid-cols-3 gap-2">
                       {mp.portfolioPhotos.map((src, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => setLightboxSrc(src)}
-                          aria-label={`Открыть фото ${i + 1}`}
-                          className="aspect-square overflow-hidden rounded-xl transition-transform duration-150 active:scale-95"
-                          style={{ background: 'rgb(var(--primary-rgb) / 0.06)', display: 'block' }}
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={src}
-                            alt={`Работа ${i + 1}`}
-                            className="h-full w-full object-cover"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                          />
-                        </button>
+                        <StaggerItem key={i}>
+                          <PressableButton
+                            type="button"
+                            onClick={() => setLightboxSrc(src)}
+                            aria-label={`Открыть фото ${i + 1}`}
+                            className="aspect-square w-full overflow-hidden rounded-xl"
+                            style={{ background: 'rgb(var(--primary-rgb) / 0.06)', display: 'block' }}
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={src}
+                              alt={`Работа ${i + 1}`}
+                              className="h-full w-full object-cover"
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                            />
+                          </PressableButton>
+                        </StaggerItem>
                       ))}
-                    </div>
+                    </Stagger>
                   </>
                 )}
 
@@ -488,19 +491,19 @@ export default function ProfilePage() {
         )}
 
         {/* ══ Logout ══════════════════════════════════════════════════════════ */}
-        <button
+        <PressableButton
           onClick={handleLogout}
           disabled={loggingOut}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-[14px] font-semibold transition-all active:scale-[0.98]"
+          className="flex w-full items-center justify-center gap-2 rounded-2xl py-3.5 text-[14px] font-semibold"
           style={{
-            background:    'rgba(200,60,60,0.05)',
-            border:        '1px solid rgba(200,60,60,0.12)',
+            background:    'rgb(var(--danger-rgb) / 5%)',
+            border:        '1px solid rgb(var(--danger-rgb) / 12%)',
             color:         'var(--danger)',
           }}
         >
           <LogOut size={16} strokeWidth={1.8} aria-hidden="true" />
           {loggingOut ? 'Выходим...' : 'Выйти из аккаунта'}
-        </button>
+        </PressableButton>
 
         <p style={{ textAlign: 'center', color: 'var(--muted-foreground)', fontSize: 11, margin: 0, opacity: 0.6 }}>
           Handmader v1.0
@@ -508,39 +511,49 @@ export default function ProfilePage() {
       </div>
 
       {/* ══ Lightbox ══════════════════════════════════════════════════════════ */}
-      {lightboxSrc && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Просмотр фото"
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ background: 'rgba(15,8,4,0.88)' }}
-          onClick={() => setLightboxSrc(null)}
-        >
-          <button
-            aria-label="Закрыть"
-            className="absolute right-4 top-4 flex size-10 items-center justify-center rounded-full transition-colors active:scale-95"
-            style={{ background: 'rgba(255,255,255,0.14)', color: '#fff' }}
+      <AnimatePresence>
+        {lightboxSrc && (
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Просмотр фото"
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: 'rgba(15,8,4,0.88)' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
             onClick={() => setLightboxSrc(null)}
           >
-            <X size={18} aria-hidden="true" />
-          </button>
+            <PressableButton
+              aria-label="Закрыть"
+              className="absolute right-4 top-4 flex size-10 items-center justify-center rounded-full"
+              style={{ background: 'rgba(255,255,255,0.14)', color: '#fff' }}
+              onClick={() => setLightboxSrc(null)}
+            >
+              <X size={18} aria-hidden="true" />
+            </PressableButton>
 
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={lightboxSrc}
-            alt="Просмотр фото"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              maxWidth: '90vw',
-              maxHeight: '80vh',
-              objectFit: 'contain',
-              borderRadius: 16,
-              boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
-            }}
-          />
-        </div>
-      )}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <motion.img
+              src={lightboxSrc}
+              alt="Просмотр фото"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.94, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+              onClick={(e) => e.stopPropagation()}
+              style={{
+                maxWidth: '90vw',
+                maxHeight: '80vh',
+                objectFit: 'contain',
+                borderRadius: 16,
+                boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </PageLayout>
   );
 }

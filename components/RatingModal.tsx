@@ -81,7 +81,7 @@ export function RatingModal({ masterName, onSend, onSkip }: Props) {
           style={{
             width: '100%', padding: '12px 14px', borderRadius: 12,
             border: '1.5px solid rgb(var(--foreground-rgb) / 0.18)',
-            background: 'rgba(255,248,240,0.8)',
+            background: 'rgb(var(--background-rgb) / 0.8)',
             fontSize: 14, color: '#2D2D2D', resize: 'none',
             fontFamily: 'inherit', lineHeight: 1.5,
             boxSizing: 'border-box', marginBottom: 14,

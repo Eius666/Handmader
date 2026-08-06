@@ -93,7 +93,7 @@ export default function RegisterPage() {
                       <span
                         className="flex size-4 shrink-0 items-center justify-center rounded-full text-[10px] font-black leading-none transition-all duration-200"
                         style={{
-                          background: ok ? 'rgba(74,124,89,0.12)' : 'rgba(120,113,108,0.1)',
+                          background: ok ? 'rgb(var(--success-rgb) / 0.12)' : 'rgb(var(--muted-foreground-rgb) / 0.1)',
                           color:      ok ? 'var(--success)' : 'var(--muted-foreground)',
                         }}
                       >
