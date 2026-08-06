@@ -96,7 +96,7 @@ export function SplashScreen({ onDone }: { onDone: () => void }) {
             lineHeight:    1,
           }}
         >
-          Handmader
+          Вязубер
         </p>
         <p
           className="font-hand"

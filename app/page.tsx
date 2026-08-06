@@ -51,7 +51,7 @@ export default function RootPage() {
     >
       <div style={{ fontSize: 56 }}>🧶</div>
       <h1 className="font-display" style={{ fontSize: 28, fontWeight: 600, color: 'var(--primary)', margin: 0 }}>
-        Handmader
+        Вязубер
       </h1>
       <Spinner size={28} />
     </div>

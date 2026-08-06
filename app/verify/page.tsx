@@ -52,7 +52,7 @@ export default function VerifyPage() {
               Вы проверенный мастер
             </h2>
             <p className="text-[14px] text-muted-foreground leading-relaxed">
-              Ваш профиль проверен командой Handmader. Клиенты видят бейдж «Проверен» рядом с вашим именем.
+              Ваш профиль проверен командой Вязубер. Клиенты видят бейдж «Проверен» рядом с вашим именем.
             </p>
           </div>
           <PressableButton

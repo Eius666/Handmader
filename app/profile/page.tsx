@@ -506,7 +506,7 @@ export default function ProfilePage() {
         </PressableButton>
 
         <p style={{ textAlign: 'center', color: 'var(--muted-foreground)', fontSize: 11, margin: 0, opacity: 0.6 }}>
-          Handmader v1.0
+          Вязубер v1.0
         </p>
       </div>
 

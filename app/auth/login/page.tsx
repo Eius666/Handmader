@@ -39,7 +39,7 @@ export default function LoginPage() {
         className="flex flex-col items-center px-5 pb-8 pt-16 text-center"
       >
         <span className="text-5xl leading-none">🧶</span>
-        <h1 className="font-display mt-3 text-[32px] font-semibold text-primary">Handmader</h1>
+        <h1 className="font-display mt-3 text-[32px] font-semibold text-primary">Вязубер</h1>
         <p className="mt-1.5 text-sm text-muted-foreground">Ваш мастер рядом</p>
       </motion.div>
 

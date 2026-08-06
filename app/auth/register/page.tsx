@@ -55,7 +55,7 @@ export default function RegisterPage() {
       >
         <span className="text-5xl leading-none">🧶</span>
         <h1 className="font-display mt-3 text-[28px] font-semibold text-primary">Создать аккаунт</h1>
-        <p className="mt-1.5 text-sm text-muted-foreground">Присоединяйтесь к Handmader</p>
+        <p className="mt-1.5 text-sm text-muted-foreground">Присоединяйтесь к Вязубер</p>
       </motion.div>
 
       {/* Form area */}

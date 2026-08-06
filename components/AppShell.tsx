@@ -23,7 +23,7 @@ const AuthProvider = dynamic(
       >
         <div style={{ fontSize: 56 }}>🧶</div>
         <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 28, fontWeight: 600, color: '#9C4A2E', margin: 0 }}>
-          Handmader
+          Вязубер
         </h1>
       </div>
     ),

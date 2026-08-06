@@ -48,7 +48,7 @@ export function OnboardingRole() {
           Добро пожаловать!
         </h1>
         <p style={{ fontSize: 15, color: 'var(--muted-foreground)', margin: 0, lineHeight: 1.5 }}>
-          Выберите, как вы хотите использовать Handmader
+          Выберите, как вы хотите использовать Вязубер
         </p>
       </motion.div>
 

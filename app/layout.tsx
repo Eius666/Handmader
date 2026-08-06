@@ -29,7 +29,7 @@ const caveat = Caveat({
 });
 
 export const metadata: Metadata = {
-  title:       'Handmader',
+  title:       'Вязубер',
   description: 'Заказы на вязаные изделия',
 };
 
