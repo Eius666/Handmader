@@ -6,6 +6,8 @@ import { Clock, SlidersHorizontal } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { ImageCarousel } from '@/components/ui/ImageCarousel';
+import { Stagger, StaggerItem } from '@/components/motion/Stagger';
+import { MotionCard, PressableButton } from '@/components/motion/Pressable';
 import { getAvailableOrders } from '@/lib/firestore';
 import { Order, OrderCategory, CATEGORY_LABELS } from '@/types';
 
@@ -39,65 +41,61 @@ export default function FeedPage() {
 
   const isFilterActive = filter !== '';
   const filterButton = (
-    <button
+    <PressableButton
       type="button"
       aria-label="Фильтр"
       onClick={() => setShowFilters((v) => !v)}
-      className="flex size-11 items-center justify-center rounded-full transition-all duration-200 active:scale-95"
+      className="flex size-11 items-center justify-center rounded-full"
       style={{
-        background: showFilters || isFilterActive ? '#C2703E' : '#FFFDF9',
-        color:      showFilters || isFilterActive ? '#ffffff' : '#2A1A0E',
-        border: '1px solid rgba(194,112,62,0.12)',
-        boxShadow: showFilters || isFilterActive
-          ? 'var(--shadow-primary)'
-          : 'var(--shadow-sm)',
-        transition: 'all 0.25s cubic-bezier(0.32, 0.72, 0, 1)',
+        background: showFilters || isFilterActive ? 'var(--primary)' : 'var(--card)',
+        color:      showFilters || isFilterActive ? 'var(--primary-foreground)' : 'var(--foreground)',
+        border: '1px solid rgb(var(--primary-rgb) / 12%)',
+        boxShadow: showFilters || isFilterActive ? 'var(--shadow-primary)' : 'var(--shadow-sm)',
+        transition: 'background 0.25s cubic-bezier(0.32, 0.72, 0, 1), box-shadow 0.25s',
       }}
     >
       <SlidersHorizontal className="size-5" aria-hidden="true" />
-    </button>
+    </PressableButton>
   );
 
   return (
     <PageLayout title="Заказы" headerRight={filterButton}>
       {/* Filter chips panel */}
       {showFilters && (
-        <div className="flex gap-2 overflow-x-auto px-5 pb-3 pt-2 scrollbar-none">
+        <Stagger className="flex gap-2 overflow-x-auto px-5 pb-3 pt-2 scrollbar-none">
           {FILTERS.map(({ key, label }) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => { setFilter(key); setShowFilters(false); }}
-              className="shrink-0 rounded-full px-4 py-2 text-[13px] font-semibold transition-all duration-200 active:scale-95"
-              style={{
-                background: filter === key ? '#C2703E' : '#FFFDF9',
-                color:      filter === key ? '#ffffff' : '#9C7E68',
-                border: `1px solid ${filter === key ? 'transparent' : 'rgba(194,112,62,0.12)'}`,
-                boxShadow: filter === key
-                  ? 'var(--shadow-primary)'
-                  : 'var(--shadow-sm)',
-                transition: 'all 0.2s cubic-bezier(0.32, 0.72, 0, 1)',
-              }}
-            >
-              {label}
-            </button>
+            <StaggerItem key={key} className="shrink-0">
+              <PressableButton
+                type="button"
+                onClick={() => { setFilter(key); setShowFilters(false); }}
+                className="rounded-full px-4 py-2 text-[13px] font-semibold"
+                style={{
+                  background: filter === key ? 'var(--primary)' : 'var(--card)',
+                  color:      filter === key ? 'var(--primary-foreground)' : 'var(--muted-foreground)',
+                  border: `1px solid ${filter === key ? 'transparent' : 'rgb(var(--primary-rgb) / 12%)'}`,
+                  boxShadow: filter === key ? 'var(--shadow-primary)' : 'var(--shadow-sm)',
+                }}
+              >
+                {label}
+              </PressableButton>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       )}
 
       {/* Active filter badge */}
       {isFilterActive && !showFilters && (
         <div className="flex items-center gap-2 px-5 pb-3 pt-1">
           <span className="text-[12px] text-muted-foreground">Категория:</span>
-          <button
+          <PressableButton
             type="button"
             onClick={() => setFilter('')}
-            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold text-white active:scale-95"
-            style={{ background: '#C2703E', boxShadow: 'var(--shadow-primary)' }}
+            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-bold"
+            style={{ background: 'var(--primary)', color: 'var(--primary-foreground)', boxShadow: 'var(--shadow-primary)' }}
           >
             {FILTERS.find((f) => f.key === filter)?.label}
             <span className="text-[10px] opacity-80">✕</span>
-          </button>
+          </PressableButton>
         </div>
       )}
 
@@ -108,32 +106,36 @@ export default function FeedPage() {
               <div
                 key={i}
                 className="rounded-2xl"
-                style={{ height: 160, background: 'rgba(180,100,70,0.06)' }}
+                style={{
+                  height: 160,
+                  background: 'linear-gradient(90deg, rgb(var(--primary-rgb) / 6%) 0%, rgb(var(--primary-rgb) / 10%) 50%, rgb(var(--primary-rgb) / 6%) 100%)',
+                  backgroundSize: '200% 100%',
+                  animation: 'shimmer 1.4s infinite',
+                }}
               />
             ))}
           </div>
         ) : displayed.length === 0 ? (
           <div
             className="flex flex-col items-center gap-3 rounded-2xl py-14 text-center"
-            style={{
-              background: '#ffffff',
-              border: '1px solid rgba(180,100,70,0.08)',
-              boxShadow: '0 2px 12px rgba(140,80,50,0.06)',
-            }}
+            style={{ background: 'var(--card)', border: '1px solid rgb(var(--primary-rgb) / 8%)', boxShadow: 'var(--shadow-card)' }}
           >
             <span className="text-5xl">🧶</span>
             <p className="text-[14px] font-semibold text-muted-foreground">Заказов пока нет</p>
             <p className="text-[12px] text-muted-foreground">Попробуйте другую категорию</p>
           </div>
         ) : (
-          displayed.map((order) => (
-            <BrowseOrderCard
-              key={order.id}
-              order={order}
-              onRespond={() => router.push(`/orders/${order.id}/respond`)}
-              onDetail={() => router.push(`/orders/${order.id}`)}
-            />
-          ))
+          <Stagger className="flex flex-col gap-3">
+            {displayed.map((order) => (
+              <StaggerItem key={order.id}>
+                <BrowseOrderCard
+                  order={order}
+                  onRespond={() => router.push(`/orders/${order.id}/respond`)}
+                  onDetail={() => router.push(`/orders/${order.id}`)}
+                />
+              </StaggerItem>
+            ))}
+          </Stagger>
         )}
       </section>
     </PageLayout>
@@ -150,11 +152,12 @@ function BrowseOrderCard({
   const responseCount = Object.keys(order.responses ?? {}).length;
 
   return (
-    <article
-      className="flex flex-col gap-3 transition-all duration-200 active:scale-[0.99]"
+    <MotionCard
+      interactive={false}
+      className="flex flex-col gap-3"
       style={{
-        background:   '#FFFDF9',
-        border:       '1px solid rgba(194,112,62,0.09)',
+        background:   'var(--card)',
+        border:       '1px solid rgb(var(--primary-rgb) / 9%)',
         borderRadius: 22,
         padding:      '16px',
         boxShadow:    'var(--shadow-card)',
@@ -163,7 +166,7 @@ function BrowseOrderCard({
       <div className="flex items-start gap-3">
         <span
           className="flex size-11 shrink-0 items-center justify-center rounded-2xl text-lg"
-          style={{ background: 'linear-gradient(135deg, rgba(194,112,62,0.12) 0%, rgba(194,112,62,0.06) 100%)' }}
+          style={{ background: 'linear-gradient(135deg, rgb(var(--primary-rgb) / 12%) 0%, rgb(var(--primary-rgb) / 6%) 100%)' }}
         >
           {getCategoryEmoji(order.category)}
         </span>
@@ -178,7 +181,7 @@ function BrowseOrderCard({
         {responseCount > 0 && (
           <span
             className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold"
-            style={{ background: 'rgba(194,112,62,0.1)', color: '#C2703E' }}
+            style={{ background: 'rgb(var(--primary-rgb) / 10%)', color: 'var(--primary)' }}
           >
             {responseCount} откл.
           </span>
@@ -194,7 +197,7 @@ function BrowseOrderCard({
       )}
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-        <span className="font-display text-[16px] font-bold tracking-[-0.02em]" style={{ color: '#C2703E' }}>
+        <span className="font-display font-tabular text-[16px] font-semibold tracking-[-0.01em]" style={{ color: 'var(--primary)' }}>
           {order.budgetMin.toLocaleString('ru-RU')} — {order.budgetMax.toLocaleString('ru-RU')} ₽
         </span>
         <span className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
@@ -204,33 +207,34 @@ function BrowseOrderCard({
       </div>
 
       <div className="flex gap-2.5">
-        <button
+        <PressableButton
           type="button"
           onClick={onDetail}
-          className="flex-1 rounded-xl py-2.5 text-[13px] font-semibold transition-all duration-200 active:scale-[0.97]"
+          className="flex-1 rounded-xl py-2.5 text-[13px] font-semibold"
           style={{
             background:  'transparent',
-            border:      '1.5px solid rgba(194,112,62,0.3)',
-            color:       '#C2703E',
+            border:      '1.5px solid rgb(var(--primary-rgb) / 30%)',
+            color:       'var(--primary)',
             letterSpacing: '0.01em',
           }}
         >
           Подробнее
-        </button>
-        <button
+        </PressableButton>
+        <PressableButton
           type="button"
           onClick={onRespond}
-          className="flex-1 rounded-xl py-2.5 text-[13px] font-semibold text-white transition-all duration-200 active:scale-[0.97]"
+          className="flex-1 rounded-xl py-2.5 text-[13px] font-semibold"
           style={{
-            background: 'linear-gradient(160deg, #d97152 0%, #C2703E 100%)',
-            boxShadow:  '0 4px 14px rgba(194,112,62,0.32)',
+            background: 'linear-gradient(160deg, var(--primary-soft) 0%, var(--primary) 100%)',
+            color: 'var(--primary-foreground)',
+            boxShadow:  'var(--shadow-primary)',
             letterSpacing: '0.01em',
           }}
         >
           Откликнуться
-        </button>
+        </PressableButton>
       </div>
-    </article>
+    </MotionCard>
   );
 }
 

@@ -104,7 +104,7 @@ export function ImageCarousel({ photos, height = 'h-48', showFullscreen = true }
                 style={{
                   width:      i === idx ? 14 : 6,
                   height:     6,
-                  background: i === idx ? '#C2703E' : 'rgba(255,255,255,0.65)',
+                  background: i === idx ? 'var(--primary)' : 'rgba(255,255,255,0.65)',
                 }}
               />
             ))}
@@ -187,7 +187,7 @@ export function ImageCarousel({ photos, height = 'h-48', showFullscreen = true }
                   style={{
                     width:      i === lbIdx ? 18 : 7,
                     height:     7,
-                    background: i === lbIdx ? '#C2703E' : 'rgba(255,255,255,0.35)',
+                    background: i === lbIdx ? 'var(--primary)' : 'rgba(255,255,255,0.35)',
                   }}
                 />
               ))}
