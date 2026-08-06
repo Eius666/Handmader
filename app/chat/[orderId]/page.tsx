@@ -2,10 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { motion } from 'motion/react';
 import { ArrowLeft, Send } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTelegram } from '@/hooks/useTelegram';
 import { NotificationBell } from '@/components/ui/NotificationBell';
+import { PressableButton } from '@/components/motion/Pressable';
 import {
   getOrder,
   sendMessage,
@@ -150,14 +152,14 @@ export default function ChatPage() {
         className="shrink-0 flex items-center gap-3 px-4 pb-3 pt-5"
         style={{ borderBottom: '1px solid rgb(var(--foreground-rgb) / 0.08)' }}
       >
-        <button
+        <PressableButton
           onClick={() => router.back()}
           aria-label="Назад"
-          className="flex size-9 shrink-0 items-center justify-center rounded-full transition-all active:scale-95"
+          className="flex size-9 shrink-0 items-center justify-center rounded-full"
           style={{ background: 'rgb(var(--primary-soft-rgb) / 0.08)' }}
         >
           <ArrowLeft className="size-4 text-primary" aria-hidden="true" />
-        </button>
+        </PressableButton>
 
         <div
           className="flex size-10 shrink-0 items-center justify-center rounded-full text-[15px] font-bold text-white"
@@ -203,7 +205,13 @@ export default function ChatPage() {
               const prev   = messages[idx - 1];
               const showName = !isMe && (!prev || prev.senderId !== msg.senderId);
               return (
-                <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 10, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ type: 'spring', stiffness: 460, damping: 32 }}
+                  className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}
+                >
                   {showName && (
                     <span className="mb-0.5 px-1 text-[11px] font-semibold text-muted-foreground">
                       {msg.senderName}
@@ -212,8 +220,8 @@ export default function ChatPage() {
                   <div
                     className="max-w-[80%] px-4 py-2.5"
                     style={{
-                      background:            isMe ? 'var(--primary)' : '#f3f4f6',
-                      color:                 isMe ? '#ffffff' : '#1c1917',
+                      background:            isMe ? 'var(--primary)' : 'var(--secondary)',
+                      color:                 isMe ? 'var(--primary-foreground)' : 'var(--foreground)',
                       borderRadius:          18,
                       borderBottomRightRadius: isMe ? 4 : 18,
                       borderBottomLeftRadius:  isMe ? 18 : 4,
@@ -223,10 +231,10 @@ export default function ChatPage() {
                       {msg.text}
                     </p>
                   </div>
-                  <span className="mt-0.5 px-1 text-[10px] text-gray-400">
+                  <span className="mt-0.5 px-1 text-[10px] text-muted-foreground">
                     {formatMsgTime(msg.createdAt)}
                   </span>
-                </div>
+                </motion.div>
               );
             })}
           </div>
@@ -259,16 +267,16 @@ export default function ChatPage() {
             border: '1px solid rgb(var(--primary-rgb) / 0.15)',
           }}
         />
-        <button
+        <PressableButton
           type="button"
           onClick={() => void handleSend()}
           disabled={!text.trim() || sending}
           aria-label="Отправить"
-          className="ml-2 flex size-10 shrink-0 items-center justify-center rounded-xl text-white transition-all duration-200 active:scale-95 disabled:opacity-40"
+          className="ml-2 flex size-10 shrink-0 items-center justify-center rounded-xl text-white disabled:opacity-40"
           style={{ background: 'var(--primary)', boxShadow: '0 2px 8px rgb(var(--primary-rgb) / 0.35)' }}
         >
           <Send className="size-4" aria-hidden="true" />
-        </button>
+        </PressableButton>
       </div>
     </div>
   );

@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { SkeletonChatItem } from '@/components/ui/Skeleton';
+import { Stagger, StaggerItem } from '@/components/motion/Stagger';
+import { PressableButton, PopIn } from '@/components/motion/Pressable';
 import { getChatList } from '@/lib/firestore';
 import { Chat } from '@/types';
 
@@ -48,8 +50,8 @@ export default function ChatsPage() {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col pt-1">
-          {chats.map((chat, idx) => {
+        <Stagger className="flex flex-col pt-1">
+          {chats.map((chat) => {
             const isCustomer = user?.uid === chat.customerId;
             const otherName  = isCustomer
               ? (chat.masterName   || 'Мастер')
@@ -57,58 +59,56 @@ export default function ChatsPage() {
             const unread = isCustomer ? chat.unreadCustomer : chat.unreadMaster;
 
             return (
-              <button
-                key={chat.orderId}
-                type="button"
-                onClick={() => router.push(`/chat/${chat.orderId}`)}
-                className="stagger-item flex w-full items-center gap-3 px-5 py-3.5 text-left transition-all active:bg-secondary"
-                style={{
-                  borderBottom:   '1px solid rgb(var(--foreground-rgb) / 0.06)',
-                  animationDelay: `${idx * 50}ms`,
-                }}
-              >
-                {/* Avatar */}
-                <div
-                  className="flex size-11 shrink-0 items-center justify-center rounded-full text-[16px] font-bold text-white"
-                  style={{ background: 'linear-gradient(135deg, var(--primary), var(--primary-soft))' }}
-                  aria-hidden="true"
+              <StaggerItem key={chat.orderId}>
+                <PressableButton
+                  type="button"
+                  onClick={() => router.push(`/chat/${chat.orderId}`)}
+                  className="flex w-full items-center gap-3 px-5 py-3.5 text-left active:bg-secondary"
+                  style={{ borderBottom: '1px solid rgb(var(--foreground-rgb) / 0.06)' }}
                 >
-                  {otherName[0]?.toUpperCase() ?? '?'}
-                </div>
+                  {/* Avatar */}
+                  <div
+                    className="flex size-11 shrink-0 items-center justify-center rounded-full text-[16px] font-bold text-white"
+                    style={{ background: 'linear-gradient(135deg, var(--primary), var(--primary-soft))' }}
+                    aria-hidden="true"
+                  >
+                    {otherName[0]?.toUpperCase() ?? '?'}
+                  </div>
 
-                {/* Content */}
-                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="truncate text-[14px] font-bold text-foreground">
-                      {otherName}
-                    </span>
-                    <span className="shrink-0 text-[11px] text-muted-foreground">
-                      {formatTime(chat.lastMessageAt)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="truncate text-[13px] text-muted-foreground">
-                      {chat.lastMessage || '…'}
-                    </span>
-                    {unread > 0 && (
-                      <span
-                        className="flex shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
-                        style={{
-                          background: 'var(--primary)',
-                          minWidth: 20,
-                          height: 20,
-                          padding: '0 5px',
-                        }}
-                      >
-                        {unread > 9 ? '9+' : unread}
+                  {/* Content */}
+                  <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate text-[14px] font-bold text-foreground">
+                        {otherName}
                       </span>
-                    )}
+                      <span className="shrink-0 text-[11px] text-muted-foreground">
+                        {formatTime(chat.lastMessageAt)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate text-[13px] text-muted-foreground">
+                        {chat.lastMessage || '…'}
+                      </span>
+                      {unread > 0 && (
+                        <PopIn
+                          className="flex shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
+                          style={{
+                            background: 'var(--primary)',
+                            minWidth: 20,
+                            height: 20,
+                            padding: '0 5px',
+                          }}
+                        >
+                          {unread > 9 ? '9+' : unread}
+                        </PopIn>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </button>
+                </PressableButton>
+              </StaggerItem>
             );
           })}
-        </div>
+        </Stagger>
       )}
     </PageLayout>
   );

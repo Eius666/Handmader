@@ -9,6 +9,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { NotificationBell } from '@/components/ui/NotificationBell';
 import { StatusBadge } from '@/components/ui/StatusBadge';
+import { Stagger, StaggerItem } from '@/components/motion/Stagger';
+import { MotionCard, PressableButton } from '@/components/motion/Pressable';
+import { PageTransition } from '@/components/motion/PageTransition';
 import { Order, CATEGORY_LABELS } from '@/types';
 
 interface Entry {
@@ -66,12 +69,13 @@ export default function MyResponsesPage() {
       <header className="shrink-0 flex items-center justify-between px-5 pb-3 pt-8">
         <div>
           <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-muted-foreground mb-0.5">Мои</p>
-          <h1 className="text-[26px] font-extrabold tracking-[-0.03em] text-foreground leading-none">Отклики</h1>
+          <h1 className="font-display text-[26px] font-semibold tracking-[-0.02em] text-foreground leading-none">Отклики</h1>
         </div>
         <NotificationBell />
       </header>
 
       <div className="flex-1 overflow-y-auto pb-28 [&::-webkit-scrollbar]:hidden">
+      <PageTransition>
       <section className="flex flex-col gap-3 px-5 pt-2">
         {loading ? (
           <div className="flex justify-center py-16">
@@ -80,40 +84,42 @@ export default function MyResponsesPage() {
         ) : entries.length === 0 ? (
           <div
             className="flex flex-col items-center gap-3 rounded-2xl py-14 text-center"
-            style={{ background: '#ffffff', border: '1px solid rgb(var(--foreground-rgb) / 0.08)', boxShadow: '0 2px 12px rgb(var(--foreground-rgb) / 0.06)' }}
+            style={{ background: 'var(--card)', border: '1px solid rgb(var(--foreground-rgb) / 0.08)', boxShadow: 'var(--shadow-card)' }}
           >
             <span className="text-5xl">📩</span>
             <p className="text-[14px] font-semibold text-muted-foreground">Откликов пока нет</p>
             <p className="text-[12px] text-muted-foreground">Перейдите в ленту и откликнитесь</p>
-            <button
+            <PressableButton
               onClick={() => router.push('/feed')}
-              className="mt-2 rounded-full px-6 py-2.5 text-[13px] font-bold text-white transition-all active:scale-95"
-              style={{ background: 'var(--primary)', boxShadow: '0 4px 14px rgb(var(--primary-soft-rgb) / 0.3)' }}
+              className="mt-2 rounded-full px-6 py-2.5 text-[13px] font-bold text-white"
+              style={{ background: 'var(--primary)', boxShadow: 'var(--shadow-primary)' }}
             >
               Открыть ленту
-            </button>
+            </PressableButton>
           </div>
         ) : (
-          entries.map(({ order, myPrice, myTimeline, isSelected }) => {
+          <Stagger className="contents">
+          {entries.map(({ order, myPrice, myTimeline, isSelected }) => {
             const isRejected = order.status === 'master_selected' && !isSelected;
             return (
-              <div
-                key={order.id}
+              <StaggerItem key={order.id}>
+              <MotionCard
+                interactive={false}
                 className="flex flex-col gap-3 w-full"
                 style={{
                   borderRadius: 18,
                   padding: '14px 16px',
                   background: isSelected
-                    ? 'rgba(74,124,89,0.07)'
+                    ? 'rgb(var(--success-rgb) / 7%)'
                     : isRejected
-                    ? 'rgba(120,113,108,0.04)'
-                    : '#ffffff',
+                    ? 'rgb(var(--foreground-rgb) / 4%)'
+                    : 'var(--card)',
                   border: isSelected
-                    ? '1px solid rgba(74,124,89,0.2)'
+                    ? '1px solid rgb(var(--success-rgb) / 20%)'
                     : isRejected
-                    ? '1px solid rgba(120,113,108,0.12)'
+                    ? '1px solid rgb(var(--foreground-rgb) / 12%)'
                     : '1px solid rgb(var(--foreground-rgb) / 0.08)',
-                  boxShadow: '0 2px 10px rgb(var(--foreground-rgb) / 0.06)',
+                  boxShadow: 'var(--shadow-sm)',
                   opacity: isRejected ? 0.6 : 1,
                 }}
               >
@@ -124,7 +130,7 @@ export default function MyResponsesPage() {
                       ? router.push(`/track/${order.id}`)
                       : router.push(`/orders/${order.id}`)
                   }
-                  className="flex flex-col gap-3 w-full text-left transition-all duration-200 active:scale-[0.98]"
+                  className="flex flex-col gap-3 w-full text-left"
                 >
                   <div className="flex items-start gap-3">
                     <span className="text-2xl shrink-0">{getCategoryEmoji(order.category)}</span>
@@ -139,7 +145,7 @@ export default function MyResponsesPage() {
                     {isRejected ? (
                       <span
                         className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wide"
-                        style={{ background: 'rgba(120,113,108,0.1)', color: '#78716c' }}
+                        style={{ background: 'rgb(var(--foreground-rgb) / 10%)', color: 'var(--muted-foreground)' }}
                       >
                         Не выбран
                       </span>
@@ -158,21 +164,24 @@ export default function MyResponsesPage() {
                 </button>
 
                 {isSelected && (
-                  <button
+                  <PressableButton
                     type="button"
                     onClick={() => router.push(`/chat/${order.id}`)}
-                    className="flex items-center justify-center gap-2 rounded-xl py-2.5 text-[13px] font-bold text-white transition-all active:scale-95"
+                    className="flex items-center justify-center gap-2 rounded-xl py-2.5 text-[13px] font-bold text-white"
                     style={{ background: 'var(--primary)', boxShadow: '0 3px 10px rgb(var(--primary-rgb) / 0.3)' }}
                   >
                     <MessageSquare className="size-4" aria-hidden="true" />
                     Чат с клиентом
-                  </button>
+                  </PressableButton>
                 )}
-              </div>
+              </MotionCard>
+              </StaggerItem>
             );
-          })
+          })}
+          </Stagger>
         )}
       </section>
+      </PageTransition>
       </div>
 
       <BottomNav />
