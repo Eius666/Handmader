@@ -45,6 +45,7 @@
      Warmer and quieter than a typical marketplace orange. One confident
      accent (clay), one quiet support hue (thread-gold), used sparingly. */
   --background:        #FAF6F0;
+  --background-rgb:     250 246 240;
   --foreground:         #211B16;
   --foreground-rgb:      33 27 22;
   --card:               #FFFFFF;

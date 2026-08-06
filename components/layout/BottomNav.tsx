@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { motion } from 'motion/react';
 import { Home, ClipboardList, User, Package, MessageSquareText, MessageSquare } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -59,11 +60,10 @@ export function BottomNav() {
         left:                  0,
         right:                 0,
         zIndex:                10,
-        background:            'rgba(248, 242, 234, 0.96)',
+        background:            'rgb(var(--background-rgb) / 96%)',
         backdropFilter:        'blur(24px)',
         WebkitBackdropFilter:  'blur(24px)',
-        /* single clean top border — no bottom/side borders */
-        borderTop:             '1px solid rgba(194, 112, 62, 0.10)',
+        borderTop:             '1px solid rgb(var(--primary-rgb) / 10%)',
         display:               'flex',
         alignItems:            'stretch',
         paddingTop:            4,
@@ -71,13 +71,7 @@ export function BottomNav() {
       }}
     >
       {/* Safe-area padding wrapper */}
-      <div
-        style={{
-          display:             'flex',
-          flex:                1,
-          paddingBottom:       'env(safe-area-inset-bottom)',
-        }}
-      >
+      <div style={{ display: 'flex', flex: 1, paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {items.map((item) => {
           const Icon     = item.icon;
           const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
@@ -99,41 +93,42 @@ export function BottomNav() {
                 paddingBottom:  10,
                 textDecoration: 'none',
                 position:       'relative',
-                transition:     'opacity 0.15s ease',
               }}
             >
-              {/* Active indicator — thin pill above icon */}
-              <span
-                aria-hidden="true"
-                style={{
-                  position:     'absolute',
-                  top:          0,
-                  left:         '50%',
-                  transform:    'translateX(-50%)',
-                  width:        isActive ? 24 : 0,
-                  height:       3,
-                  borderRadius: 2,
-                  background:   '#C2703E',
-                  transition:   'width 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                }}
-              />
+              {/* Active indicator — a single pill that morphs between tabs */}
+              {isActive && (
+                <motion.span
+                  layoutId="bottom-nav-active-pill"
+                  aria-hidden="true"
+                  style={{
+                    position:     'absolute',
+                    top:          0,
+                    width:        24,
+                    height:       3,
+                    borderRadius: 2,
+                    background:   'var(--primary)',
+                  }}
+                  transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+                />
+              )}
 
-              <Icon
-                size={isActive ? 22 : 21}
-                strokeWidth={1.8}
-                style={{
-                  color:      isActive ? '#C2703E' : '#9C7E68',
-                  transition: 'color 0.2s ease, transform 0.2s ease',
-                  transform:  isActive ? 'translateY(-1px)' : 'none',
-                }}
-                aria-hidden="true"
-              />
+              <motion.div
+                animate={{ y: isActive ? -1 : 0 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 24 }}
+              >
+                <Icon
+                  size={isActive ? 22 : 21}
+                  strokeWidth={1.75}
+                  style={{ color: isActive ? 'var(--primary)' : 'var(--muted-foreground)' }}
+                  aria-hidden="true"
+                />
+              </motion.div>
 
               <span
                 style={{
                   fontSize:      10,
                   fontWeight:    isActive ? 700 : 500,
-                  color:         isActive ? '#C2703E' : '#9C7E68',
+                  color:         isActive ? 'var(--primary)' : 'var(--muted-foreground)',
                   letterSpacing: '0.02em',
                   lineHeight:    1,
                   transition:    'color 0.2s ease, font-weight 0.2s ease',

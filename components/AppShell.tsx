@@ -17,12 +17,12 @@ const AuthProvider = dynamic(
           flexDirection:  'column',
           alignItems:     'center',
           justifyContent: 'center',
-          background:     '#FFF8F0',
+          background:     '#FAF6F0',
           gap:            16,
         }}
       >
         <div style={{ fontSize: 56 }}>🧶</div>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: '#E07A5F', margin: 0 }}>
+        <h1 style={{ fontFamily: 'Georgia, serif', fontSize: 28, fontWeight: 600, color: '#9C4A2E', margin: 0 }}>
           Handmader
         </h1>
       </div>

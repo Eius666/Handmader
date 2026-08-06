@@ -6,6 +6,8 @@ import { ArrowLeft } from 'lucide-react';
 import { BottomNav } from './BottomNav';
 import { useTelegram } from '@/hooks/useTelegram';
 import { NotificationBell } from '@/components/ui/NotificationBell';
+import { PageTransition } from '@/components/motion/PageTransition';
+import { PressableButton } from '@/components/motion/Pressable';
 
 interface PageLayoutProps {
   children:     ReactNode;
@@ -44,22 +46,22 @@ export function PageLayout({
       {title && (
         <header
           className="shrink-0 flex items-center gap-3 px-5 pb-4 pt-6"
-          style={{ borderBottom: '1px solid rgba(194,112,62,0.08)' }}
+          style={{ borderBottom: '1px solid rgb(var(--primary-rgb) / 8%)' }}
         >
           {showBack && !webApp && (
-            <button
+            <PressableButton
               onClick={onBack ?? (() => router.back())}
               aria-label="Назад"
-              className="flex size-9 items-center justify-center rounded-full transition-all duration-200 active:scale-95"
-              style={{ background: 'rgba(194,112,62,0.08)', color: '#C2703E' }}
+              className="flex size-9 items-center justify-center rounded-full"
+              style={{ background: 'rgb(var(--primary-rgb) / 8%)', color: 'var(--primary)' }}
             >
               <ArrowLeft size={16} aria-hidden="true" />
-            </button>
+            </PressableButton>
           )}
 
           <h1
             className="font-display flex-1 leading-tight text-foreground"
-            style={{ margin: 0, fontSize: 26, fontWeight: 700 }}
+            style={{ margin: 0, fontSize: 26, fontWeight: 600, letterSpacing: '-0.01em' }}
           >
             {title}
           </h1>
@@ -73,9 +75,7 @@ export function PageLayout({
         className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden"
         style={{ paddingBottom: hideNav ? 0 : 'calc(var(--nav-height) + env(safe-area-inset-bottom))' }}
       >
-        <div className="page-enter min-h-full">
-          {children}
-        </div>
+        <PageTransition>{children}</PageTransition>
       </div>
 
       {!hideNav && <BottomNav />}

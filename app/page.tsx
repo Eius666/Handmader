@@ -46,11 +46,11 @@ export default function RootPage() {
         height: '100%',
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
-        background: 'var(--bg)', gap: 16,
+        background: 'var(--background)', gap: 16,
       }}
     >
       <div style={{ fontSize: 56 }}>🧶</div>
-      <h1 style={{ fontSize: 28, fontWeight: 800, color: 'var(--accent)', margin: 0 }}>
+      <h1 className="font-display" style={{ fontSize: 28, fontWeight: 600, color: 'var(--primary)', margin: 0 }}>
         Handmader
       </h1>
       <Spinner size={28} />
