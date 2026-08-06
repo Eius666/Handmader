@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'motion/react';
 import { ArrowLeft, Check, Send, Wallet, Package, Trash2, MessageSquare } from 'lucide-react';
 import { NotificationBell } from '@/components/ui/NotificationBell';
 import { StarRating } from '@/components/ui/StarRating';
@@ -10,6 +11,8 @@ import { Toast } from '@/components/ui/Toast';
 import { RatingModal } from '@/components/RatingModal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { ImageCarousel } from '@/components/ui/ImageCarousel';
+import { PageTransition } from '@/components/motion/PageTransition';
+import { PressableButton, MotionCard } from '@/components/motion/Pressable';
 import { getOrder, startWork, markReady, confirmDelivery, submitRating, deleteOrder, getMasterTelegramId } from '@/lib/firestore';
 import { useAuth } from '@/hooks/useAuth';
 import { useTelegram } from '@/hooks/useTelegram';
@@ -158,47 +161,54 @@ export default function TrackPage() {
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-background">
       <header className="shrink-0 flex items-center gap-4 px-5 pb-2 pt-4">
-        <button
+        <PressableButton
           onClick={() => router.back()}
           aria-label="Назад"
-          className="flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)] transition-colors active:bg-secondary"
+          className="flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)]"
         >
           <ArrowLeft className="size-5" aria-hidden="true" />
-        </button>
-        <h1 className="flex-1 text-2xl font-extrabold text-foreground">
+        </PressableButton>
+        <h1 className="font-display flex-1 text-2xl font-semibold text-foreground">
           {CATEGORY_LABELS[order.category]}
         </h1>
         <NotificationBell />
         {order.selectedMasterId && (isOwner || isMaster) && (
-          <button
+          <PressableButton
             type="button"
             aria-label="Открыть чат"
             onClick={() => router.push(`/chat/${order.id}`)}
-            className="flex size-10 items-center justify-center rounded-full bg-card text-primary shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)] transition-all active:scale-95"
+            className="flex size-10 items-center justify-center rounded-full bg-card text-primary shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)]"
           >
             <MessageSquare className="size-4" aria-hidden="true" />
-          </button>
+          </PressableButton>
         )}
         {canDelete && (
-          <button
+          <PressableButton
             type="button"
             aria-label="Удалить заказ"
             onClick={() => setShowDelete(true)}
-            className="flex size-10 items-center justify-center rounded-full bg-card text-muted-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)] transition-all active:scale-95 active:text-red-600"
+            className="flex size-10 items-center justify-center rounded-full bg-card text-muted-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)] active:text-red-600"
           >
             <Trash2 className="size-4" aria-hidden="true" />
-          </button>
+          </PressableButton>
         )}
       </header>
 
       <div className="flex-1 overflow-y-auto pb-28 [&::-webkit-scrollbar]:hidden">
+      <PageTransition>
       <div className="flex flex-col gap-6 px-5 pt-4">
         {/* Status icon */}
         <section className="flex flex-col items-center gap-3 pt-2">
-          <div className="flex size-28 items-center justify-center rounded-full bg-primary shadow-[0_10px_30px_rgb(var(--primary-rgb)_/_0.4)] text-5xl">
+          <motion.div
+            key={order.status}
+            initial={{ scale: 0.6, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 20 }}
+            className="flex size-28 items-center justify-center rounded-full bg-primary shadow-[0_10px_30px_rgb(var(--primary-rgb)_/_0.4)] text-5xl"
+          >
             {statusInfo.icon}
-          </div>
-          <p className="text-2xl font-extrabold text-foreground">{statusInfo.text}</p>
+          </motion.div>
+          <p className="font-display text-2xl font-semibold text-foreground">{statusInfo.text}</p>
           <p className="px-4 text-center text-sm text-muted-foreground">{statusInfo.sub}</p>
         </section>
 
@@ -213,12 +223,21 @@ export default function TrackPage() {
                 {idx < steps.length - 1 && (
                   <span
                     aria-hidden="true"
-                    className={`absolute left-1/2 top-4 h-1 w-full -translate-y-1/2 rounded-full ${
-                      step.state === 'done' ? 'bg-status-progress' : 'bg-secondary'
-                    }`}
-                  />
+                    className="absolute left-1/2 top-4 h-1 w-full -translate-y-1/2 rounded-full overflow-hidden bg-secondary"
+                  >
+                    <motion.span
+                      className="block h-full rounded-full bg-status-progress"
+                      initial={false}
+                      animate={{ width: step.state === 'done' ? '100%' : '0%' }}
+                      transition={{ duration: 0.5, ease: [0.32, 0.72, 0, 1] }}
+                    />
+                  </span>
                 )}
-                <span
+                <motion.span
+                  layout
+                  initial={false}
+                  animate={{ scale: step.state === 'active' ? 1.1 : 1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 22 }}
                   className={`relative z-10 flex size-8 items-center justify-center rounded-full ${
                     step.state === 'done'
                       ? 'bg-status-progress text-status-progress-foreground'
@@ -237,7 +256,7 @@ export default function TrackPage() {
                   ) : (
                     <span className="size-2.5 rounded-full bg-muted-foreground/40" aria-hidden="true" />
                   )}
-                </span>
+                </motion.span>
                 <span
                   className={`text-center text-xs font-semibold leading-tight ${
                     step.state === 'todo' ? 'text-muted-foreground' : 'text-foreground'
@@ -252,7 +271,10 @@ export default function TrackPage() {
 
         {/* Master card */}
         {selectedResp && (
-          <section className="flex items-center gap-4 rounded-2xl bg-card p-4 shadow-[0_4px_20px_rgb(var(--foreground-rgb)_/_0.06)]">
+          <MotionCard
+            interactive={false}
+            className="flex items-center gap-4 rounded-2xl bg-card p-4 shadow-[0_4px_20px_rgb(var(--foreground-rgb)_/_0.06)]"
+          >
             <div className="relative size-14 shrink-0 overflow-hidden rounded-full bg-secondary">
               {selectedResp.masterPhoto ? (
                 <Image
@@ -276,16 +298,16 @@ export default function TrackPage() {
               </div>
             </div>
             {isOwner && masterTelegramId && (
-              <button
+              <PressableButton
                 type="button"
                 onClick={() => openTelegramChat(masterTelegramId)}
-                className="flex shrink-0 items-center gap-2 rounded-full bg-[#229ED9] px-4 py-2.5 text-sm font-bold text-white shadow-[0_4px_14px_rgba(34,158,217,0.35)] transition-transform active:scale-95"
+                className="flex shrink-0 items-center gap-2 rounded-full bg-[#229ED9] px-4 py-2.5 text-sm font-bold text-white shadow-[0_4px_14px_rgba(34,158,217,0.35)]"
               >
                 <Send className="size-4" aria-hidden="true" />
                 Связаться
-              </button>
+              </PressableButton>
             )}
-          </section>
+          </MotionCard>
         )}
 
         {/* Order summary */}
@@ -305,60 +327,78 @@ export default function TrackPage() {
               <Wallet className="size-4 text-primary" aria-hidden="true" />
               {order.selectedPrice ? 'Цена мастера' : 'Бюджет'}
             </span>
-            <span className="text-lg font-extrabold text-primary">
+            <span className="font-display text-lg font-semibold text-primary">
               {(order.selectedPrice ?? order.budgetMax).toLocaleString('ru-RU')} ₽
             </span>
           </div>
         </section>
       </div>
+      </PageTransition>
       </div>
 
-      {/* Fixed bottom CTA */}
+      {/* Fixed bottom CTA — crossfades as order status changes */}
       <div className="fixed inset-x-0 bottom-0 mx-auto max-w-md border-t border-border bg-background/95 px-5 py-4 backdrop-blur">
-        {order.status === 'completed' ? (
-          <div className="flex w-full items-center justify-center gap-2 rounded-xl bg-status-progress/15 py-4 text-lg font-bold text-status-progress">
-            ✓ Заказ завершён
-          </div>
-        ) : isMaster && order.status === 'master_selected' ? (
-          <button
-            type="button"
-            onClick={handleStart}
-            disabled={acting}
-            className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-bold text-white shadow-[0_8px_24px_rgb(var(--primary-rgb)_/_0.4)] transition-transform active:scale-[0.98] disabled:opacity-60"
-            style={{ background: 'var(--primary)' }}
-          >
-            {acting ? 'Обновляем...' : '▶ Начать работу'}
-          </button>
-        ) : isMaster && order.status === 'in_progress' ? (
-          <button
-            type="button"
-            onClick={handleReady}
-            disabled={acting}
-            className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-bold text-white shadow-[0_8px_24px_rgba(74,124,89,0.4)] transition-transform active:scale-[0.98] disabled:opacity-60"
-            style={{ background: 'var(--success)' }}
-          >
-            {acting ? 'Обновляем...' : '✓ Заказ готов'}
-          </button>
-        ) : canConfirm ? (
-          <button
-            type="button"
-            onClick={handleConfirm}
-            disabled={acting}
-            className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-bold text-white shadow-[0_8px_24px_rgba(74,124,89,0.4)] transition-transform active:scale-[0.98] disabled:opacity-60"
-            style={{ background: 'var(--success)' }}
-          >
-            <Check className="size-5" strokeWidth={3} aria-hidden="true" />
-            {acting ? 'Подтверждаем...' : 'Подтвердить получение'}
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="w-full rounded-xl bg-secondary py-4 text-base font-bold text-foreground"
-          >
-            ← Назад к заказам
-          </button>
-        )}
+        <AnimatePresence mode="wait">
+          {order.status === 'completed' ? (
+            <motion.div
+              key="completed"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2 }}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-status-progress/15 py-4 text-lg font-bold text-status-progress"
+            >
+              ✓ Заказ завершён
+            </motion.div>
+          ) : isMaster && order.status === 'master_selected' ? (
+            <motion.div key="start" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
+              <PressableButton
+                type="button"
+                onClick={handleStart}
+                disabled={acting}
+                className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-bold text-white shadow-[0_8px_24px_rgb(var(--primary-rgb)_/_0.4)] disabled:opacity-60"
+                style={{ background: 'var(--primary)' }}
+              >
+                {acting ? 'Обновляем...' : '▶ Начать работу'}
+              </PressableButton>
+            </motion.div>
+          ) : isMaster && order.status === 'in_progress' ? (
+            <motion.div key="ready" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
+              <PressableButton
+                type="button"
+                onClick={handleReady}
+                disabled={acting}
+                className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-bold text-white shadow-[0_8px_24px_rgb(var(--success-rgb)_/_0.4)] disabled:opacity-60"
+                style={{ background: 'var(--success)' }}
+              >
+                {acting ? 'Обновляем...' : '✓ Заказ готов'}
+              </PressableButton>
+            </motion.div>
+          ) : canConfirm ? (
+            <motion.div key="confirm" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
+              <PressableButton
+                type="button"
+                onClick={handleConfirm}
+                disabled={acting}
+                className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-bold text-white shadow-[0_8px_24px_rgb(var(--success-rgb)_/_0.4)] disabled:opacity-60"
+                style={{ background: 'var(--success)' }}
+              >
+                <Check className="size-5" strokeWidth={3} aria-hidden="true" />
+                {acting ? 'Подтверждаем...' : 'Подтвердить получение'}
+              </PressableButton>
+            </motion.div>
+          ) : (
+            <motion.div key="back" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
+              <PressableButton
+                type="button"
+                onClick={() => router.back()}
+                className="w-full rounded-xl bg-secondary py-4 text-base font-bold text-foreground"
+              >
+                ← Назад к заказам
+              </PressableButton>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {toast && <Toast message={toast} onClose={() => setToast('')} />}
@@ -371,18 +411,15 @@ export default function TrackPage() {
         />
       )}
 
-      {showDelete && (
-        <ConfirmModal
-          title="Удалить заказ?"
-          body={order.description.length > 80
-            ? order.description.slice(0, 80) + '…'
-            : order.description}
-          confirmLabel="Удалить"
-          loading={deleting}
-          onConfirm={handleDelete}
-          onCancel={() => setShowDelete(false)}
-        />
-      )}
+      <ConfirmModal
+        open={showDelete}
+        title="Удалить заказ?"
+        body={order.description.length > 80 ? order.description.slice(0, 80) + '…' : order.description}
+        confirmLabel="Удалить"
+        loading={deleting}
+        onConfirm={handleDelete}
+        onCancel={() => setShowDelete(false)}
+      />
     </div>
   );
 }
