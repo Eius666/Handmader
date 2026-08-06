@@ -40,7 +40,7 @@ export default function SettingsPage() {
       <div className="flex flex-col gap-4 px-5 pb-24 pt-4">
 
         {/* ── Role section ──────────────────────────────── */}
-        <div className="rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
+        <div className="rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)]">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text)' }}>
@@ -72,7 +72,7 @@ export default function SettingsPage() {
                 disabled={savingRole}
               />
               {roleError && (
-                <p style={{ color: '#E07A5F', fontSize: 13, margin: '10px 0 0', textAlign: 'center' }}>
+                <p style={{ color: 'var(--primary)', fontSize: 13, margin: '10px 0 0', textAlign: 'center' }}>
                   {roleError}
                 </p>
               )}
@@ -105,7 +105,7 @@ export default function SettingsPage() {
         ].map((item) => (
           <div
             key={item.label}
-            className="flex items-center gap-3.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgba(45,45,45,0.06)]"
+            className="flex items-center gap-3.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)]"
             style={{ opacity: 0.55, cursor: 'default' }}
           >
             <span className="text-[22px] leading-none">{item.emoji}</span>

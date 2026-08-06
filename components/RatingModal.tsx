@@ -80,7 +80,7 @@ export function RatingModal({ masterName, onSend, onSkip }: Props) {
           rows={3}
           style={{
             width: '100%', padding: '12px 14px', borderRadius: 12,
-            border: '1.5px solid rgba(180,100,70,0.18)',
+            border: '1.5px solid rgb(var(--foreground-rgb) / 0.18)',
             background: 'rgba(255,248,240,0.8)',
             fontSize: 14, color: '#2D2D2D', resize: 'none',
             fontFamily: 'inherit', lineHeight: 1.5,
@@ -95,10 +95,10 @@ export function RatingModal({ masterName, onSend, onSkip }: Props) {
           disabled={!rating || sending}
           style={{
             width: '100%', padding: '14px', borderRadius: 14,
-            background: rating ? '#C2703E' : 'rgba(194,112,62,0.3)',
+            background: rating ? 'var(--primary)' : 'rgb(var(--primary-rgb) / 0.3)',
             color: '#ffffff', fontSize: 16, fontWeight: 700,
             border: 'none', cursor: rating ? 'pointer' : 'default',
-            boxShadow: rating ? '0 6px 20px rgba(194,112,62,0.35)' : 'none',
+            boxShadow: rating ? '0 6px 20px rgb(var(--primary-rgb) / 0.35)' : 'none',
             marginBottom: 10, transition: 'all 0.2s',
             letterSpacing: '-0.01em',
           }}

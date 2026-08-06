@@ -31,12 +31,12 @@ function NotificationSkeleton() {
         <div
           key={i}
           className="flex gap-3 rounded-2xl p-4"
-          style={{ background: '#FFFDF9', boxShadow: 'var(--shadow-card)', opacity: 1 - i * 0.15 }}
+          style={{ background: 'var(--card)', boxShadow: 'var(--shadow-card)', opacity: 1 - i * 0.15 }}
         >
-          <div className="size-10 shrink-0 rounded-full" style={{ background: 'rgba(194,112,62,0.10)' }} />
+          <div className="size-10 shrink-0 rounded-full" style={{ background: 'rgb(var(--primary-rgb) / 0.10)' }} />
           <div className="flex flex-1 flex-col gap-2">
-            <div className="h-3.5 w-2/3 rounded-full" style={{ background: 'rgba(194,112,62,0.10)' }} />
-            <div className="h-3 w-full rounded-full" style={{ background: 'rgba(194,112,62,0.06)' }} />
+            <div className="h-3.5 w-2/3 rounded-full" style={{ background: 'rgb(var(--primary-rgb) / 0.10)' }} />
+            <div className="h-3 w-full rounded-full" style={{ background: 'rgb(var(--primary-rgb) / 0.06)' }} />
           </div>
         </div>
       ))}
@@ -91,7 +91,7 @@ export default function NotificationsPage() {
       onClick={handleMarkAll}
       disabled={markingAll}
       className="shrink-0 rounded-full px-3 py-1.5 text-[12px] font-semibold transition-all active:scale-95 disabled:opacity-50"
-      style={{ background: 'rgba(194,112,62,0.08)', color: '#C2703E' }}
+      style={{ background: 'rgb(var(--primary-rgb) / 0.08)', color: 'var(--primary)' }}
     >
       {markingAll ? '...' : 'Прочитать все'}
     </button>
@@ -105,9 +105,9 @@ export default function NotificationsPage() {
         <div className="flex flex-col items-center gap-4 px-5 pt-20 text-center">
           <div
             className="flex size-20 items-center justify-center rounded-full"
-            style={{ background: 'rgba(194,112,62,0.08)' }}
+            style={{ background: 'rgb(var(--primary-rgb) / 0.08)' }}
           >
-            <Bell size={36} strokeWidth={1.4} style={{ color: '#C2703E' }} />
+            <Bell size={36} strokeWidth={1.4} style={{ color: 'var(--primary)' }} />
           </div>
           <p className="text-[15px] font-semibold text-foreground">Пока нет уведомлений</p>
           <p className="text-[13px] leading-relaxed text-muted-foreground">
@@ -123,20 +123,20 @@ export default function NotificationsPage() {
               onClick={() => handleTap(notif)}
               className="flex w-full items-start gap-3 rounded-2xl p-4 text-left transition-all duration-150 active:scale-[0.985]"
               style={{
-                background:    notif.read ? '#FFFDF9' : 'rgba(194,112,62,0.05)',
+                background:    notif.read ? 'var(--card)' : 'rgb(var(--primary-rgb) / 0.05)',
                 boxShadow:     'var(--shadow-card)',
-                border:        notif.read ? 'none' : '1px solid rgba(194,112,62,0.12)',
+                border:        notif.read ? 'none' : '1px solid rgb(var(--primary-rgb) / 0.12)',
               }}
             >
               {/* Unread dot */}
               <div className="relative flex size-10 shrink-0 items-center justify-center rounded-full text-[20px]"
-                style={{ background: 'rgba(194,112,62,0.08)' }}
+                style={{ background: 'rgb(var(--primary-rgb) / 0.08)' }}
               >
                 {notifIcon(notif.type)}
                 {!notif.read && (
                   <span
                     className="absolute -right-0.5 -top-0.5 size-2.5 rounded-full"
-                    style={{ background: '#C2703E', border: '1.5px solid #F8F2EA' }}
+                    style={{ background: 'var(--primary)', border: '1.5px solid var(--background)' }}
                   />
                 )}
               </div>

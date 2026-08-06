@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'motion/react';
 import { Shirt, HardHat, Wind, Baby, Sparkles, Package, Plus, Star, Trash2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,8 +11,9 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { RatingModal } from '@/components/RatingModal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { Toast } from '@/components/ui/Toast';
+import { Stagger, StaggerItem } from '@/components/motion/Stagger';
+import { MotionCard, PressableButton } from '@/components/motion/Pressable';
 import { getCustomerOrders, submitRating, deleteOrder } from '@/lib/firestore';
-import { ImageCarousel } from '@/components/ui/ImageCarousel';
 import { Order, OrderCategory, CATEGORY_LABELS, OrderStatus } from '@/types';
 
 const CATEGORY_ICONS: Record<OrderCategory, LucideIcon> = {
@@ -89,14 +91,14 @@ export default function OrdersPage() {
   }
 
   const newOrderBtn = (
-    <button
+    <PressableButton
       onClick={() => router.push('/orders/new')}
       aria-label="Новый заказ"
-      className="flex size-11 items-center justify-center rounded-full text-white transition-all duration-200 active:scale-95"
-      style={{ background: '#C2703E', boxShadow: 'var(--shadow-primary)' }}
+      className="flex size-11 items-center justify-center rounded-full"
+      style={{ background: 'var(--primary)', color: 'var(--primary-foreground)', boxShadow: 'var(--shadow-primary)' }}
     >
       <Plus className="size-5" aria-hidden="true" />
-    </button>
+    </PressableButton>
   );
 
   return (
@@ -104,21 +106,24 @@ export default function OrdersPage() {
       {/* Tabs */}
       <div
         className="mx-5 mt-4 mb-4 flex w-fit gap-1 rounded-xl p-1 min-w-[240px] max-w-sm"
-        style={{ background: 'rgba(180,100,70,0.07)' }}
+        style={{ background: 'rgb(var(--primary-rgb) / 7%)' }}
       >
         {(['active', 'completed'] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className="flex-1 rounded-lg py-2.5 text-[13px] font-bold transition-all duration-250"
-            style={{
-              background: tab === t ? '#ffffff' : 'transparent',
-              color: tab === t ? '#C2703E' : '#9C7E68',
-              boxShadow: tab === t ? '0 2px 8px rgba(140,80,50,0.1)' : 'none',
-              transition: 'all 0.25s cubic-bezier(0.32, 0.72, 0, 1)',
-            }}
+            className="relative flex-1 rounded-lg py-2.5 text-[13px] font-bold"
+            style={{ color: tab === t ? 'var(--primary)' : 'var(--muted-foreground)' }}
           >
-            {t === 'active' ? 'Активные' : 'Завершённые'}
+            {tab === t && (
+              <motion.span
+                layoutId="orders-tab-pill"
+                className="absolute inset-0 rounded-lg"
+                style={{ background: 'var(--card)', boxShadow: 'var(--shadow-sm)' }}
+                transition={{ type: 'spring', stiffness: 420, damping: 34 }}
+              />
+            )}
+            <span className="relative">{t === 'active' ? 'Активные' : 'Завершённые'}</span>
           </button>
         ))}
       </div>
@@ -130,56 +135,51 @@ export default function OrdersPage() {
               <div
                 key={i}
                 className="rounded-2xl"
-                style={{
-                  height: 90,
-                  background: 'rgba(180,100,70,0.06)',
-                  border: '1px solid rgba(180,100,70,0.06)',
-                }}
+                style={{ height: 90, background: 'rgb(var(--primary-rgb) / 6%)', border: '1px solid rgb(var(--primary-rgb) / 6%)' }}
               />
             ))}
           </>
         ) : filtered.length === 0 ? (
           <div
             className="col-span-full flex flex-col items-center gap-3 rounded-2xl py-14 text-center"
-            style={{
-              background: '#ffffff',
-              border: '1px solid rgba(180,100,70,0.08)',
-              boxShadow: '0 2px 12px rgba(140,80,50,0.06)',
-            }}
+            style={{ background: 'var(--card)', border: '1px solid rgb(var(--primary-rgb) / 8%)', boxShadow: 'var(--shadow-card)' }}
           >
             <span className="text-5xl">📋</span>
             <p className="text-[14px] font-semibold text-muted-foreground">
               {tab === 'active' ? 'Активных заказов нет' : 'Завершённых заказов нет'}
             </p>
             {tab === 'active' && (
-              <button
+              <PressableButton
                 onClick={() => router.push('/orders/new')}
-                className="mt-1 rounded-full px-6 py-2.5 text-[13px] font-bold text-white transition-all active:scale-95"
-                style={{ background: '#C2703E', boxShadow: 'var(--shadow-primary)' }}
+                className="mt-1 rounded-full px-6 py-2.5 text-[13px] font-bold"
+                style={{ background: 'var(--primary)', color: 'var(--primary-foreground)', boxShadow: 'var(--shadow-primary)' }}
               >
                 Создать заказ
-              </button>
+              </PressableButton>
             )}
           </div>
         ) : (
-          filtered.map((order) => {
-            const canRate =
-              order.status === 'completed' &&
-              !!order.selectedMasterId &&
-              !order.ratings?.some((r) => r.userId === user?.uid);
-            const canDelete = DELETABLE.includes(order.status);
-            return (
-              <OrderListCard
-                key={order.id}
-                order={order}
-                onClick={() => handleCardClick(order)}
-                canRate={canRate}
-                onRate={() => setRatingOrder(order)}
-                canDelete={canDelete}
-                onDelete={() => setDeleteTarget(order)}
-              />
-            );
-          })
+          <Stagger className="contents">
+            {filtered.map((order) => {
+              const canRate =
+                order.status === 'completed' &&
+                !!order.selectedMasterId &&
+                !order.ratings?.some((r) => r.userId === user?.uid);
+              const canDelete = DELETABLE.includes(order.status);
+              return (
+                <StaggerItem key={order.id}>
+                  <OrderListCard
+                    order={order}
+                    onClick={() => handleCardClick(order)}
+                    canRate={canRate}
+                    onRate={() => setRatingOrder(order)}
+                    canDelete={canDelete}
+                    onDelete={() => setDeleteTarget(order)}
+                  />
+                </StaggerItem>
+              );
+            })}
+          </Stagger>
         )}
       </section>
 
@@ -191,18 +191,17 @@ export default function OrdersPage() {
         />
       )}
 
-      {deleteTarget && (
-        <ConfirmModal
-          title="Удалить заказ?"
-          body={deleteTarget.description.length > 80
-            ? deleteTarget.description.slice(0, 80) + '…'
-            : deleteTarget.description}
-          confirmLabel="Удалить"
-          loading={deleting}
-          onConfirm={handleDeleteConfirm}
-          onCancel={() => setDeleteTarget(null)}
-        />
-      )}
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Удалить заказ?"
+        body={deleteTarget
+          ? (deleteTarget.description.length > 80 ? deleteTarget.description.slice(0, 80) + '…' : deleteTarget.description)
+          : ''}
+        confirmLabel="Удалить"
+        loading={deleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
+      />
 
       {toast && <Toast message={toast} onClose={() => setToast('')} />}
     </PageLayout>
@@ -223,15 +222,15 @@ function OrderListCard({
   const responseCount = Object.keys(order.responses ?? {}).length;
 
   return (
-    <div
+    <MotionCard
       role="button"
       tabIndex={0}
       onClick={onClick}
       onKeyDown={(e) => e.key === 'Enter' && onClick()}
-      className="flex flex-col gap-3 w-full text-left cursor-pointer transition-all duration-200 active:scale-[0.99]"
+      className="flex flex-col gap-3 w-full text-left cursor-pointer"
       style={{
-        background:   '#FFFDF9',
-        border:       '1px solid rgba(194,112,62,0.09)',
+        background:   'var(--card)',
+        border:       '1px solid rgb(var(--primary-rgb) / 9%)',
         borderRadius: 20,
         padding:      '14px 16px',
         boxShadow:    'var(--shadow-card)',
@@ -241,9 +240,9 @@ function OrderListCard({
       <div className="flex items-start gap-3">
         <span
           className="flex size-10 shrink-0 items-center justify-center rounded-xl"
-          style={{ background: 'rgba(217,108,82,0.1)' }}
+          style={{ background: 'rgb(var(--primary-rgb) / 10%)' }}
         >
-          <Icon className="size-5 text-primary" aria-hidden="true" />
+          <Icon className="size-5" aria-hidden="true" style={{ color: 'var(--primary)' }} />
         </span>
         <div className="flex-1 min-w-0">
           <span className="text-[10px] font-bold uppercase tracking-[0.07em] text-muted-foreground">
@@ -261,9 +260,9 @@ function OrderListCard({
               aria-label="Удалить заказ"
               onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
               className="flex size-7 items-center justify-center rounded-full transition-colors active:scale-95"
-              style={{ color: '#a8a29e' }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#c0392b')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = '#a8a29e')}
+              style={{ color: 'var(--muted-foreground)' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--danger)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--muted-foreground)')}
             >
               <Trash2 className="size-3.5" aria-hidden="true" />
             </button>
@@ -274,9 +273,9 @@ function OrderListCard({
       {/* Bottom meta row */}
       <div
         className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-3 text-[11px] font-medium text-muted-foreground"
-        style={{ borderTop: '1px solid rgba(180,100,70,0.08)' }}
+        style={{ borderTop: '1px solid rgb(var(--primary-rgb) / 8%)' }}
       >
-        <span className="font-display font-bold" style={{ color: '#C2703E' }}>
+        <span className="font-display font-tabular font-semibold" style={{ color: 'var(--primary)' }}>
           {order.budgetMin.toLocaleString('ru-RU')} — {order.budgetMax.toLocaleString('ru-RU')} ₽
         </span>
         <span>до {formatDate(order.deadline)}</span>
@@ -284,18 +283,18 @@ function OrderListCard({
           <span className="font-bold text-primary ml-auto">{responseCount} откл.</span>
         )}
         {canRate && (
-          <button
+          <PressableButton
             type="button"
             onClick={(e) => { e.stopPropagation(); onRate?.(); }}
-            className="ml-auto inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold text-white transition-all active:scale-95"
-            style={{ background: '#C2703E', boxShadow: '0 2px 8px rgba(194,112,62,0.35)' }}
+            className="ml-auto inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold"
+            style={{ background: 'var(--gold)', color: 'var(--gold-foreground)', boxShadow: 'var(--shadow-gold)' }}
           >
             <Star className="size-3 fill-current" aria-hidden="true" />
             Оценить
-          </button>
+          </PressableButton>
         )}
       </div>
-    </div>
+    </MotionCard>
   );
 }
 

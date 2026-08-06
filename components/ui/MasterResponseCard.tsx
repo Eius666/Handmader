@@ -18,8 +18,8 @@ export function MasterResponseCard({ masterId, response, onSelect, isSelecting, 
     /* Double-bezel */
     <div
       style={{
-        background: selected ? 'rgba(74,124,89,0.06)' : 'rgba(180,100,70,0.04)',
-        border: selected ? '1px solid rgba(74,124,89,0.15)' : '1px solid rgba(180,100,70,0.08)',
+        background: selected ? 'rgba(74,124,89,0.06)' : 'rgb(var(--foreground-rgb) / 0.04)',
+        border: selected ? '1px solid rgba(74,124,89,0.15)' : '1px solid rgb(var(--foreground-rgb) / 0.08)',
         borderRadius: 22,
         padding: 4,
       }}
@@ -36,7 +36,7 @@ export function MasterResponseCard({ masterId, response, onSelect, isSelecting, 
         {/* Avatar */}
         <div
           className="relative size-[50px] shrink-0 overflow-hidden rounded-full"
-          style={{ background: 'rgba(217,108,82,0.1)', border: '2px solid rgba(217,108,82,0.12)' }}
+          style={{ background: 'rgb(var(--primary-soft-rgb) / 0.1)', border: '2px solid rgb(var(--primary-soft-rgb) / 0.12)' }}
         >
           {response.masterPhoto ? (
             <Image
@@ -95,7 +95,7 @@ export function MasterResponseCard({ masterId, response, onSelect, isSelecting, 
                 <div
                   key={idx}
                   className="relative size-14 overflow-hidden rounded-xl"
-                  style={{ background: 'rgba(217,108,82,0.08)' }}
+                  style={{ background: 'rgb(var(--primary-soft-rgb) / 0.08)' }}
                 >
                   <Image
                     src={src}
@@ -118,7 +118,7 @@ export function MasterResponseCard({ masterId, response, onSelect, isSelecting, 
               className="mt-1 w-full rounded-xl py-2.5 text-[13px] font-bold text-white transition-all duration-200 active:scale-[0.98] disabled:opacity-60"
               style={{
                 background: '#d96c52',
-                boxShadow: '0 4px 12px rgba(217,108,82,0.3)',
+                boxShadow: '0 4px 12px rgb(var(--primary-soft-rgb) / 0.3)',
               }}
             >
               {isSelecting ? 'Выбираем...' : 'Выбрать мастера'}

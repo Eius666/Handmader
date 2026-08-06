@@ -42,14 +42,14 @@ function VerificationBlock({ status }: { status: VerificationStatus }) {
     return (
       <div
         className="flex items-center gap-3 rounded-2xl p-3"
-        style={{ background: 'rgba(194,112,62,0.06)', border: '1px solid rgba(194,112,62,0.14)' }}
+        style={{ background: 'rgb(var(--primary-rgb) / 0.06)', border: '1px solid rgb(var(--primary-rgb) / 0.14)' }}
       >
-        <Clock size={16} strokeWidth={1.8} style={{ color: '#C2703E', flexShrink: 0 }} />
+        <Clock size={16} strokeWidth={1.8} style={{ color: 'var(--primary)', flexShrink: 0 }} />
         <div>
           <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: '#7A4020' }}>
             Заявка на рассмотрении
           </p>
-          <p style={{ margin: 0, fontSize: 11, color: '#9C7E68' }}>Обычно 1–3 дня</p>
+          <p style={{ margin: 0, fontSize: 11, color: 'var(--muted-foreground)' }}>Обычно 1–3 дня</p>
         </div>
       </div>
     );
@@ -172,12 +172,12 @@ export default function ProfilePage() {
         {!isMaster && (
           <div
             className="flex flex-col items-center gap-3 p-6"
-            style={{ background: '#FFFDF9', border: '1px solid rgba(194,112,62,0.09)', borderRadius: 22, boxShadow: 'var(--shadow-card)' }}
+            style={{ background: 'var(--card)', border: '1px solid rgb(var(--primary-rgb) / 0.09)', borderRadius: 22, boxShadow: 'var(--shadow-card)' }}
           >
             <div
               style={{
                 width: 80, height: 80, borderRadius: '50%',
-                background: 'linear-gradient(135deg, #C2703E, #D98B5E)',
+                background: 'linear-gradient(135deg, var(--primary), var(--primary-soft))',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 32, fontWeight: 800, color: '#fff',
                 boxShadow: 'var(--shadow-primary)',
@@ -198,8 +198,8 @@ export default function ProfilePage() {
         {isMaster && (
           <div
             style={{
-              background:   '#FFFDF9',
-              border:       '1px solid rgba(194,112,62,0.09)',
+              background:   'var(--card)',
+              border:       '1px solid rgb(var(--primary-rgb) / 0.09)',
               borderRadius: 22,
               padding:      20,
               boxShadow:    'var(--shadow-card)',
@@ -255,9 +255,9 @@ export default function ProfilePage() {
                           onClick={() => setCats((prev) => on ? prev.filter((c) => c !== cat) : [...prev, cat])}
                           style={{
                             padding: '6px 14px', borderRadius: 20, fontSize: 13, cursor: 'pointer',
-                            border:     on ? '1.5px solid #C2703E' : '1.5px solid var(--border)',
-                            background: on ? 'rgba(194,112,62,0.08)' : 'transparent',
-                            color:      on ? '#C2703E' : 'var(--muted-foreground)',
+                            border:     on ? '1.5px solid var(--primary)' : '1.5px solid var(--border)',
+                            background: on ? 'rgb(var(--primary-rgb) / 0.08)' : 'transparent',
+                            color:      on ? 'var(--primary)' : 'var(--muted-foreground)',
                             fontWeight: on ? 700 : 400,
                             transition: 'all 0.15s',
                           }}
@@ -299,7 +299,7 @@ export default function ProfilePage() {
                 </div>
 
                 {masterError && (
-                  <p style={{ color: '#C2703E', fontSize: 13, margin: 0, textAlign: 'center' }}>{masterError}</p>
+                  <p style={{ color: 'var(--primary)', fontSize: 13, margin: 0, textAlign: 'center' }}>{masterError}</p>
                 )}
 
                 <button onClick={handleSaveMaster} disabled={savingMaster} className="btn-primary">
@@ -317,10 +317,10 @@ export default function ProfilePage() {
                   <div
                     style={{
                       width: 64, height: 64, borderRadius: '50%', flexShrink: 0,
-                      background: 'linear-gradient(135deg, #C2703E, #D98B5E)',
+                      background: 'linear-gradient(135deg, var(--primary), var(--primary-soft))',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 24, fontWeight: 800, color: '#fff',
-                      boxShadow: '0 4px 14px rgba(194,112,62,0.30)',
+                      boxShadow: '0 4px 14px rgb(var(--primary-rgb) / 0.30)',
                     }}
                   >
                     {user.displayName?.[0]?.toUpperCase() ?? '?'}
@@ -353,7 +353,7 @@ export default function ProfilePage() {
                   <button
                     onClick={() => { setEditingMaster(true); setMasterError(''); }}
                     style={{
-                      background: 'none', border: 'none', color: '#C2703E',
+                      background: 'none', border: 'none', color: 'var(--primary)',
                       fontSize: 13, fontWeight: 600, cursor: 'pointer', padding: 0, flexShrink: 0,
                     }}
                   >
@@ -362,7 +362,7 @@ export default function ProfilePage() {
                 </div>
 
                 {/* ── Divider ─────────────────────────────────────────────── */}
-                <div style={{ height: 1, background: 'rgba(194,112,62,0.08)', margin: '18px 0' }} />
+                <div style={{ height: 1, background: 'rgb(var(--primary-rgb) / 0.08)', margin: '18px 0' }} />
 
                 {/* ── Stats row ───────────────────────────────────────────── */}
                 <div className="flex items-stretch">
@@ -370,7 +370,7 @@ export default function ProfilePage() {
                   <div className="flex flex-1 flex-col items-center gap-1">
                     <span
                       className="font-display"
-                      style={{ fontSize: 30, fontWeight: 800, color: '#C2703E', lineHeight: 1 }}
+                      style={{ fontSize: 30, fontWeight: 800, color: 'var(--primary)', lineHeight: 1 }}
                     >
                       {(mp?.rating ?? 0) > 0 ? (mp!.rating.toFixed(1)) : '—'}
                     </span>
@@ -384,13 +384,13 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Vertical divider */}
-                  <div style={{ width: 1, background: 'rgba(194,112,62,0.10)', margin: '0 16px' }} />
+                  <div style={{ width: 1, background: 'rgb(var(--primary-rgb) / 0.10)', margin: '0 16px' }} />
 
                   {/* Completed orders */}
                   <div className="flex flex-1 flex-col items-center gap-1">
                     <span
                       className="font-display"
-                      style={{ fontSize: 30, fontWeight: 800, color: '#C2703E', lineHeight: 1 }}
+                      style={{ fontSize: 30, fontWeight: 800, color: 'var(--primary)', lineHeight: 1 }}
                     >
                       {mp?.completedOrders ?? 0}
                     </span>
@@ -405,7 +405,7 @@ export default function ProfilePage() {
                 {/* ── Bio ─────────────────────────────────────────────────── */}
                 {mp?.bio && (
                   <>
-                    <div style={{ height: 1, background: 'rgba(194,112,62,0.08)', margin: '18px 0' }} />
+                    <div style={{ height: 1, background: 'rgb(var(--primary-rgb) / 0.08)', margin: '18px 0' }} />
                     <p style={{ margin: 0, fontSize: 14, color: 'var(--foreground)', lineHeight: 1.65 }}>
                       {mp.bio}
                     </p>
@@ -415,7 +415,7 @@ export default function ProfilePage() {
                 {/* ── Categories ──────────────────────────────────────────── */}
                 {mp?.categories && mp.categories.length > 0 && (
                   <>
-                    <div style={{ height: 1, background: 'rgba(194,112,62,0.08)', margin: '18px 0' }} />
+                    <div style={{ height: 1, background: 'rgb(var(--primary-rgb) / 0.08)', margin: '18px 0' }} />
                     <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted-foreground)' }}>
                       Категории
                     </p>
@@ -425,9 +425,9 @@ export default function ProfilePage() {
                           key={cat}
                           className="shrink-0 rounded-full px-3 py-1.5 text-[12px] font-semibold"
                           style={{
-                            background:    'rgba(194,112,62,0.07)',
-                            border:        '1px solid rgba(194,112,62,0.18)',
-                            color:         '#C2703E',
+                            background:    'rgb(var(--primary-rgb) / 0.07)',
+                            border:        '1px solid rgb(var(--primary-rgb) / 0.18)',
+                            color:         'var(--primary)',
                             whiteSpace:    'nowrap',
                           }}
                         >
@@ -441,7 +441,7 @@ export default function ProfilePage() {
                 {/* ── Portfolio ────────────────────────────────────────────── */}
                 {mp?.portfolioPhotos && mp.portfolioPhotos.length > 0 && (
                   <>
-                    <div style={{ height: 1, background: 'rgba(194,112,62,0.08)', margin: '18px 0' }} />
+                    <div style={{ height: 1, background: 'rgb(var(--primary-rgb) / 0.08)', margin: '18px 0' }} />
                     <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted-foreground)' }}>
                       Портфолио
                     </p>
@@ -453,7 +453,7 @@ export default function ProfilePage() {
                           onClick={() => setLightboxSrc(src)}
                           aria-label={`Открыть фото ${i + 1}`}
                           className="aspect-square overflow-hidden rounded-xl transition-transform duration-150 active:scale-95"
-                          style={{ background: 'rgba(194,112,62,0.06)', display: 'block' }}
+                          style={{ background: 'rgb(var(--primary-rgb) / 0.06)', display: 'block' }}
                         >
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
@@ -478,7 +478,7 @@ export default function ProfilePage() {
                 {/* ── Verification ─────────────────────────────────────────── */}
                 {verStatus !== 'verified' && (
                   <>
-                    <div style={{ height: 1, background: 'rgba(194,112,62,0.08)', margin: '18px 0' }} />
+                    <div style={{ height: 1, background: 'rgb(var(--primary-rgb) / 0.08)', margin: '18px 0' }} />
                     <VerificationBlock status={verStatus} />
                   </>
                 )}

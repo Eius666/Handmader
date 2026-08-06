@@ -74,7 +74,7 @@ export default function OrderDetailPage() {
         <button
           onClick={() => router.back()}
           aria-label="Назад"
-          className="flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-[0_4px_16px_rgba(45,45,45,0.06)] transition-colors active:bg-secondary"
+          className="flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)] transition-colors active:bg-secondary"
         >
           <ArrowLeft className="size-5" aria-hidden="true" />
         </button>
@@ -87,7 +87,7 @@ export default function OrderDetailPage() {
       <div className="flex-1 overflow-y-auto pb-10 [&::-webkit-scrollbar]:hidden">
       <div className="flex flex-col gap-6 px-5 pt-4">
         {/* Order info card */}
-        <section className="flex flex-col gap-4 rounded-2xl bg-card p-5 shadow-[0_4px_20px_rgba(45,45,45,0.06)]">
+        <section className="flex flex-col gap-4 rounded-2xl bg-card p-5 shadow-[0_4px_20px_rgb(var(--foreground-rgb) / 0.06)]">
           <span className="inline-flex w-fit items-center rounded-full bg-primary/12 px-3 py-1 text-sm font-bold text-primary">
             {CATEGORY_LABELS[order.category]}
           </span>
@@ -116,13 +116,13 @@ export default function OrderDetailPage() {
           <section
             className="flex gap-3 rounded-2xl p-4"
             style={{
-              background: 'rgba(194,112,62,0.06)',
-              border: '1px solid rgba(194,112,62,0.15)',
+              background: 'rgb(var(--primary-rgb) / 0.06)',
+              border: '1px solid rgb(var(--primary-rgb) / 0.15)',
             }}
           >
-            <Ruler className="mt-0.5 size-4 shrink-0" style={{ color: '#C2703E' }} aria-hidden="true" />
+            <Ruler className="mt-0.5 size-4 shrink-0" style={{ color: 'var(--primary)' }} aria-hidden="true" />
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-bold uppercase tracking-wide" style={{ color: '#C2703E' }}>
+              <span className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
                 Мерки клиента
               </span>
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
@@ -160,7 +160,7 @@ export default function OrderDetailPage() {
             </h2>
 
             {responses.length === 0 ? (
-              <div className="flex flex-col items-center gap-3 rounded-2xl bg-card p-8 text-center shadow-[0_4px_20px_rgba(45,45,45,0.06)]">
+              <div className="flex flex-col items-center gap-3 rounded-2xl bg-card p-8 text-center shadow-[0_4px_20px_rgb(var(--foreground-rgb) / 0.06)]">
                 <span className="text-5xl">⏳</span>
                 <p className="text-base font-semibold text-muted-foreground">
                   Ожидаем откликов мастеров...
@@ -202,7 +202,7 @@ export default function OrderDetailPage() {
         {!isOwner && (user?.role === 'master' || user?.role === 'both') && order.status === 'awaiting_responses' && (
           <button
             onClick={() => router.push(`/orders/${order.id}/respond`)}
-            className="w-full rounded-xl bg-primary py-4 text-lg font-bold text-primary-foreground shadow-[0_8px_24px_rgba(224,122,95,0.4)] transition-transform active:scale-[0.98]"
+            className="w-full rounded-xl bg-primary py-4 text-lg font-bold text-primary-foreground shadow-[0_8px_24px_rgb(var(--primary-rgb) / 0.4)] transition-transform active:scale-[0.98]"
           >
             Откликнуться на заказ
           </button>

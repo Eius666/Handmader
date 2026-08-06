@@ -111,7 +111,7 @@ function NewOrderFormInner() {
           type="button"
           onClick={() => router.back()}
           aria-label="Назад"
-          className="flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-[0_4px_16px_rgba(45,45,45,0.06)] transition-colors active:bg-secondary"
+          className="flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)] transition-colors active:bg-secondary"
         >
           <ArrowLeft className="size-5" aria-hidden="true" />
         </button>
@@ -141,7 +141,7 @@ function NewOrderFormInner() {
                   className={cn(
                     'shrink-0 rounded-full px-5 py-2.5 text-base font-semibold transition-colors',
                     isActive
-                      ? 'bg-primary text-primary-foreground shadow-[0_4px_14px_rgba(224,122,95,0.35)]'
+                      ? 'bg-primary text-primary-foreground shadow-[0_4px_14px_rgb(var(--primary-rgb) / 0.35)]'
                       : 'bg-card text-muted-foreground',
                   )}
                 >
@@ -163,7 +163,7 @@ function NewOrderFormInner() {
             placeholder="Опишите что хотите: размер, цвет, пряжа..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full resize-none rounded-2xl bg-card px-5 py-4 text-base font-medium text-foreground shadow-[0_4px_16px_rgba(45,45,45,0.05)] outline-none placeholder:font-medium placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40"
+            className="w-full resize-none rounded-2xl bg-card px-5 py-4 text-base font-medium text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.05)] outline-none placeholder:font-medium placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40"
             required
           />
         </section>
@@ -230,7 +230,7 @@ function NewOrderFormInner() {
                 value={budgetMin}
                 onChange={(e) => setBudgetMin(e.target.value)}
                 aria-label="Бюджет от"
-                className="w-full rounded-2xl bg-card py-4 pl-5 pr-9 text-base font-semibold text-foreground shadow-[0_4px_16px_rgba(45,45,45,0.05)] outline-none placeholder:font-medium placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40"
+                className="w-full rounded-2xl bg-card py-4 pl-5 pr-9 text-base font-semibold text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.05)] outline-none placeholder:font-medium placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40"
               />
               <span className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-base font-semibold text-muted-foreground">₽</span>
             </div>
@@ -242,7 +242,7 @@ function NewOrderFormInner() {
                 value={budgetMax}
                 onChange={(e) => setBudgetMax(e.target.value)}
                 aria-label="Бюджет до"
-                className="w-full rounded-2xl bg-card py-4 pl-5 pr-9 text-base font-semibold text-foreground shadow-[0_4px_16px_rgba(45,45,45,0.05)] outline-none placeholder:font-medium placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40"
+                className="w-full rounded-2xl bg-card py-4 pl-5 pr-9 text-base font-semibold text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.05)] outline-none placeholder:font-medium placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40"
               />
               <span className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-base font-semibold text-muted-foreground">₽</span>
             </div>
@@ -273,7 +273,7 @@ function NewOrderFormInner() {
             placeholder="Рост: 170 см, Обхват груди: 90 см, Обхват талии: 70 см..."
             value={measurements}
             onChange={(e) => setMeasurements(e.target.value)}
-            className="w-full resize-y rounded-2xl bg-card px-5 py-4 text-base font-medium text-foreground shadow-[0_4px_16px_rgba(45,45,45,0.05)] outline-none placeholder:font-medium placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40"
+            className="w-full resize-y rounded-2xl bg-card px-5 py-4 text-base font-medium text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.05)] outline-none placeholder:font-medium placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40"
           />
           <p className="text-xs font-medium text-muted-foreground">
             Укажите свои размеры, чтобы мастер мог точнее оценить заказ
@@ -292,7 +292,7 @@ function NewOrderFormInner() {
           type="submit"
           form="new-order-form"
           disabled={submitting}
-          className="w-full rounded-xl bg-primary py-4 text-lg font-bold text-primary-foreground shadow-[0_8px_24px_rgba(224,122,95,0.4)] transition-transform active:scale-[0.98] disabled:opacity-60"
+          className="w-full rounded-xl bg-primary py-4 text-lg font-bold text-primary-foreground shadow-[0_8px_24px_rgb(var(--primary-rgb) / 0.4)] transition-transform active:scale-[0.98] disabled:opacity-60"
         >
           {submitting ? 'Публикуем...' : 'Опубликовать заказ 🚀'}
         </button>

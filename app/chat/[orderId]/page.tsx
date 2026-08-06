@@ -148,13 +148,13 @@ export default function ChatPage() {
       {/* ── Header ── */}
       <header
         className="shrink-0 flex items-center gap-3 px-4 pb-3 pt-5"
-        style={{ borderBottom: '1px solid rgba(180,100,70,0.08)' }}
+        style={{ borderBottom: '1px solid rgb(var(--foreground-rgb) / 0.08)' }}
       >
         <button
           onClick={() => router.back()}
           aria-label="Назад"
           className="flex size-9 shrink-0 items-center justify-center rounded-full transition-all active:scale-95"
-          style={{ background: 'rgba(217,108,82,0.08)' }}
+          style={{ background: 'rgb(var(--primary-soft-rgb) / 0.08)' }}
         >
           <ArrowLeft className="size-4 text-primary" aria-hidden="true" />
         </button>
@@ -212,7 +212,7 @@ export default function ChatPage() {
                   <div
                     className="max-w-[80%] px-4 py-2.5"
                     style={{
-                      background:            isMe ? '#C2703E' : '#f3f4f6',
+                      background:            isMe ? 'var(--primary)' : '#f3f4f6',
                       color:                 isMe ? '#ffffff' : '#1c1917',
                       borderRadius:          18,
                       borderBottomRightRadius: isMe ? 4 : 18,
@@ -238,7 +238,7 @@ export default function ChatPage() {
         className="shrink-0 flex items-end px-3 py-2"
         style={{
           background: 'var(--background)',
-          borderTop: '1px solid rgba(194,112,62,0.08)',
+          borderTop: '1px solid rgb(var(--primary-rgb) / 0.08)',
           paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))',
         }}
       >
@@ -256,7 +256,7 @@ export default function ChatPage() {
             padding: '10px 12px',
             overflowY: 'auto',
             background: 'rgba(226,208,188,0.22)',
-            border: '1px solid rgba(194,112,62,0.15)',
+            border: '1px solid rgb(var(--primary-rgb) / 0.15)',
           }}
         />
         <button
@@ -265,7 +265,7 @@ export default function ChatPage() {
           disabled={!text.trim() || sending}
           aria-label="Отправить"
           className="ml-2 flex size-10 shrink-0 items-center justify-center rounded-xl text-white transition-all duration-200 active:scale-95 disabled:opacity-40"
-          style={{ background: '#C2703E', boxShadow: '0 2px 8px rgba(194,112,62,0.35)' }}
+          style={{ background: 'var(--primary)', boxShadow: '0 2px 8px rgb(var(--primary-rgb) / 0.35)' }}
         >
           <Send className="size-4" aria-hidden="true" />
         </button>

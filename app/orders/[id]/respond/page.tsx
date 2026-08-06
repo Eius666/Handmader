@@ -105,13 +105,13 @@ export default function RespondPage() {
           className="mx-5 mt-10 flex flex-col items-center gap-4 rounded-2xl p-8 text-center"
           style={{
             background: '#ffffff',
-            border: '1px solid rgba(180,100,70,0.08)',
-            boxShadow: '0 4px 16px rgba(45,45,45,0.06)',
+            border: '1px solid rgb(var(--foreground-rgb) / 0.08)',
+            boxShadow: '0 4px 16px rgb(var(--foreground-rgb) / 0.06)',
           }}
         >
           <div
             className="flex size-16 items-center justify-center rounded-full text-3xl"
-            style={{ background: 'rgba(194,112,62,0.1)' }}
+            style={{ background: 'rgb(var(--primary-rgb) / 0.1)' }}
           >
             ✓
           </div>
@@ -124,7 +124,7 @@ export default function RespondPage() {
           <button
             onClick={() => router.back()}
             className="mt-2 rounded-xl px-8 py-3 text-sm font-bold text-white transition-all active:scale-95"
-            style={{ background: '#C2703E', boxShadow: '0 4px 14px rgba(194,112,62,0.35)' }}
+            style={{ background: 'var(--primary)', boxShadow: '0 4px 14px rgb(var(--primary-rgb) / 0.35)' }}
           >
             Назад
           </button>
@@ -138,7 +138,7 @@ export default function RespondPage() {
       <div className="flex flex-col gap-4 px-5 pb-8 pt-4">
 
         {/* Order summary */}
-        <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
+        <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)]">
           <span className="text-xs font-medium text-muted-foreground">Заказ</span>
           <span className="text-base font-bold text-foreground">{CATEGORY_LABELS[order.category]}</span>
           <p className="text-sm leading-relaxed text-foreground" style={{ margin: 0 }}>
@@ -152,7 +152,7 @@ export default function RespondPage() {
 
         {/* Reference photos */}
         {order.photos && order.photos.length > 0 && (
-          <div className="flex flex-col gap-2 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
+          <div className="flex flex-col gap-2 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)]">
             <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
               Фото от клиента
             </span>
@@ -165,13 +165,13 @@ export default function RespondPage() {
           <div
             className="flex gap-3 rounded-2xl p-4"
             style={{
-              background: 'rgba(194,112,62,0.08)',
-              border: '1.5px solid rgba(194,112,62,0.25)',
+              background: 'rgb(var(--primary-rgb) / 0.08)',
+              border: '1.5px solid rgb(var(--primary-rgb) / 0.25)',
             }}
           >
-            <Ruler className="mt-0.5 size-4 shrink-0" style={{ color: '#C2703E' }} aria-hidden="true" />
+            <Ruler className="mt-0.5 size-4 shrink-0" style={{ color: 'var(--primary)' }} aria-hidden="true" />
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-extrabold uppercase tracking-wide" style={{ color: '#C2703E' }}>
+              <span className="text-xs font-extrabold uppercase tracking-wide" style={{ color: 'var(--primary)' }}>
                 Мерки клиента
               </span>
               <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
@@ -182,14 +182,14 @@ export default function RespondPage() {
         )}
 
         {success ? (
-          <div className="flex flex-col items-center gap-3 rounded-2xl bg-card p-8 text-center shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
+          <div className="flex flex-col items-center gap-3 rounded-2xl bg-card p-8 text-center shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)]">
             <span className="text-5xl">✅</span>
             <span className="text-lg font-bold text-foreground">Отклик отправлен!</span>
             <span className="text-sm text-muted-foreground">Заказчик получит уведомление</span>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
+            <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)]">
               <label className="text-sm font-bold text-foreground">Ваша цена (₽)</label>
               <input
                 className="input-field"
@@ -205,7 +205,7 @@ export default function RespondPage() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
+            <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)]">
               <label className="text-sm font-bold text-foreground">Срок выполнения</label>
               <input
                 className="input-field"
@@ -217,7 +217,7 @@ export default function RespondPage() {
               />
             </div>
 
-            <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
+            <div className="flex flex-col gap-1.5 rounded-2xl bg-card p-4 shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)]">
               <label className="text-sm font-bold text-foreground">Комментарий</label>
               <textarea
                 className="input-field"

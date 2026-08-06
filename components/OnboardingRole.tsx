@@ -53,14 +53,14 @@ export function OnboardingRole() {
         <div
           style={{
             marginTop: 14, padding: '10px 14px', borderRadius: 10,
-            background: '#FFF0EB', border: '1px solid #E07A5F',
-            fontSize: 13, color: '#E07A5F', textAlign: 'center',
+            background: '#FFF0EB', border: '1px solid var(--primary)',
+            fontSize: 13, color: 'var(--primary)', textAlign: 'center',
           }}
         >
           {error}
           <button
             onClick={() => setError('')}
-            style={{ marginLeft: 8, fontWeight: 700, background: 'none', border: 'none', color: '#E07A5F', cursor: 'pointer' }}
+            style={{ marginLeft: 8, fontWeight: 700, background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer' }}
           >
             ✕
           </button>

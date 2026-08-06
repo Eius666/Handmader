@@ -1,42 +1,43 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 
 export function Toast({ message, onClose }: { message: string; onClose: () => void }) {
-  const [exiting, setExiting] = useState(false);
-
   useEffect(() => {
-    const t1 = setTimeout(() => setExiting(true), 2500);
-    const t2 = setTimeout(onClose, 3000);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
+    const t = setTimeout(onClose, 2800);
+    return () => clearTimeout(t);
   }, [onClose]);
 
   return (
-    <div
-      aria-live="polite"
-      role="status"
-      style={{
-        position:      'fixed',
-        bottom:        108,
-        left:          '50%',
-        transform:     'translateX(-50%)',
-        zIndex:        1000,
-        background:    '#2d2d2d',
-        color:         '#ffffff',
-        padding:       '12px 22px',
-        borderRadius:  14,
-        fontSize:      14,
-        fontWeight:    700,
-        letterSpacing: '-0.01em',
-        boxShadow:     '0 8px 28px rgba(0,0,0,0.22)',
-        whiteSpace:    'nowrap',
-        opacity:       exiting ? 0 : 1,
-        // Enter via CSS animation; exit via opacity transition
-        animation:     exiting ? undefined : 'toast-in 0.25s ease-out both',
-        transition:    exiting ? 'opacity 0.4s ease-out' : undefined,
-      }}
-    >
-      {message}
-    </div>
+    <AnimatePresence>
+      {message && (
+        <motion.div
+          aria-live="polite"
+          role="status"
+          initial={{ opacity: 0, y: 16, x: '-50%' }}
+          animate={{ opacity: 1, y: 0, x: '-50%' }}
+          exit={{ opacity: 0, y: 10, x: '-50%' }}
+          transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+          style={{
+            position:      'fixed',
+            bottom:        108,
+            left:          '50%',
+            zIndex:        1000,
+            background:    'var(--foreground)',
+            color:         'var(--background)',
+            padding:       '12px 22px',
+            borderRadius:  14,
+            fontSize:      14,
+            fontWeight:    700,
+            letterSpacing: '-0.01em',
+            boxShadow:     'var(--shadow-float)',
+            whiteSpace:    'nowrap',
+          }}
+        >
+          {message}
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

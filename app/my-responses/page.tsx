@@ -80,7 +80,7 @@ export default function MyResponsesPage() {
         ) : entries.length === 0 ? (
           <div
             className="flex flex-col items-center gap-3 rounded-2xl py-14 text-center"
-            style={{ background: '#ffffff', border: '1px solid rgba(180,100,70,0.08)', boxShadow: '0 2px 12px rgba(140,80,50,0.06)' }}
+            style={{ background: '#ffffff', border: '1px solid rgb(var(--foreground-rgb) / 0.08)', boxShadow: '0 2px 12px rgb(var(--foreground-rgb) / 0.06)' }}
           >
             <span className="text-5xl">📩</span>
             <p className="text-[14px] font-semibold text-muted-foreground">Откликов пока нет</p>
@@ -88,7 +88,7 @@ export default function MyResponsesPage() {
             <button
               onClick={() => router.push('/feed')}
               className="mt-2 rounded-full px-6 py-2.5 text-[13px] font-bold text-white transition-all active:scale-95"
-              style={{ background: '#d96c52', boxShadow: '0 4px 14px rgba(217,108,82,0.3)' }}
+              style={{ background: '#d96c52', boxShadow: '0 4px 14px rgb(var(--primary-soft-rgb) / 0.3)' }}
             >
               Открыть ленту
             </button>
@@ -112,8 +112,8 @@ export default function MyResponsesPage() {
                     ? '1px solid rgba(74,124,89,0.2)'
                     : isRejected
                     ? '1px solid rgba(120,113,108,0.12)'
-                    : '1px solid rgba(180,100,70,0.08)',
-                  boxShadow: '0 2px 10px rgba(140,80,50,0.06)',
+                    : '1px solid rgb(var(--foreground-rgb) / 0.08)',
+                  boxShadow: '0 2px 10px rgb(var(--foreground-rgb) / 0.06)',
                   opacity: isRejected ? 0.6 : 1,
                 }}
               >
@@ -162,7 +162,7 @@ export default function MyResponsesPage() {
                     type="button"
                     onClick={() => router.push(`/chat/${order.id}`)}
                     className="flex items-center justify-center gap-2 rounded-xl py-2.5 text-[13px] font-bold text-white transition-all active:scale-95"
-                    style={{ background: '#C2703E', boxShadow: '0 3px 10px rgba(194,112,62,0.3)' }}
+                    style={{ background: 'var(--primary)', boxShadow: '0 3px 10px rgb(var(--primary-rgb) / 0.3)' }}
                   >
                     <MessageSquare className="size-4" aria-hidden="true" />
                     Чат с клиентом

@@ -27,25 +27,25 @@ export function RoleSelector({ value, onChange, disabled }: RoleSelectorProps) {
             style={{
               display: 'flex', alignItems: 'center', gap: 14,
               padding: '16px 18px', borderRadius: 16, width: '100%', textAlign: 'left',
-              border:     active ? '2px solid #E07A5F' : '2px solid #EAE0D8',
+              border:     active ? '2px solid var(--primary)' : '2px solid #EAE0D8',
               background: active ? '#FFF0EB'           : '#FFFFFF',
               cursor:     disabled ? 'default'          : 'pointer',
               opacity:    disabled ? 0.65               : 1,
               transition: 'all 0.15s',
               boxShadow:  active
-                ? '0 2px 12px rgba(224,122,95,0.18)'
-                : '0 1px 6px rgba(45,45,45,0.06)',
+                ? '0 2px 12px rgb(var(--primary-rgb) / 0.18)'
+                : '0 1px 6px rgb(var(--foreground-rgb) / 0.06)',
             }}
           >
             <span style={{ fontSize: 32, flexShrink: 0 }}>{r.emoji}</span>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, fontSize: 16, color: active ? '#E07A5F' : '#2D2D2D', marginBottom: 3 }}>
+              <div style={{ fontWeight: 700, fontSize: 16, color: active ? 'var(--primary)' : '#2D2D2D', marginBottom: 3 }}>
                 {r.title}
               </div>
               <div style={{ fontSize: 13, color: '#8E7E74', lineHeight: 1.4 }}>{r.desc}</div>
             </div>
             {active && (
-              <span style={{ color: '#E07A5F', fontSize: 20, flexShrink: 0 }}>✓</span>
+              <span style={{ color: 'var(--primary)', fontSize: 20, flexShrink: 0 }}>✓</span>
             )}
           </button>
         );

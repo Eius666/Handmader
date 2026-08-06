@@ -7,7 +7,7 @@ export function Spinner({ size = 24 }: { size?: number }) {
         width: size,
         height: size,
         border: `3px solid #EDE0D4`,
-        borderTopColor: '#E07A5F',
+        borderTopColor: 'var(--primary)',
         borderRadius: '50%',
         animation: 'spin 0.7s linear infinite',
       }}

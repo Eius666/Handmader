@@ -76,9 +76,9 @@ export default function VerifyPage() {
         <div className="flex flex-col items-center gap-5 px-5 pt-10 text-center">
           <div
             className="flex size-20 items-center justify-center rounded-full"
-            style={{ background: 'rgba(194,112,62,0.10)' }}
+            style={{ background: 'rgb(var(--primary-rgb) / 0.10)' }}
           >
-            <Clock size={40} strokeWidth={1.6} style={{ color: '#C2703E' }} />
+            <Clock size={40} strokeWidth={1.6} style={{ color: 'var(--primary)' }} />
           </div>
           <div>
             <h2 className="font-display text-[22px] font-bold text-foreground" style={{ margin: '0 0 6px' }}>
@@ -91,7 +91,7 @@ export default function VerifyPage() {
           </div>
           <div
             className="w-full max-w-sm rounded-2xl p-4 text-left text-[13px] text-muted-foreground leading-relaxed"
-            style={{ background: 'rgba(194,112,62,0.05)', border: '1px solid rgba(194,112,62,0.12)' }}
+            style={{ background: 'rgb(var(--primary-rgb) / 0.05)', border: '1px solid rgb(var(--primary-rgb) / 0.12)' }}
           >
             Обычно рассмотрение занимает 1-3 дня. Результат придёт уведомлением в Telegram.
           </div>
@@ -132,9 +132,9 @@ export default function VerifyPage() {
         <div className="flex flex-col items-center gap-5 px-5 pt-10 text-center">
           <div
             className="flex size-20 items-center justify-center rounded-full"
-            style={{ background: 'rgba(194,112,62,0.10)' }}
+            style={{ background: 'rgb(var(--primary-rgb) / 0.10)' }}
           >
-            <Clock size={40} strokeWidth={1.6} style={{ color: '#C2703E' }} />
+            <Clock size={40} strokeWidth={1.6} style={{ color: 'var(--primary)' }} />
           </div>
           <div>
             <h2 className="font-display text-[22px] font-bold text-foreground" style={{ margin: '0 0 6px' }}>
@@ -208,7 +208,7 @@ export default function VerifyPage() {
           />
           <p
             className="text-[11px]"
-            style={{ color: experience.trim().length >= MIN_EXPERIENCE_LENGTH ? '#3E7A4A' : '#9C7E68', margin: 0 }}
+            style={{ color: experience.trim().length >= MIN_EXPERIENCE_LENGTH ? '#3E7A4A' : 'var(--muted-foreground)', margin: 0 }}
           >
             {experience.trim().length} / {MIN_EXPERIENCE_LENGTH} символов минимум
           </p>
@@ -247,7 +247,7 @@ export default function VerifyPage() {
                     type="button"
                     onClick={() => setSocialLinks((prev) => prev.filter((_, j) => j !== i))}
                     className="flex size-10 shrink-0 items-center justify-center rounded-full transition-colors active:scale-95"
-                    style={{ background: 'rgba(194,112,62,0.08)', color: '#9C7E68' }}
+                    style={{ background: 'rgb(var(--primary-rgb) / 0.08)', color: 'var(--muted-foreground)' }}
                     aria-label="Удалить ссылку"
                   >
                     <X size={14} aria-hidden="true" />
@@ -261,7 +261,7 @@ export default function VerifyPage() {
               type="button"
               onClick={() => setSocialLinks((prev) => [...prev, ''])}
               className="flex items-center gap-2 self-start rounded-full px-4 py-2 text-[13px] font-semibold transition-all active:scale-95"
-              style={{ background: 'rgba(194,112,62,0.08)', color: '#C2703E' }}
+              style={{ background: 'rgb(var(--primary-rgb) / 0.08)', color: 'var(--primary)' }}
             >
               <Plus size={14} aria-hidden="true" />
               Добавить ссылку
@@ -296,7 +296,7 @@ export default function VerifyPage() {
               type="button"
               onClick={() => setPortfolioPhotos((prev) => [...prev, ''])}
               className="flex items-center gap-2 self-start rounded-full px-4 py-2 text-[13px] font-semibold transition-all active:scale-95"
-              style={{ background: 'rgba(194,112,62,0.08)', color: '#C2703E' }}
+              style={{ background: 'rgb(var(--primary-rgb) / 0.08)', color: 'var(--primary)' }}
             >
               <Plus size={14} aria-hidden="true" />
               Ещё фото

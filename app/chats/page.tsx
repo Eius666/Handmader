@@ -63,7 +63,7 @@ export default function ChatsPage() {
                 onClick={() => router.push(`/chat/${chat.orderId}`)}
                 className="stagger-item flex w-full items-center gap-3 px-5 py-3.5 text-left transition-all active:bg-secondary"
                 style={{
-                  borderBottom:   '1px solid rgba(180,100,70,0.06)',
+                  borderBottom:   '1px solid rgb(var(--foreground-rgb) / 0.06)',
                   animationDelay: `${idx * 50}ms`,
                 }}
               >
@@ -94,7 +94,7 @@ export default function ChatsPage() {
                       <span
                         className="flex shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white"
                         style={{
-                          background: '#C2703E',
+                          background: 'var(--primary)',
                           minWidth: 20,
                           height: 20,
                           padding: '0 5px',

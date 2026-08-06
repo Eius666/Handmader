@@ -95,7 +95,7 @@ export function DatePicker({ value, onChange, placeholder = 'Выберите д
           setViewMonth(m - 1);
           setOpen(true);
         }}
-        className="flex w-full items-center gap-3 rounded-2xl bg-card py-4 pl-5 pr-4 text-left shadow-[0_4px_16px_rgba(45,45,45,0.05)] transition-colors active:bg-secondary"
+        className="flex w-full items-center gap-3 rounded-2xl bg-card py-4 pl-5 pr-4 text-left shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.05)] transition-colors active:bg-secondary"
       >
         <Calendar className="size-5 shrink-0 text-primary" aria-hidden="true" />
         <span className={`flex-1 text-base font-semibold ${value ? 'text-foreground' : 'text-muted-foreground'}`}>
@@ -121,7 +121,7 @@ export function DatePicker({ value, onChange, placeholder = 'Выберите д
         >
           <div
             className="w-full max-w-md rounded-t-[28px] bg-background px-4 pb-10 pt-5"
-            style={{ boxShadow: '0 -8px 40px rgba(45,45,45,0.18)' }}
+            style={{ boxShadow: '0 -8px 40px rgb(var(--foreground-rgb) / 0.18)' }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Handle */}
@@ -154,7 +154,7 @@ export function DatePicker({ value, onChange, placeholder = 'Выберите д
                 <div
                   key={d}
                   className="py-1 text-center text-[11px] font-bold uppercase tracking-wider"
-                  style={{ color: i >= 5 ? '#C2703E' : 'var(--text-muted)' }}
+                  style={{ color: i >= 5 ? 'var(--primary)' : 'var(--text-muted)' }}
                 >
                   {d}
                 </div>
@@ -190,9 +190,9 @@ export function DatePicker({ value, onChange, placeholder = 'Выберите д
                     `}
                     style={
                       selected
-                        ? { background: '#C2703E', boxShadow: '0 4px 14px rgba(194,112,62,0.4)' }
+                        ? { background: 'var(--primary)', boxShadow: '0 4px 14px rgb(var(--primary-rgb) / 0.4)' }
                         : !disabled && isWeekend
-                        ? { color: '#C2703E' }
+                        ? { color: 'var(--primary)' }
                         : {}
                     }
                   >

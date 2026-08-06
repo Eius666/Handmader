@@ -120,12 +120,12 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
             height:       104,
             borderRadius: 32,
             background:   'linear-gradient(145deg, #fff 0%, #ffeedd 100%)',
-            border:       '1.5px solid rgba(217,108,82,0.15)',
+            border:       '1.5px solid rgb(var(--primary-soft-rgb) / 0.15)',
             display:      'flex',
             alignItems:   'center',
             justifyContent: 'center',
             fontSize:     56,
-            boxShadow:    '0 8px 32px rgba(217,108,82,0.12)',
+            boxShadow:    '0 8px 32px rgb(var(--primary-soft-rgb) / 0.12)',
           }}
         >
           {s.emoji}
@@ -162,8 +162,8 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
                     background:    '#ffffff',
                     borderRadius:  14,
                     padding:       '13px 16px',
-                    border:        '1px solid rgba(180,100,70,0.1)',
-                    boxShadow:     '0 2px 8px rgba(140,80,50,0.05)',
+                    border:        '1px solid rgb(var(--foreground-rgb) / 0.1)',
+                    boxShadow:     '0 2px 8px rgb(var(--foreground-rgb) / 0.05)',
                     textAlign:     'left',
                     animation:     `fade-up 0.22s ease-out ${i * 60}ms both`,
                   }}
@@ -238,7 +238,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
             cursor:        'pointer',
             fontFamily:    'inherit',
             letterSpacing: '-0.01em',
-            boxShadow:     '0 8px 24px rgba(217,108,82,0.35)',
+            boxShadow:     '0 8px 24px rgb(var(--primary-soft-rgb) / 0.35)',
             transition:    'transform 0.15s ease-out, box-shadow 0.15s ease-out',
           }}
           onMouseDown={(e) => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.97)'; }}

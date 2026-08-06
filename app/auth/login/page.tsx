@@ -38,7 +38,7 @@ export default function LoginPage() {
 
       {/* Form area */}
       <div className="flex flex-1 flex-col gap-3 px-5 pb-10">
-        <div className="flex flex-col gap-3 rounded-2xl bg-card p-6 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
+        <div className="flex flex-col gap-3 rounded-2xl bg-card p-6 shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)]">
           <h2 className="text-xl font-bold text-foreground">Войти</h2>
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <input

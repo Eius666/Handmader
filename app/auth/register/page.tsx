@@ -53,7 +53,7 @@ export default function RegisterPage() {
 
       {/* Form area */}
       <div className="flex flex-1 flex-col gap-3 px-5 pb-10">
-        <div className="rounded-2xl bg-card p-6 shadow-[0_4px_16px_rgba(45,45,45,0.06)]">
+        <div className="rounded-2xl bg-card p-6 shadow-[0_4px_16px_rgb(var(--foreground-rgb) / 0.06)]">
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             <input
               className="input-field"
@@ -94,14 +94,14 @@ export default function RegisterPage() {
                         className="flex size-4 shrink-0 items-center justify-center rounded-full text-[10px] font-black leading-none transition-all duration-200"
                         style={{
                           background: ok ? 'rgba(74,124,89,0.12)' : 'rgba(120,113,108,0.1)',
-                          color:      ok ? '#4a7c59' : '#a8a29e',
+                          color:      ok ? '#4a7c59' : 'var(--muted-foreground)',
                         }}
                       >
                         {ok ? '✓' : '·'}
                       </span>
                       <span
                         className="text-[12px] font-medium transition-colors duration-200"
-                        style={{ color: ok ? '#4a7c59' : '#a8a29e' }}
+                        style={{ color: ok ? '#4a7c59' : 'var(--muted-foreground)' }}
                       >
                         {label}
                       </span>
@@ -123,7 +123,7 @@ export default function RegisterPage() {
 
             {/* Confirm mismatch hint */}
             {confirm.length > 0 && password !== confirm && (
-              <p className="px-1 text-[12px] font-medium" style={{ color: '#c0392b', marginTop: -4 }}>
+              <p className="px-1 text-[12px] font-medium" style={{ color: 'var(--danger)', marginTop: -4 }}>
                 Пароли не совпадают
               </p>
             )}
