@@ -6,21 +6,26 @@ import { Modal } from '@/components/motion/Modal';
 import { PressableButton } from '@/components/motion/Pressable';
 
 interface Props {
-  masterName?: string;
+  title?: string;
+  subjectName?: string;
   onSend: (rating: number, comment: string) => Promise<void>;
   onSkip: () => void;
 }
 
-export function RatingModal({ masterName, onSend, onSkip }: Props) {
+export function RatingModal({ title = 'Оцените мастера', subjectName, onSend, onSkip }: Props) {
   const [rating,  setRating]  = useState(0);
   const [comment, setComment] = useState('');
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
 
   async function handleSend() {
     if (!rating) return;
     setSending(true);
+    setError('');
     try {
       await onSend(rating, comment.trim());
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Не удалось отправить отзыв');
     } finally {
       setSending(false);
     }
@@ -47,12 +52,12 @@ export function RatingModal({ masterName, onSend, onSkip }: Props) {
         />
 
         <h2 className="font-display" style={{ textAlign: 'center', fontSize: 21, fontWeight: 600, color: 'var(--foreground)', margin: '0 0 4px' }}>
-          Оцените мастера
+          {title}
         </h2>
 
-        {masterName && (
+        {subjectName && (
           <p style={{ textAlign: 'center', fontSize: 14, color: 'var(--muted-foreground)', margin: '0 0 22px' }}>
-            {masterName}
+            {subjectName}
           </p>
         )}
 
@@ -77,6 +82,12 @@ export function RatingModal({ masterName, onSend, onSkip }: Props) {
             outline: 'none',
           }}
         />
+
+        {error && (
+          <p role="alert" style={{ margin: '0 0 12px', color: 'var(--danger)', fontSize: 13, textAlign: 'center' }}>
+            {error}
+          </p>
+        )}
 
         <PressableButton
           type="button"

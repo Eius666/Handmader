@@ -129,9 +129,10 @@ export default function TrackPage() {
 
   async function handleRatingSend(rating: number, comment: string) {
     if (!order?.selectedMasterId || !user) return;
-    await submitRating(order.id, order.selectedMasterId, user.uid, rating, comment);
+    await submitRating(order.id, rating, comment);
+    setOrder((previous) => previous ? { ...previous, hasSubmittedReview: true } : previous);
     setShowRating(false);
-    setToast('Спасибо за оценку!');
+    setToast('Отзыв принят и будет опубликован через 7 дней');
   }
 
   if (loading) {
@@ -326,7 +327,18 @@ export default function TrackPage() {
       {/* Fixed bottom CTA — crossfades as order status changes */}
       <div className="fixed inset-x-0 bottom-0 mx-auto max-w-md border-t border-border bg-background/95 px-5 py-4 backdrop-blur">
         <AnimatePresence mode="wait">
-          {order.status === 'completed' ? (
+          {order.status === 'completed' && !order.hasSubmittedReview ? (
+            <motion.div key="review" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
+              <PressableButton
+                type="button"
+                onClick={() => setShowRating(true)}
+                className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-bold text-white shadow-[0_8px_24px_rgb(var(--primary-rgb)_/_0.4)]"
+                style={{ background: 'var(--primary)' }}
+              >
+                ⭐ Оставить отзыв
+              </PressableButton>
+            </motion.div>
+          ) : order.status === 'completed' ? (
             <motion.div
               key="completed"
               initial={{ opacity: 0, y: 6 }}
@@ -392,7 +404,10 @@ export default function TrackPage() {
 
       {showRating && (
         <RatingModal
-          masterName={order?.responses?.[order.selectedMasterId!]?.masterName}
+          title={isMaster ? 'Оцените заказчика' : 'Оцените мастера'}
+          subjectName={isMaster
+            ? order.customerName
+            : order.responses?.[order.selectedMasterId!]?.masterName}
           onSend={handleRatingSend}
           onSkip={() => setShowRating(false)}
         />

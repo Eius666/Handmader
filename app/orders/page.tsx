@@ -79,11 +79,11 @@ export default function OrdersPage() {
 
   async function handleRatingSend(rating: number, comment: string) {
     if (!ratingOrder?.selectedMasterId || !user) return;
-    await submitRating(ratingOrder.id, ratingOrder.selectedMasterId, user.uid, rating, comment);
+    await submitRating(ratingOrder.id, rating, comment);
     setOrders((prev) =>
       prev.map((o) =>
         o.id === ratingOrder.id
-          ? { ...o, ratings: [...(o.ratings ?? []), { rating, comment, createdAt: new Date(), userId: user.uid }] }
+          ? { ...o, hasSubmittedReview: true }
           : o,
       ),
     );
@@ -164,7 +164,7 @@ export default function OrdersPage() {
               const canRate =
                 order.status === 'completed' &&
                 !!order.selectedMasterId &&
-                !order.ratings?.some((r) => r.userId === user?.uid);
+                !order.hasSubmittedReview;
               const canDelete = DELETABLE.includes(order.status);
               return (
                 <StaggerItem key={order.id}>
@@ -185,7 +185,7 @@ export default function OrdersPage() {
 
       {ratingOrder && (
         <RatingModal
-          masterName={ratingOrder.selectedMasterName}
+          subjectName={ratingOrder.selectedMasterName}
           onSend={handleRatingSend}
           onSkip={() => setRatingOrder(null)}
         />

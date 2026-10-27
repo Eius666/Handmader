@@ -29,6 +29,7 @@ export interface OrderDto {
   selectedMasterName?: string;
   selectedPrice?: number;
   responseCount: number;
+  hasSubmittedReview: boolean;
   ratings?: Array<{ rating: number; comment?: string; createdAt: string; userId?: string }>;
   measurements?: string;
   location?: string;
@@ -148,6 +149,7 @@ function orderDto(id: string, data: Record<string, unknown>, actorId: string): O
     status: stringValue(data.status),
     createdAt: timestampIso(data.createdAt),
     responseCount: numberValue(data.responseCount),
+    hasSubmittedReview: stringArray(data.reviewAuthorIds).includes(actorId),
   };
   if (selectedMasterId && (isCustomer || isSelectedMaster)) {
     result.selectedMasterId = selectedMasterId;
@@ -160,12 +162,14 @@ function orderDto(id: string, data: Record<string, unknown>, actorId: string): O
   if (Array.isArray(data.ratings) && (isCustomer || isSelectedMaster)) {
     result.ratings = data.ratings
       .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === 'object')
+      .filter((item) => item.userId === actorId)
       .map((item) => ({
         rating: numberValue(item.rating),
         ...(typeof item.comment === 'string' ? { comment: item.comment } : {}),
         createdAt: timestampIso(item.createdAt),
         ...(item.userId === actorId ? { userId: actorId } : {}),
       }));
+    if (result.ratings.length > 0) result.hasSubmittedReview = true;
   }
   return result;
 }

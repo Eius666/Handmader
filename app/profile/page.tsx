@@ -10,7 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { VerifiedBadge } from '@/components/ui/VerifiedBadge';
 import { PressableButton } from '@/components/motion/Pressable';
-import { setUser } from '@/lib/firestore';
+import { getPublishedReviews, setUser } from '@/lib/firestore';
 import { OrderCategory, CATEGORY_LABELS, MasterProfile, VerificationStatus } from '@/types';
 
 const MASTER_CATS: OrderCategory[] = ['hat', 'sweater', 'scarf', 'toy', 'accessory', 'other'];
@@ -92,6 +92,7 @@ export default function ProfilePage() {
   const [editingMaster, setEditingMaster] = useState(false);
   const [savingMaster,  setSavingMaster]  = useState(false);
   const [masterError,   setMasterError]   = useState('');
+  const [publishedRating, setPublishedRating] = useState<{ rating: number; ratingCount: number } | null>(null);
 
   const [bio,  setBio]  = useState('');
   const [cats, setCats] = useState<OrderCategory[]>([]);
@@ -113,10 +114,20 @@ export default function ProfilePage() {
     setEditingMaster(hasMasterRole && !mp);
   }, [user?.uid]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    if (!user || (user.role !== 'master' && user.role !== 'both')) return;
+    getPublishedReviews(user.uid)
+      .then(({ rating, ratingCount }) => setPublishedRating({ rating, ratingCount }))
+      .catch(() => setPublishedRating(null));
+  }, [user]);
+
   if (!user) return null;
 
   const isMaster = user.role === 'master' || user.role === 'both';
   const mp = user.masterProfile;
+  const hasPublishedReviews = (publishedRating?.ratingCount ?? 0) > 0;
+  const visibleRating = hasPublishedReviews ? publishedRating!.rating : mp?.rating ?? 0;
+  const visibleRatingCount = hasPublishedReviews ? publishedRating!.ratingCount : mp?.ratingCount ?? 0;
   const verStatus: VerificationStatus = user.verificationStatus ?? 'none';
 
   async function handleSaveMaster() {
@@ -354,14 +365,14 @@ export default function ProfilePage() {
                       className="font-display"
                       style={{ fontSize: 30, fontWeight: 800, color: 'var(--primary)', lineHeight: 1 }}
                     >
-                      {(mp?.rating ?? 0) > 0 ? (mp!.rating.toFixed(1)) : '—'}
+                      {visibleRating > 0 ? visibleRating.toFixed(1) : '—'}
                     </span>
-                    {(mp?.rating ?? 0) > 0
-                      ? <RatingStars value={mp!.rating} />
+                    {visibleRating > 0
+                      ? <RatingStars value={visibleRating} />
                       : <span style={{ fontSize: 14, color: 'var(--border)', letterSpacing: 2 }}>★★★★★</span>
                     }
                     <span style={{ fontSize: 10, color: 'var(--muted-foreground)', marginTop: 1 }}>
-                      {(mp?.ratingCount ?? 0) > 0 ? `${mp!.ratingCount} оценок` : 'нет оценок'}
+                      {visibleRatingCount > 0 ? `${visibleRatingCount} оценок` : 'нет оценок'}
                     </span>
                   </div>
 

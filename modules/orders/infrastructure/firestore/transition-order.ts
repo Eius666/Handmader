@@ -43,7 +43,7 @@ const NOTIFICATION_BY_ACTION = {
 const TIMESTAMP_FIELD_BY_ACTION = {
   start_work: 'startedAt',
   mark_ready: 'readyAt',
-  confirm_delivery: 'deliveredAt',
+  confirm_delivery: 'completedAt',
 } as const;
 
 export async function transitionOrderInFirestore(

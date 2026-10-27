@@ -131,6 +131,24 @@ test('browser cannot advance an order status', async () => {
   }));
 });
 
+test('browser cannot forge an embedded or standalone review', async () => {
+  const db = environment.authenticatedContext('customer-1').firestore();
+
+  await assertFails(updateDoc(doc(db, 'orders', 'order-1'), {
+    ratings: [{ rating: 5, userId: 'customer-1' }],
+  }));
+  await assertFails(updateDoc(doc(db, 'orders', 'order-1'), {
+    reviewAuthorIds: ['customer-1'],
+  }));
+  await assertFails(setDoc(doc(db, 'reviews', 'order-1_customer-1'), {
+    orderId: 'order-1',
+    authorId: 'customer-1',
+    subjectId: 'master-1',
+    rating: 5,
+  }));
+  await assertFails(getDoc(doc(db, 'reviews', 'order-1_customer-1')));
+});
+
 test('browser cannot write an embedded or standalone proposal', async () => {
   const db = environment.authenticatedContext('master-1').firestore();
 

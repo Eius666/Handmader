@@ -112,6 +112,7 @@ export interface Order {
   selectedPrice?: number;
   responses: Record<string, OrderResponse>;
   responseCount?: number;
+  hasSubmittedReview?: boolean;
   ratings?: OrderRating[];
   measurements?: string;
   location?: string;

@@ -31,5 +31,14 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    ".next/standalone",
+    ".next/standalone 2",
+    ".next/types/app 2",
+    ".next/types/app 3",
+    ".next/types/**/* 2.ts",
+    ".next/types/**/* 3.ts",
+    ".vercel"
+  ]
 }

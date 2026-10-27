@@ -8,7 +8,6 @@ import {
   query,
   where,
   orderBy,
-  arrayUnion,
   onSnapshot,
   writeBatch,
   limit,
@@ -141,27 +140,34 @@ async function transitionOrder(
 
 export async function submitRating(
   orderId: string,
-  masterId: string,
-  userId: string,
   rating: number,
   comment?: string,
 ): Promise<void> {
-  const entry: Record<string, unknown> = { rating, userId, createdAt: Timestamp.now() };
-  if (comment) entry.comment = comment;
-
-  await updateDoc(doc(db, 'orders', orderId), { ratings: arrayUnion(entry) });
-
-  const masterSnap = await getDoc(doc(db, 'users', masterId));
-  if (!masterSnap.exists()) return;
-  const mp = (masterSnap.data().masterProfile ?? {}) as { rating?: number; ratingCount?: number };
-  const oldCount  = mp.ratingCount ?? 0;
-  const newCount  = oldCount + 1;
-  const newRating = ((mp.rating ?? 0) * oldCount + rating) / newCount;
-
-  await updateDoc(doc(db, 'users', masterId), {
-    'masterProfile.rating':      newRating,
-    'masterProfile.ratingCount': newCount,
+  await postServerCommand(`/api/orders/${encodeURIComponent(orderId)}/reviews`, {
+    rating,
+    comment,
+    commandId: crypto.randomUUID(),
   });
+}
+
+export interface PublishedReviewSummaryDto {
+  rating: number;
+  ratingCount: number;
+  reviews: Array<{
+    id: string;
+    orderId: string;
+    authorAlias: string;
+    authorRole: 'customer' | 'master';
+    rating: number;
+    comment?: string;
+    publishedAt: string;
+  }>;
+}
+
+export async function getPublishedReviews(subjectId: string): Promise<PublishedReviewSummaryDto> {
+  return getServerQuery<PublishedReviewSummaryDto>(
+    `/api/reviews?subjectId=${encodeURIComponent(subjectId)}`,
+  );
 }
 
 export async function deleteOrder(orderId: string): Promise<void> {

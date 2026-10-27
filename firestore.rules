@@ -13,7 +13,9 @@ service cloud.firestore {
         'readyAt',
         'deliveredAt',
         'responses',
-        'responseCount'
+        'responseCount',
+        'ratings',
+        'reviewAuthorIds'
       ]);
     }
 
@@ -94,6 +96,12 @@ service cloud.firestore {
     }
 
     match /outboxEvents/{eventId} {
+      allow read, write: if false;
+    }
+
+    // Reviews are submitted and published by trusted server commands. Pending
+    // feedback must not be observable by the other order participant.
+    match /reviews/{reviewId} {
       allow read, write: if false;
     }
 
