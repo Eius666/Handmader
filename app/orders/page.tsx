@@ -25,7 +25,7 @@ const CATEGORY_ICONS: Record<OrderCategory, LucideIcon> = {
   other:     Package,
 };
 
-const ACTIVE_STATUSES: OrderStatus[] = ['awaiting_responses', 'master_selected', 'in_progress', 'ready', 'delivered'];
+const ACTIVE_STATUSES: OrderStatus[] = ['awaiting_responses', 'master_selected', 'awaiting_payment', 'paid', 'in_progress', 'ready', 'delivered'];
 
 export default function OrdersPage() {
   const { user } = useAuth();
@@ -53,7 +53,7 @@ export default function OrdersPage() {
   );
 
   function handleCardClick(order: Order) {
-    if (['master_selected', 'in_progress', 'ready', 'delivered'].includes(order.status)) {
+    if (['master_selected', 'awaiting_payment', 'paid', 'in_progress', 'ready', 'delivered'].includes(order.status)) {
       router.push(`/track/${order.id}`);
     } else {
       router.push(`/orders/${order.id}`);

@@ -47,3 +47,16 @@ test('transition cannot skip order states', () => {
     (error: unknown) => error instanceof DomainError && error.code === 'INVALID_STATE',
   );
 });
+
+test('new flow requires funded payment before production starts', () => {
+  assert.throws(
+    () => decideOrderTransition({ ...base, flowVersion: 2 }, 'master-1', 'start_work'),
+    (error: unknown) => error instanceof DomainError && error.code === 'INVALID_STATE',
+  );
+  const started = decideOrderTransition(
+    { ...base, flowVersion: 2, status: 'paid' },
+    'master-1',
+    'start_work',
+  );
+  assert.equal(started.nextStatus, 'in_progress');
+});

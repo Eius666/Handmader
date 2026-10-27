@@ -7,6 +7,7 @@ export interface TransitionableOrderSnapshot {
   customerId: string;
   selectedMasterId?: string;
   status: string;
+  flowVersion?: number;
 }
 
 export interface OrderTransitionDecision {
@@ -28,7 +29,7 @@ export function decideOrderTransition(
   switch (action) {
     case 'start_work':
       requireActor(actorId, order.selectedMasterId, 'Только выбранный мастер может начать работу');
-      requireStatus(order.status, ['master_selected']);
+      requireStatus(order.status, order.flowVersion === 2 ? ['paid'] : ['master_selected', 'paid']);
       return {
         action,
         previousStatus: order.status,

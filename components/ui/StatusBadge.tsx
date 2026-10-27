@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'motion/react';
-import { Clock, UserCheck, Scissors, Sparkles, CheckCheck, Truck } from 'lucide-react';
+import { Clock, UserCheck, Scissors, Sparkles, CheckCheck, Truck, WalletCards, ShieldCheck } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { OrderStatus } from '@/types';
 
@@ -14,6 +14,8 @@ interface StatusCfg {
 const STATUS_CONFIG: Record<OrderStatus, StatusCfg> = {
   awaiting_responses: { label: 'ожидает',       Icon: Clock,      tone: 'gold' },
   master_selected:    { label: 'мастер выбран',  Icon: UserCheck,  tone: 'success' },
+  awaiting_payment:   { label: 'ждёт оплаты',    Icon: WalletCards, tone: 'gold' },
+  paid:               { label: 'тестово оплачен', Icon: ShieldCheck, tone: 'success' },
   in_progress:        { label: 'в работе',       Icon: Scissors,   tone: 'success' },
   ready:              { label: 'готово',          Icon: Sparkles,   tone: 'gold' },
   delivered:          { label: 'доставлен',       Icon: Truck,      tone: 'gold' },

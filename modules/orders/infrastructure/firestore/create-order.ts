@@ -52,6 +52,7 @@ export async function createOrderInFirestore(
       customerId: command.actorId,
       customerName: createPublicAlias('customer', command.actorId),
       status: 'awaiting_responses',
+      flowVersion: 2,
       responseCount: 0,
       createdAt: now,
       updatedAt: now,

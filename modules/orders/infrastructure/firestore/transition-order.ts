@@ -71,6 +71,7 @@ export async function transitionOrderInFirestore(
       customerId: String(data.customerId ?? ''),
       selectedMasterId,
       status: String(data.status ?? ''),
+      flowVersion: typeof data.flowVersion === 'number' ? data.flowVersion : undefined,
     }, command.actorId, command.action);
 
     const now = Timestamp.now();

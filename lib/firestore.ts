@@ -170,6 +170,72 @@ export async function getPublishedReviews(subjectId: string): Promise<PublishedR
   );
 }
 
+export interface AgreementDto {
+  orderId: string;
+  version: number;
+  status: 'pending' | 'confirmed';
+  description: string;
+  measurements: string;
+  referencePhotos: string[];
+  finalPrice: number;
+  deadline: string;
+  deliveryMethod: 'local' | 'delivery';
+  deliveryIncluded: boolean;
+  tolerances?: string;
+  cancellationPolicyVersion: string;
+  confirmations: { customer: boolean; master: boolean };
+  proposedBy: string;
+  updatedAt: string;
+  confirmedAt?: string;
+}
+
+export async function getAgreement(orderId: string): Promise<AgreementDto | null> {
+  return getServerQuery<AgreementDto | null>(
+    `/api/orders/${encodeURIComponent(orderId)}/agreement`,
+  );
+}
+
+export async function proposeAgreement(
+  orderId: string,
+  input: {
+    finalPrice: number;
+    deadline: string;
+    deliveryMethod: 'local' | 'delivery';
+    deliveryIncluded: boolean;
+    tolerances?: string;
+  },
+): Promise<AgreementDto> {
+  return postServerCommand<AgreementDto>(
+    `/api/orders/${encodeURIComponent(orderId)}/agreement`,
+    { action: 'propose', ...input, commandId: crypto.randomUUID() },
+  );
+}
+
+export async function confirmAgreement(orderId: string): Promise<AgreementDto> {
+  return postServerCommand<AgreementDto>(
+    `/api/orders/${encodeURIComponent(orderId)}/agreement`,
+    { action: 'confirm', commandId: crypto.randomUUID() },
+  );
+}
+
+export interface MockPaymentResultDto {
+  paymentId: string;
+  orderId: string;
+  status: 'funded';
+  provider: 'mock';
+  currency: 'RUB';
+  grossAmountMinor: number;
+  commissionAmountMinor: number;
+  masterAmountMinor: number;
+}
+
+export async function simulateMockPayment(orderId: string): Promise<MockPaymentResultDto> {
+  return postServerCommand<MockPaymentResultDto>(
+    `/api/orders/${encodeURIComponent(orderId)}/payments/mock`,
+    { commandId: crypto.randomUUID() },
+  );
+}
+
 export async function deleteOrder(orderId: string): Promise<void> {
   await deleteDoc(doc(db, 'orders', orderId));
 }

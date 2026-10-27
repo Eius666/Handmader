@@ -149,6 +149,26 @@ test('browser cannot forge an embedded or standalone review', async () => {
   await assertFails(getDoc(doc(db, 'reviews', 'order-1_customer-1')));
 });
 
+test('browser cannot forge agreement or payment state', async () => {
+  const db = environment.authenticatedContext('customer-1').firestore();
+
+  await assertFails(updateDoc(doc(db, 'orders', 'order-1'), {
+    agreementStatus: 'confirmed',
+    finalPrice: 1,
+    paymentStatus: 'funded',
+  }));
+  await assertFails(setDoc(doc(db, 'agreements', 'order-1'), {
+    orderId: 'order-1',
+    status: 'confirmed',
+    finalPrice: 1,
+  }));
+  await assertFails(setDoc(doc(db, 'payments', 'order-1'), {
+    orderId: 'order-1',
+    status: 'funded',
+    grossAmountMinor: 100,
+  }));
+});
+
 test('browser cannot write an embedded or standalone proposal', async () => {
   const db = environment.authenticatedContext('master-1').firestore();
 

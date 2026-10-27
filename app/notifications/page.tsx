@@ -16,6 +16,9 @@ function notifIcon(type: NotificationType): string {
     case 'new_order':              return '🧵';
     case 'new_response':           return '📨';
     case 'master_selected':        return '✅';
+    case 'agreement_pending':      return '📋';
+    case 'agreement_confirmed':    return '🤝';
+    case 'payment_confirmed':      return '🛡️';
     case 'work_started':           return '🔧';
     case 'order_ready':            return '✨';
     case 'order_completed':        return '🎉';

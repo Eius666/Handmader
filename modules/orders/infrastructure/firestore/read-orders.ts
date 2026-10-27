@@ -29,6 +29,11 @@ export interface OrderDto {
   selectedMasterName?: string;
   selectedPrice?: number;
   responseCount: number;
+  flowVersion?: number;
+  agreementStatus?: 'pending' | 'confirmed';
+  agreementVersion?: number;
+  finalPrice?: number;
+  paymentStatus?: 'funded';
   hasSubmittedReview: boolean;
   ratings?: Array<{ rating: number; comment?: string; createdAt: string; userId?: string }>;
   measurements?: string;
@@ -151,6 +156,17 @@ function orderDto(id: string, data: Record<string, unknown>, actorId: string): O
     responseCount: numberValue(data.responseCount),
     hasSubmittedReview: stringArray(data.reviewAuthorIds).includes(actorId),
   };
+  if (typeof data.flowVersion === 'number') result.flowVersion = data.flowVersion;
+  if (data.agreementStatus === 'pending' || data.agreementStatus === 'confirmed') {
+    result.agreementStatus = data.agreementStatus;
+  }
+  if (typeof data.agreementVersion === 'number') result.agreementVersion = data.agreementVersion;
+  if (typeof data.finalPrice === 'number' && (isCustomer || isSelectedMaster)) {
+    result.finalPrice = data.finalPrice;
+  }
+  if (data.paymentStatus === 'funded' && (isCustomer || isSelectedMaster)) {
+    result.paymentStatus = 'funded';
+  }
   if (selectedMasterId && (isCustomer || isSelectedMaster)) {
     result.selectedMasterId = selectedMasterId;
     result.selectedMasterName = createPublicAlias('master', selectedMasterId);

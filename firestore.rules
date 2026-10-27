@@ -15,7 +15,14 @@ service cloud.firestore {
         'responses',
         'responseCount',
         'ratings',
-        'reviewAuthorIds'
+        'reviewAuthorIds',
+        'flowVersion',
+        'agreementStatus',
+        'agreementVersion',
+        'finalPrice',
+        'paymentStatus',
+        'paymentId',
+        'paidAt'
       ]);
     }
 
@@ -103,6 +110,24 @@ service cloud.firestore {
     // feedback must not be observable by the other order participant.
     match /reviews/{reviewId} {
       allow read, write: if false;
+    }
+
+    // Final terms and the test payment ledger are server-owned. Participants
+    // receive projected data through authenticated APIs.
+    match /agreements/{agreementId} {
+      allow read, write: if false;
+
+      match /versions/{versionId} {
+        allow read, write: if false;
+      }
+    }
+
+    match /payments/{paymentId} {
+      allow read, write: if false;
+
+      match /events/{eventId} {
+        allow read, write: if false;
+      }
     }
 
     // Chat content is private. Message creation and preview counters are

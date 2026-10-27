@@ -30,12 +30,14 @@ interface Step {
 function buildSteps(currentStatus: OrderStatus): Step[] {
   const steps: { id: string; label: string; status: OrderStatus }[] = [
     { id: 'accepted',   label: 'Принят',   status: 'master_selected' },
+    { id: 'terms',      label: 'Условия', status: 'awaiting_payment' },
+    { id: 'paid',       label: 'Оплачен', status: 'paid' },
     { id: 'inprogress', label: 'В работе', status: 'in_progress' },
     { id: 'ready',      label: 'Готов',    status: 'ready' },
     { id: 'delivered',  label: 'Доставлен', status: 'delivered' },
   ];
 
-  const ORDER: OrderStatus[] = ['master_selected', 'in_progress', 'ready', 'delivered', 'completed'];
+  const ORDER: OrderStatus[] = ['master_selected', 'awaiting_payment', 'paid', 'in_progress', 'ready', 'delivered', 'completed'];
   const currentIdx = ORDER.indexOf(currentStatus);
 
   return steps.map((step) => {
@@ -49,6 +51,8 @@ function buildSteps(currentStatus: OrderStatus): Step[] {
 
 const STATUS_META: Partial<Record<OrderStatus, { icon: string; text: string; sub: string }>> = {
   master_selected: { icon: '🤝', text: 'Принят',   sub: 'Мастер подтвердил заказ и готовится приступить' },
+  awaiting_payment: { icon: '📋', text: 'Условия согласованы', sub: 'Заказ ожидает тестовой оплаты' },
+  paid:            { icon: '🛡️', text: 'Тестово оплачен', sub: 'Средства зарезервированы в тестовом контуре' },
   in_progress:     { icon: '🧶', text: 'В работе', sub: 'Мастер приступил к вязанию вашего заказа' },
   ready:           { icon: '✅', text: 'Готово!',  sub: 'Ваш заказ выполнен и ждёт передачи' },
   delivered:       { icon: '📦', text: 'Доставлен', sub: 'Заказ доставлен, ожидаем подтверждения' },
@@ -313,10 +317,10 @@ export default function TrackPage() {
           <div className="flex items-center justify-between border-t border-border pt-4">
             <span className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
               <Wallet className="size-4 text-primary" aria-hidden="true" />
-              {order.selectedPrice ? 'Цена мастера' : 'Бюджет'}
+              {order.finalPrice ? 'Итоговая цена' : order.selectedPrice ? 'Цена мастера' : 'Бюджет'}
             </span>
             <span className="font-display text-lg font-semibold text-primary">
-              {(order.selectedPrice ?? order.budgetMax).toLocaleString('ru-RU')} ₽
+              {(order.finalPrice ?? order.selectedPrice ?? order.budgetMax).toLocaleString('ru-RU')} ₽
             </span>
           </div>
         </section>
@@ -349,7 +353,29 @@ export default function TrackPage() {
             >
               ✓ Заказ завершён
             </motion.div>
-          ) : isMaster && order.status === 'master_selected' ? (
+          ) : order.flowVersion === 2 && order.status === 'master_selected' ? (
+            <motion.div key="agreement" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
+              <PressableButton
+                type="button"
+                onClick={() => router.push(`/orders/${order.id}/agreement`)}
+                className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-bold text-white shadow-[0_8px_24px_rgb(var(--primary-rgb)_/_0.4)]"
+                style={{ background: 'var(--primary)' }}
+              >
+                📋 Согласовать условия
+              </PressableButton>
+            </motion.div>
+          ) : order.status === 'awaiting_payment' ? (
+            <motion.div key="payment" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
+              <PressableButton
+                type="button"
+                onClick={() => router.push(`/orders/${order.id}/agreement`)}
+                className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-lg font-bold text-white shadow-[0_8px_24px_rgb(var(--primary-rgb)_/_0.4)]"
+                style={{ background: 'var(--primary)' }}
+              >
+                {isOwner ? '💳 Перейти к тестовой оплате' : '📋 Условия и оплата'}
+              </PressableButton>
+            </motion.div>
+          ) : isMaster && (order.status === 'paid' || order.status === 'master_selected') ? (
             <motion.div key="start" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
               <PressableButton
                 type="button"

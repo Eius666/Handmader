@@ -187,7 +187,7 @@ export default function HomePage() {
                   <OrderCard
                     order={order}
                     onClick={() => {
-                      if (['master_selected', 'in_progress', 'ready', 'delivered'].includes(order.status)) {
+                      if (['master_selected', 'awaiting_payment', 'paid', 'in_progress', 'ready', 'delivered'].includes(order.status)) {
                         router.push(`/track/${order.id}`);
                       } else {
                         router.push(`/orders/${order.id}`);

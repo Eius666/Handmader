@@ -4,6 +4,9 @@ export type NotificationType =
   | 'new_order'
   | 'new_response'
   | 'master_selected'
+  | 'agreement_pending'
+  | 'agreement_confirmed'
+  | 'payment_confirmed'
   | 'work_started'
   | 'order_ready'
   | 'order_completed'
@@ -28,6 +31,8 @@ export type VerificationStatus = 'none' | 'pending' | 'verified' | 'rejected';
 export type OrderStatus =
   | 'awaiting_responses'
   | 'master_selected'
+  | 'awaiting_payment'
+  | 'paid'
   | 'in_progress'
   | 'ready'
   | 'delivered'
@@ -112,6 +117,11 @@ export interface Order {
   selectedPrice?: number;
   responses: Record<string, OrderResponse>;
   responseCount?: number;
+  flowVersion?: number;
+  agreementStatus?: 'pending' | 'confirmed';
+  agreementVersion?: number;
+  finalPrice?: number;
+  paymentStatus?: 'funded';
   hasSubmittedReview?: boolean;
   ratings?: OrderRating[];
   measurements?: string;
@@ -153,6 +163,8 @@ export const CATEGORY_LABELS: Record<OrderCategory, string> = {
 export const STATUS_LABELS: Record<OrderStatus, string> = {
   awaiting_responses: 'Ожидает откликов',
   master_selected: 'Мастер выбран',
+  awaiting_payment: 'Ожидает оплаты',
+  paid: 'Оплачен',
   in_progress: 'В работе',
   ready: 'Готов',
   delivered: 'Доставлен',
@@ -161,6 +173,8 @@ export const STATUS_LABELS: Record<OrderStatus, string> = {
 
 export const STATUS_STEPS: OrderStatus[] = [
   'master_selected',
+  'awaiting_payment',
+  'paid',
   'in_progress',
   'ready',
   'delivered',

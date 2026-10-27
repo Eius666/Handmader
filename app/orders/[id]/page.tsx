@@ -72,7 +72,7 @@ export default function OrderDetailPage() {
   const isMasterSelected = !!order.selectedMasterId;
 
   // If order is in active state, redirect to tracking
-  if (['in_progress', 'ready', 'delivered'].includes(order.status)) {
+  if (['awaiting_payment', 'paid', 'in_progress', 'ready', 'delivered'].includes(order.status)) {
     router.replace(`/track/${order.id}`);
     return null;
   }
@@ -165,7 +165,7 @@ export default function OrderDetailPage() {
             <div>
               <p className="font-bold text-foreground">Мастер выбран!</p>
               <p className="text-sm text-muted-foreground">
-                {order.selectedMasterName} приступит к работе
+                Согласуйте с {order.selectedMasterName} итоговые условия
               </p>
             </div>
             <PressableButton
