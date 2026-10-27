@@ -8,6 +8,7 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { Stagger, StaggerItem } from '@/components/motion/Stagger';
 import { PressableButton } from '@/components/motion/Pressable';
 import { subscribeToNotifications, markNotificationRead, markAllNotificationsRead } from '@/lib/notifications';
+import { notificationRoute } from '@/modules/notifications/domain/notification-route';
 import { relativeTime } from '@/lib/relativeTime';
 import { AppNotification, NotificationType } from '@/types';
 
@@ -82,11 +83,8 @@ export default function NotificationsPage() {
     if (!notif.read) {
       markNotificationRead(notif.id).catch(console.error);
     }
-    if (notif.chatId) {
-      router.push(`/chat/${notif.chatId}`);
-    } else if (notif.orderId) {
-      router.push(`/track/${notif.orderId}`);
-    }
+    const route = notificationRoute(notif);
+    if (route) router.push(route);
   }
 
   const hasUnread = notifications.some((n) => !n.read);

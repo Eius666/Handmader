@@ -1,85 +1,22 @@
 import {
-  addDoc,
   collection,
   doc,
-  getDoc,
   getDocs,
+  limit,
   onSnapshot,
   orderBy,
   query,
-  serverTimestamp,
+  Timestamp,
   updateDoc,
   where,
   writeBatch,
-  limit,
-  Timestamp,
 } from 'firebase/firestore';
+
+import type { AppNotification, NotificationType } from '@/types';
 import { db } from './firebase';
-import { AppNotification, CATEGORY_LABELS, NotificationType, OrderCategory } from '@/types';
 
-const BOT_USERNAME = process.env.NEXT_PUBLIC_BOT_USERNAME ?? 'handmader_bot';
-const APP_URL = `https://t.me/${BOT_USERNAME}`;
-
-function orderLink(orderId: string) {
-  return `${APP_URL}?startapp=${orderId}`;
-}
-
-function chatLink(orderId: string) {
-  return `https://t.me/${BOT_USERNAME}?startapp=chat_${orderId}`;
-}
-
-// Escape user-provided strings before inserting into Telegram HTML messages.
-// Telegram's parse_mode:'HTML' renders <b>, <a>, etc. — unescaped user content
-// would be treated as markup, enabling phishing links or misleading formatting.
-function esc(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-}
-
-async function getUserTelegramId(uid: string): Promise<number | null> {
-  try {
-    const snap = await getDoc(doc(db, 'users', uid));
-    return (snap.data()?.telegramId as number) ?? null;
-  } catch {
-    return null;
-  }
-}
-
-async function sendNotify(telegramId: number, message: string): Promise<void> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  const secret = process.env.NEXT_PUBLIC_INTERNAL_API_SECRET;
-  if (secret) headers['x-internal-secret'] = secret;
-
-  const res = await fetch('/api/notify', {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({ telegramId, message }),
-  });
-  if (!res.ok) {
-    const data = (await res.json().catch(() => ({}))) as { error?: string };
-    console.error('[notify] sendNotify failed:', data.error ?? res.status);
-  }
-}
-
-// ─── In-app notifications ─────────────────────────────────────────────────────
-
-export async function createInAppNotification(
-  userId: string,
-  type: NotificationType,
-  title: string,
-  body: string,
-  meta?: { orderId?: string; chatId?: string },
-): Promise<void> {
-  await addDoc(collection(db, 'notifications'), {
-    userId,
-    type,
-    title,
-    body,
-    orderId: meta?.orderId ?? null,
-    chatId: meta?.chatId ?? null,
-    read: false,
-    createdAt: serverTimestamp(),
-  });
-}
+// Notifications are created only by trusted server commands. The browser can
+// subscribe and update read state, but cannot create events or call channels.
 
 export function subscribeToUnreadCount(
   uid: string,
@@ -106,17 +43,20 @@ export function subscribeToNotifications(
   return onSnapshot(
     q,
     (snap) => {
-      const items: AppNotification[] = snap.docs.map((d) => ({
-        id: d.id,
-        userId: d.data().userId as string,
-        type: d.data().type as NotificationType,
-        title: d.data().title as string,
-        body: d.data().body as string,
-        orderId: d.data().orderId as string | undefined,
-        chatId: d.data().chatId as string | undefined,
-        read: d.data().read as boolean,
-        createdAt: (d.data().createdAt as Timestamp)?.toDate() ?? new Date(),
-      }));
+      const items: AppNotification[] = snap.docs.map((item) => {
+        const data = item.data();
+        return {
+          id: item.id,
+          userId: String(data.userId ?? ''),
+          type: data.type as NotificationType,
+          title: String(data.title ?? ''),
+          body: String(data.body ?? ''),
+          ...(typeof data.orderId === 'string' && data.orderId ? { orderId: data.orderId } : {}),
+          ...(typeof data.chatId === 'string' && data.chatId ? { chatId: data.chatId } : {}),
+          read: data.read === true,
+          createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(),
+        };
+      });
       callback(items);
     },
     () => callback([]),
@@ -137,251 +77,6 @@ export async function markAllNotificationsRead(uid: string): Promise<void> {
   );
   if (snap.empty) return;
   const batch = writeBatch(db);
-  snap.docs.forEach((d) => batch.update(d.ref, { read: true }));
+  snap.docs.forEach((item) => batch.update(item.ref, { read: true }));
   await batch.commit();
-}
-
-// ─── Telegram + in-app notify functions ──────────────────────────────────────
-
-/**
- * Notify a chat participant about a new incoming message.
- * Called fire-and-forget from sendMessage in firestore.ts.
- */
-export async function notifyNewChatMessage(
-  recipientTelegramId: number,
-  senderName: string,
-  orderTitle: string,
-  messageText: string,
-  orderId: string,
-): Promise<void> {
-  const shortText = messageText.length > 50 ? messageText.slice(0, 50) + '...' : messageText;
-  const link = chatLink(orderId);
-  const message =
-    `💬 <b>Новое сообщение от ${esc(senderName)}</b>\n\n` +
-    `Заказ: «${esc(orderTitle)}»\n` +
-    `${esc(shortText)}\n\n` +
-    `<a href="${link}">Открыть чат →</a>`;
-  await sendNotify(recipientTelegramId, message);
-}
-
-/**
- * Notify all masters whose categories match the new order.
- * Called after createOrder.
- */
-export async function notifyMastersAboutOrder(
-  orderId: string,
-  category: OrderCategory,
-  description: string,
-  budgetMin: number,
-  budgetMax: number,
-): Promise<void> {
-  const snaps = await getDocs(
-    query(collection(db, 'users'), where('role', 'in', ['master', 'both'])),
-  );
-
-  const link = orderLink(orderId);
-  const categoryLabel = CATEGORY_LABELS[category];
-  const shortDesc = description.slice(0, 100) + (description.length > 100 ? '…' : '');
-  const message =
-    `🧵 <b>Новый заказ</b>\n` +
-    `Категория: ${esc(categoryLabel)}\n` +
-    `${esc(shortDesc)}\n` +
-    `Бюджет: ${budgetMin.toLocaleString('ru-RU')} — ${budgetMax.toLocaleString('ru-RU')} ₽\n\n` +
-    `<a href="${link}">Откликнуться →</a>`;
-
-  const notifBody = `${categoryLabel}: ${description.slice(0, 80)}${description.length > 80 ? '…' : ''}`;
-
-  for (const snap of snaps.docs) {
-    const data = snap.data();
-    const cats = data.masterProfile?.categories as OrderCategory[] | undefined;
-    if (cats && cats.length > 0 && !cats.includes(category)) continue;
-
-    // Telegram
-    const tgId = data.telegramId as number | undefined;
-    if (tgId) void sendNotify(tgId, message);
-
-    // In-app
-    void createInAppNotification(snap.id, 'new_order', 'Новый заказ', notifBody, { orderId });
-  }
-}
-
-/**
- * Notify customer that a master responded to their order.
- * Called after addResponse.
- */
-export async function notifyCustomerNewResponse(
-  customerId: string,
-  orderId: string,
-  orderDescription: string,
-  masterName: string,
-  price: number,
-  timeline: string,
-): Promise<void> {
-  const tgId = await getUserTelegramId(customerId);
-  const link = orderLink(orderId);
-  const desc = orderDescription.slice(0, 60) + (orderDescription.length > 60 ? '…' : '');
-
-  if (tgId) {
-    const message =
-      `👤 <b>${esc(masterName)}</b> откликнулся на ваш заказ\n` +
-      `«${esc(desc)}»\n` +
-      `Цена: ${price.toLocaleString('ru-RU')} ₽ · Срок: ${esc(timeline)}\n\n` +
-      `<a href="${link}">Посмотреть →</a>`;
-    void sendNotify(tgId, message);
-  }
-
-  void createInAppNotification(
-    customerId,
-    'new_response',
-    `${masterName} откликнулся`,
-    `${price.toLocaleString('ru-RU')} ₽ · ${timeline}`,
-    { orderId },
-  );
-}
-
-/**
- * Notify the selected master that they were chosen.
- * Called after selectMaster.
- */
-export async function notifyMasterSelected(masterId: string, orderId: string): Promise<void> {
-  const [tgId, snap] = await Promise.all([
-    getUserTelegramId(masterId),
-    getDoc(doc(db, 'orders', orderId)),
-  ]);
-
-  const desc = snap.exists() ? String(snap.data().description ?? '') : '';
-  const shortDesc = desc.slice(0, 60) + (desc.length > 60 ? '…' : '');
-  const link = orderLink(orderId);
-
-  if (tgId) {
-    const message =
-      `✅ <b>Вас выбрали!</b>\n` +
-      `Заказ: «${esc(shortDesc)}»\n\n` +
-      `<a href="${link}">Перейти к заказу →</a>`;
-    void sendNotify(tgId, message);
-  }
-
-  void createInAppNotification(
-    masterId,
-    'master_selected',
-    'Вас выбрали!',
-    shortDesc || 'Заказчик выбрал вас исполнителем',
-    { orderId },
-  );
-}
-
-/**
- * Notify customer that the master started working.
- * Called after startWork.
- */
-export async function notifyCustomerWorkStarted(orderId: string): Promise<void> {
-  const snap = await getDoc(doc(db, 'orders', orderId));
-  if (!snap.exists()) return;
-  const { customerId, description } = snap.data() as { customerId: string; description: string };
-  const desc = description.slice(0, 60) + (description.length > 60 ? '…' : '');
-  const link = orderLink(orderId);
-
-  const tgId = await getUserTelegramId(customerId);
-  if (tgId) {
-    const message =
-      `🔧 Мастер начал работу над заказом\n` +
-      `«${esc(desc)}»\n\n` +
-      `<a href="${link}">Открыть →</a>`;
-    void sendNotify(tgId, message);
-  }
-
-  void createInAppNotification(
-    customerId,
-    'work_started',
-    'Мастер приступил к работе',
-    desc,
-    { orderId },
-  );
-}
-
-/**
- * Notify customer that their order is ready.
- * Called after markReady.
- */
-export async function notifyCustomerOrderReady(orderId: string): Promise<void> {
-  const snap = await getDoc(doc(db, 'orders', orderId));
-  if (!snap.exists()) return;
-  const { customerId, description } = snap.data() as { customerId: string; description: string };
-  const desc = description.slice(0, 60) + (description.length > 60 ? '…' : '');
-  const link = orderLink(orderId);
-
-  const tgId = await getUserTelegramId(customerId);
-  if (tgId) {
-    const message =
-      `✨ <b>Заказ готов!</b>\n` +
-      `«${esc(desc)}»\n\n` +
-      `<a href="${link}">Подтвердить получение →</a>`;
-    void sendNotify(tgId, message);
-  }
-
-  void createInAppNotification(
-    customerId,
-    'order_ready',
-    'Заказ готов!',
-    desc,
-    { orderId },
-  );
-}
-
-/**
- * Notify admin that a master submitted a verification request.
- * Called fire-and-forget from submitVerification in firestore.ts.
- */
-export async function notifyAdminVerificationRequest(
-  masterName: string,
-  masterId: string,
-): Promise<void> {
-  const adminIdStr = process.env.NEXT_PUBLIC_ADMIN_TELEGRAM_ID;
-  if (!adminIdStr) return;
-  const adminId = Number(adminIdStr);
-  if (!adminId) return;
-  const message =
-    `📝 <b>Новая заявка на верификацию</b>\n\n` +
-    `Мастер: <b>${masterName}</b>\n` +
-    `ID: <code>${masterId}</code>\n\n` +
-    `Одобрить или отклонить:\n` +
-    `Firebase Console → users → ${masterId}\n` +
-    `Поле: <code>verificationStatus</code> → <code>verified</code> / <code>rejected</code>`;
-  await sendNotify(adminId, message);
-}
-
-/**
- * Notify master that the order was completed by the customer.
- * Called after confirmDelivery.
- */
-export async function notifyMasterOrderCompleted(
-  orderId: string,
-  masterId: string | null,
-): Promise<void> {
-  if (!masterId) return;
-  const [tgId, snap] = await Promise.all([
-    getUserTelegramId(masterId),
-    getDoc(doc(db, 'orders', orderId)),
-  ]);
-
-  const desc = snap.exists() ? String(snap.data().description ?? '') : '';
-  const shortDesc = desc.slice(0, 60) + (desc.length > 60 ? '…' : '');
-  const link = orderLink(orderId);
-
-  if (tgId) {
-    const message =
-      `🎉 <b>Заказ завершён!</b>\n` +
-      `«${esc(shortDesc)}»\n` +
-      `Спасибо за работу!\n\n` +
-      `<a href="${link}">Открыть →</a>`;
-    void sendNotify(tgId, message);
-  }
-
-  void createInAppNotification(
-    masterId,
-    'order_completed',
-    'Заказ завершён!',
-    shortDesc || 'Клиент подтвердил получение заказа',
-    { orderId },
-  );
 }
