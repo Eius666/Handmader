@@ -56,16 +56,35 @@ export default function NotificationsPage() {
 
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading,        setLoading]       = useState(true);
+  const [loadError,      setLoadError]     = useState(false);
+  const [retryKey,       setRetryKey]      = useState(0);
   const [markingAll,     setMarkingAll]    = useState(false);
 
   useEffect(() => {
     if (!user?.uid) return;
+    let settled = false;
+    const timeout = window.setTimeout(() => {
+      if (!settled) {
+        setLoading(false);
+        setLoadError(true);
+      }
+    }, 8_000);
     const unsub = subscribeToNotifications(user.uid, (items) => {
+      settled = true;
+      window.clearTimeout(timeout);
       setNotifications(items);
       setLoading(false);
+    }, () => {
+      settled = true;
+      window.clearTimeout(timeout);
+      setLoading(false);
+      setLoadError(true);
     });
-    return unsub;
-  }, [user?.uid]);
+    return () => {
+      window.clearTimeout(timeout);
+      unsub();
+    };
+  }, [retryKey, user?.uid]);
 
   async function handleMarkAll() {
     if (!user?.uid || markingAll) return;
@@ -77,6 +96,12 @@ export default function NotificationsPage() {
     } finally {
       setMarkingAll(false);
     }
+  }
+
+  function handleRetry() {
+    setLoading(true);
+    setLoadError(false);
+    setRetryKey((value) => value + 1);
   }
 
   async function handleTap(notif: AppNotification) {
@@ -104,6 +129,15 @@ export default function NotificationsPage() {
     <PageLayout title="Уведомления" showBack headerRight={headerRight}>
       {loading ? (
         <NotificationSkeleton />
+      ) : loadError ? (
+        <div className="flex flex-col items-center gap-4 px-5 pt-20 text-center">
+          <div className="flex size-20 items-center justify-center rounded-full bg-secondary text-3xl" aria-hidden="true">↻</div>
+          <p className="text-[15px] font-semibold text-foreground">Не удалось загрузить уведомления</p>
+          <p className="text-[13px] leading-relaxed text-muted-foreground">Проверьте соединение и попробуйте ещё раз</p>
+          <PressableButton onClick={handleRetry} className="btn-outline px-5 py-3">
+            Повторить
+          </PressableButton>
+        </div>
       ) : notifications.length === 0 ? (
         <div className="flex flex-col items-center gap-4 px-5 pt-20 text-center">
           <div

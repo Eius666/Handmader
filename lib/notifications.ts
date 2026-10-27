@@ -33,6 +33,7 @@ export function subscribeToUnreadCount(
 export function subscribeToNotifications(
   uid: string,
   callback: (notifications: AppNotification[]) => void,
+  onError?: (error: Error) => void,
 ): () => void {
   const q = query(
     collection(db, 'notifications'),
@@ -59,7 +60,7 @@ export function subscribeToNotifications(
       });
       callback(items);
     },
-    () => callback([]),
+    (error) => onError?.(error),
   );
 }
 
