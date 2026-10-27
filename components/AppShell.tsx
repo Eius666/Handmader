@@ -41,6 +41,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
     // Check after mount to avoid SSR hydration mismatch
     if (!localStorage.getItem('handmader_splash_seen')) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSplash(true);
     }
   }, []);

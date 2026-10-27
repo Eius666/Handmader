@@ -14,12 +14,13 @@ function sanitizeHtml(text: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  // Optional: require an internal secret header to prevent public abuse
-  if (INTERNAL_SECRET) {
-    const provided = req.headers.get('x-internal-secret');
-    if (provided !== INTERNAL_SECRET) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
-    }
+  // Never expose a Telegram relay when server-to-server authentication is absent.
+  if (!INTERNAL_SECRET) {
+    return NextResponse.json({ success: false, error: 'Notification relay is disabled' }, { status: 503 });
+  }
+  const provided = req.headers.get('x-internal-secret');
+  if (provided !== INTERNAL_SECRET) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
 
   if (!BOT_TOKEN) {
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: telegramId,
-        text: message,
+        text: sanitizeHtml(message),
         parse_mode: 'HTML',
         disable_web_page_preview: true,
       }),

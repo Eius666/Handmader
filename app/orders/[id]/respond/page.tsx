@@ -6,9 +6,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { Spinner } from '@/components/ui/Spinner';
 import { Ruler } from 'lucide-react';
-import { getOrder, addResponse } from '@/lib/firestore';
+import { getOrder } from '@/lib/firestore';
+import { getVisibleProposals, submitProposal } from '@/lib/proposals';
 import { ImageCarousel } from '@/components/ui/ImageCarousel';
-import { PressableButton } from '@/components/motion/Pressable';
 import { Order, CATEGORY_LABELS } from '@/types';
 
 export default function RespondPage() {
@@ -26,11 +26,21 @@ export default function RespondPage() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
-    getOrder(id)
-      .then(setOrder)
+    if (!id || !user) return;
+    Promise.all([getOrder(id), getVisibleProposals(id)])
+      .then(([loadedOrder, proposals]) => {
+        if (!loadedOrder) return;
+        setOrder({ ...loadedOrder, responses: proposals });
+        const own = proposals[user.uid];
+        if (own) {
+          setPrice(String(own.price));
+          setTimeline(own.timeline);
+          setComment(own.comment);
+        }
+      })
+      .catch((err) => setError(err instanceof Error ? err.message : 'Не удалось загрузить заказ'))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, user]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -54,20 +64,10 @@ export default function RespondPage() {
     setError('');
     setSubmitting(true);
     try {
-      const masterProfile = user.masterProfile;
-      const portfolioPhotos = masterProfile?.portfolioPhotos?.slice(0, 3) ?? [];
-
-      await addResponse(order.id, user.uid, {
-        masterId: user.uid,
-        masterName: user.displayName,
-        masterPhoto: masterProfile?.portfolioPhotos?.[0],
-        masterRating: masterProfile?.rating ?? 0,
-        masterCompletedOrders: masterProfile?.completedOrders ?? 0,
-        masterVerified: user.verificationStatus === 'verified',
+      await submitProposal(order.id, {
         price: priceNum,
         timeline: timeline.trim(),
         comment: comment.trim(),
-        portfolioPhotos,
       });
       setSuccess(true);
       setTimeout(() => router.replace(`/orders/${order.id}`), 1500);
@@ -99,43 +99,8 @@ export default function RespondPage() {
 
   const alreadyResponded = Boolean(user && order.responses && user.uid in order.responses);
 
-  if (alreadyResponded) {
-    return (
-      <PageLayout showBack title="Отклик на заказ">
-        <div
-          className="mx-5 mt-10 flex flex-col items-center gap-4 rounded-2xl p-8 text-center"
-          style={{
-            background: 'var(--card)',
-            border: '1px solid rgb(var(--foreground-rgb) / 0.08)',
-            boxShadow: '0 4px 16px rgb(var(--foreground-rgb) / 0.06)',
-          }}
-        >
-          <div
-            className="flex size-16 items-center justify-center rounded-full text-3xl"
-            style={{ background: 'rgb(var(--primary-rgb) / 0.1)' }}
-          >
-            ✓
-          </div>
-          <h2 className="text-lg font-extrabold text-foreground">Вы уже откликнулись</h2>
-          <p className="text-sm leading-relaxed text-muted-foreground">
-            Вы уже отправили отклик на этот заказ.
-            <br />
-            Заказчик рассматривает его.
-          </p>
-          <PressableButton
-            onClick={() => router.back()}
-            className="mt-2 rounded-xl px-8 py-3 text-sm font-bold text-white"
-            style={{ background: 'var(--primary)', boxShadow: '0 4px 14px rgb(var(--primary-rgb) / 0.35)' }}
-          >
-            Назад
-          </PressableButton>
-        </div>
-      </PageLayout>
-    );
-  }
-
   return (
-    <PageLayout showBack title="Отклик на заказ">
+    <PageLayout showBack title={alreadyResponded ? 'Обновить отклик' : 'Отклик на заказ'}>
       <div className="flex flex-col gap-4 px-5 pb-8 pt-4">
 
         {/* Order summary */}
@@ -185,7 +150,7 @@ export default function RespondPage() {
         {success ? (
           <div className="flex flex-col items-center gap-3 rounded-2xl bg-card p-8 text-center shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)]">
             <span className="text-5xl">✅</span>
-            <span className="text-lg font-bold text-foreground">Отклик отправлен!</span>
+            <span className="text-lg font-bold text-foreground">Отклик сохранён!</span>
             <span className="text-sm text-muted-foreground">Заказчик получит уведомление</span>
           </div>
         ) : (
@@ -236,7 +201,11 @@ export default function RespondPage() {
             )}
 
             <button className="btn-primary" type="submit" disabled={submitting}>
-              {submitting ? 'Отправляем...' : 'Отправить отклик'}
+              {submitting
+                ? 'Сохраняем...'
+                : alreadyResponded
+                  ? 'Сохранить новую версию'
+                  : 'Отправить отклик'}
             </button>
           </form>
         )}

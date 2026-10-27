@@ -88,12 +88,17 @@ export interface OrderResponse {
   comment: string;
   portfolioPhotos: string[];
   createdAt: Date;
+  updatedAt?: Date;
+  validUntil?: Date;
+  version?: number;
+  status?: string;
 }
 
 export interface Order {
   id: string;
   customerId: string;
   customerName: string;
+  title?: string;
   description: string;
   category: OrderCategory;
   photos: string[];
@@ -106,9 +111,11 @@ export interface Order {
   selectedMasterName?: string;
   selectedPrice?: number;
   responses: Record<string, OrderResponse>;
+  responseCount?: number;
   ratings?: OrderRating[];
   measurements?: string;
   location?: string;
+  deliveryOption?: 'local' | 'delivery' | 'both';
 }
 
 export interface Chat {

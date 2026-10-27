@@ -16,7 +16,7 @@ export function NotificationBell() {
   const [ring,        setRing]        = useState(0);
 
   useEffect(() => {
-    if (!user?.uid) { setUnreadCount(0); return; }
+    if (!user?.uid) return;
     const unsub = subscribeToUnreadCount(user.uid, (count) => {
       setUnreadCount((prev) => {
         if (count > prev) setRing((r) => r + 1);
@@ -27,6 +27,8 @@ export function NotificationBell() {
   }, [user?.uid]);
 
   if (!user) return null;
+
+  const visibleUnreadCount = user.uid ? unreadCount : 0;
 
   return (
     <PressableButton
@@ -43,7 +45,7 @@ export function NotificationBell() {
         <Bell size={17} aria-hidden="true" />
       </motion.div>
       <AnimatePresence>
-        {unreadCount > 0 && (
+        {visibleUnreadCount > 0 && (
           <motion.span
             key="badge"
             initial={{ opacity: 0, scale: 0.4 }}
@@ -53,7 +55,7 @@ export function NotificationBell() {
             className="absolute -right-0.5 -top-0.5 flex min-w-[18px] h-[18px] items-center justify-center rounded-full px-1"
             style={{ background: 'var(--danger)', color: '#fff', fontSize: 11, fontWeight: 700, lineHeight: 1 }}
           >
-            {unreadCount > 99 ? '99+' : unreadCount}
+            {visibleUnreadCount > 99 ? '99+' : visibleUnreadCount}
           </motion.span>
         )}
       </AnimatePresence>

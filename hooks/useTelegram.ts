@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useSyncExternalStore } from 'react';
 import { auth } from '@/lib/firebase';
 import { setUser } from '@/lib/firestore';
 
@@ -45,33 +45,32 @@ declare global {
 }
 
 export function useTelegram() {
-  const [tgUser, setTgUser] = useState<TelegramUser | null>(null);
-  const [webApp, setWebApp] = useState<WebApp | null>(null);
+  const webApp = useSyncExternalStore(
+    () => () => {},
+    () => window.Telegram?.WebApp ?? null,
+    () => null,
+  );
+  const tgUser = webApp?.initDataUnsafe?.user ?? null;
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.Telegram?.WebApp) {
-      const wa = window.Telegram.WebApp;
-      setWebApp(wa);
-      const tgUsr = wa.initDataUnsafe?.user ?? null;
-      setTgUser(tgUsr);
-
+    if (webApp) {
       // Save Telegram ID to Firestore on first login or when it changes.
       // Checked against auth.currentUser to avoid a read; the actual
       // Firestore setDoc uses merge:true so duplicate writes are cheap.
-      if (tgUsr?.id) {
+      if (tgUser?.id) {
         const fbUser = auth.currentUser;
         if (fbUser) {
           // Store in sessionStorage so we only write once per browser session.
           const sessionKey = `tgid_saved_${fbUser.uid}`;
           if (!sessionStorage.getItem(sessionKey)) {
-            setUser(fbUser.uid, { telegramId: tgUsr.id })
+            setUser(fbUser.uid, { telegramId: tgUser.id })
               .then(() => sessionStorage.setItem(sessionKey, '1'))
               .catch(console.error);
           }
         }
       }
     }
-  }, []);
+  }, [tgUser?.id, webApp]);
 
   function openTelegramChat(telegramId: string | number) {
     const url = `tg://openmessage?user_id=${telegramId}`;

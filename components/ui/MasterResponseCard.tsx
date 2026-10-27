@@ -7,14 +7,13 @@ import { VerifiedBadge } from './VerifiedBadge';
 import { MotionCard, PressableButton } from '@/components/motion/Pressable';
 
 interface Props {
-  masterId: string;
   response: OrderResponse;
   onSelect?: () => void;
   isSelecting?: boolean;
   selected?: boolean;
 }
 
-export function MasterResponseCard({ masterId, response, onSelect, isSelecting, selected }: Props) {
+export function MasterResponseCard({ response, onSelect, isSelecting, selected }: Props) {
   return (
     /* Double-bezel */
     <MotionCard

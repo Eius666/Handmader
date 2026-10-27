@@ -124,6 +124,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { user: fbUser } = await createUserWithEmailAndPassword(auth, email, password);
       await updateFirebaseProfile(fbUser, { displayName });
+      await fbUser.getIdToken(true);
 
       const profile: User = {
         uid:             fbUser.uid,

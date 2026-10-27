@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Clock, SlidersHorizontal } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { Clock, MapPin, SlidersHorizontal } from 'lucide-react';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { ImageCarousel } from '@/components/ui/ImageCarousel';
 import { Stagger, StaggerItem } from '@/components/motion/Stagger';
@@ -22,7 +21,6 @@ const FILTERS: { key: OrderCategory | ''; label: string }[] = [
 ];
 
 export default function FeedPage() {
-  const { user } = useAuth();
   const router = useRouter();
   const [orders,      setOrders]      = useState<Order[]>([]);
   const [loading,     setLoading]     = useState(true);
@@ -30,7 +28,6 @@ export default function FeedPage() {
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
     getAvailableOrders()
       .then(setOrders)
       .catch(console.error)
@@ -149,7 +146,7 @@ function BrowseOrderCard({
   onRespond: () => void;
   onDetail: () => void;
 }) {
-  const responseCount = Object.keys(order.responses ?? {}).length;
+  const responseCount = order.responseCount ?? Object.keys(order.responses ?? {}).length;
 
   return (
     <MotionCard
@@ -175,8 +172,9 @@ function BrowseOrderCard({
             {CATEGORY_LABELS[order.category]}
           </span>
           <h3 className="font-display text-[15px] font-semibold leading-snug text-foreground">
-            {order.customerName}
+            {order.title || CATEGORY_LABELS[order.category]}
           </h3>
+          <span className="text-[11px] text-muted-foreground">{order.customerName}</span>
         </div>
         {responseCount > 0 && (
           <span
@@ -204,6 +202,12 @@ function BrowseOrderCard({
           <Clock className="size-3.5" aria-hidden="true" />
           до {formatDate(order.deadline)}
         </span>
+        {order.location && (
+          <span className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
+            <MapPin className="size-3.5" aria-hidden="true" />
+            {order.location}
+          </span>
+        )}
       </div>
 
       <div className="flex gap-2.5">

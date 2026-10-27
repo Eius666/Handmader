@@ -23,6 +23,8 @@ export default function VerifyPage() {
   const [success,         setSuccess]         = useState(false);
 
   useEffect(() => {
+    // Populate the editable draft once the authenticated profile is available.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (user?.verificationExperience) setExperience(user.verificationExperience);
     if (user?.verificationSocialLinks?.length) setSocialLinks(user.verificationSocialLinks);
     if (user?.verificationPortfolioPhotos?.length) {

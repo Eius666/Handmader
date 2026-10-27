@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { MessageSquare } from 'lucide-react';
-import { db } from '@/lib/firebase';
+import { getMyProposals } from '@/lib/proposals';
 import { useAuth } from '@/hooks/useAuth';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { NotificationBell } from '@/components/ui/NotificationBell';
@@ -12,18 +11,19 @@ import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Stagger, StaggerItem } from '@/components/motion/Stagger';
 import { MotionCard, PressableButton } from '@/components/motion/Pressable';
 import { PageTransition } from '@/components/motion/PageTransition';
-import { Order, CATEGORY_LABELS } from '@/types';
+import { OrderCategory, OrderStatus, CATEGORY_LABELS } from '@/types';
 
 interface Entry {
-  order: Order;
+  order: {
+    id: string;
+    description: string;
+    category: OrderCategory;
+    status: OrderStatus;
+    selectedMasterId?: string;
+  };
   myPrice: number;
   myTimeline: string;
   isSelected: boolean;
-}
-
-function formatDate(s: string) {
-  try { return new Date(s).toLocaleDateString('ru', { day: 'numeric', month: 'long' }); }
-  catch { return s; }
 }
 
 export default function MyResponsesPage() {
@@ -34,26 +34,16 @@ export default function MyResponsesPage() {
 
   useEffect(() => {
     if (!user) return;
-    if (user.role === 'customer') { setLoading(false); return; }
+    if (user.role === 'customer') return;
     async function load() {
       try {
-        const snap = await getDocs(
-          query(collection(db, 'orders'), orderBy('createdAt', 'desc'))
-        );
-        const result: Entry[] = [];
-        for (const d of snap.docs) {
-          const data = d.data();
-          const responses = data.responses as Record<string, { price: number; timeline: string }> | undefined;
-          if (responses && user!.uid in responses) {
-            const r = responses[user!.uid];
-            result.push({
-              order: { ...data, id: d.id, createdAt: data.createdAt?.toDate() ?? new Date() } as Order,
-              myPrice: r.price,
-              myTimeline: r.timeline,
-              isSelected: data.selectedMasterId === user!.uid,
-            });
-          }
-        }
+        const rows = await getMyProposals();
+        const result: Entry[] = rows.map(({ order, proposal }) => ({
+          order,
+          myPrice: proposal.price,
+          myTimeline: proposal.timeline,
+          isSelected: order.selectedMasterId === user!.uid,
+        }));
         setEntries(result);
       } catch (err) {
         console.error(err);
@@ -63,6 +53,8 @@ export default function MyResponsesPage() {
     }
     load();
   }, [user]);
+
+  const isLoading = loading && user?.role !== 'customer';
 
   return (
     <main className="flex h-full w-full flex-col overflow-hidden bg-background">
@@ -77,7 +69,7 @@ export default function MyResponsesPage() {
       <div className="flex-1 overflow-y-auto pb-28 [&::-webkit-scrollbar]:hidden">
       <PageTransition>
       <section className="flex flex-col gap-3 px-5 pt-2">
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center py-16">
             <span className="size-8 rounded-full border-2 border-secondary border-t-primary animate-spin" />
           </div>

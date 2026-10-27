@@ -3,14 +3,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'motion/react';
 import {
-  Settings, MapPin, X, ChevronRight, AlertCircle, Clock, BadgeCheck, LogOut,
+  Settings, MapPin, ChevronRight, AlertCircle, Clock, BadgeCheck, LogOut,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { PageLayout } from '@/components/layout/PageLayout';
 import { VerifiedBadge } from '@/components/ui/VerifiedBadge';
-import { Stagger, StaggerItem } from '@/components/motion/Stagger';
 import { PressableButton } from '@/components/motion/Pressable';
 import { setUser } from '@/lib/firestore';
 import { OrderCategory, CATEGORY_LABELS, MasterProfile, VerificationStatus } from '@/types';
@@ -94,11 +92,9 @@ export default function ProfilePage() {
   const [editingMaster, setEditingMaster] = useState(false);
   const [savingMaster,  setSavingMaster]  = useState(false);
   const [masterError,   setMasterError]   = useState('');
-  const [lightboxSrc,   setLightboxSrc]   = useState<string | null>(null);
 
   const [bio,  setBio]  = useState('');
   const [cats, setCats] = useState<OrderCategory[]>([]);
-  const [urls, setUrls] = useState(['', '', '']);
   const [city, setCity] = useState('');
 
   useEffect(() => {
@@ -108,9 +104,10 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!user) return;
     const mp = user.masterProfile;
+    // The form is a local draft and must be reset when another account is loaded.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setBio(mp?.bio ?? '');
     setCats(mp?.categories ?? []);
-    setUrls([mp?.portfolioPhotos?.[0] ?? '', mp?.portfolioPhotos?.[1] ?? '', mp?.portfolioPhotos?.[2] ?? '']);
     setCity(mp?.location ?? '');
     const hasMasterRole = user.role === 'master' || user.role === 'both';
     setEditingMaster(hasMasterRole && !mp);
@@ -130,7 +127,7 @@ export default function ProfilePage() {
       const masterProfile: MasterProfile = {
         bio,
         categories: cats,
-        portfolioPhotos: urls.filter(Boolean),
+        portfolioPhotos: [],
         location: city,
         rating:          mp?.rating          ?? 0,
         completedOrders: mp?.completedOrders ?? 0,
@@ -268,23 +265,6 @@ export default function ProfilePage() {
                         </PressableButton>
                       );
                     })}
-                  </div>
-                </div>
-
-                <div>
-                  <label style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted-foreground)', display: 'block', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                    Портфолио (ссылки на фото)
-                  </label>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {urls.map((url, i) => (
-                      <input
-                        key={i}
-                        value={url}
-                        onChange={(e) => setUrls((prev) => prev.map((u, j) => (j === i ? e.target.value : u)))}
-                        placeholder={`Ссылка ${i + 1} (https://...)`}
-                        className="input-field"
-                      />
-                    ))}
                   </div>
                 </div>
 
@@ -440,37 +420,6 @@ export default function ProfilePage() {
                   </>
                 )}
 
-                {/* ── Portfolio ────────────────────────────────────────────── */}
-                {mp?.portfolioPhotos && mp.portfolioPhotos.length > 0 && (
-                  <>
-                    <div style={{ height: 1, background: 'rgb(var(--primary-rgb) / 0.08)', margin: '18px 0' }} />
-                    <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted-foreground)' }}>
-                      Портфолио
-                    </p>
-                    <Stagger className="grid grid-cols-3 gap-2">
-                      {mp.portfolioPhotos.map((src, i) => (
-                        <StaggerItem key={i}>
-                          <PressableButton
-                            type="button"
-                            onClick={() => setLightboxSrc(src)}
-                            aria-label={`Открыть фото ${i + 1}`}
-                            className="aspect-square w-full overflow-hidden rounded-xl"
-                            style={{ background: 'rgb(var(--primary-rgb) / 0.06)', display: 'block' }}
-                          >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={src}
-                              alt={`Работа ${i + 1}`}
-                              className="h-full w-full object-cover"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                            />
-                          </PressableButton>
-                        </StaggerItem>
-                      ))}
-                    </Stagger>
-                  </>
-                )}
-
                 {/* ── Empty state ──────────────────────────────────────────── */}
                 {!mp?.bio && !mp?.location && (!mp?.categories || mp.categories.length === 0) && (
                   <p style={{ fontSize: 13, color: 'var(--muted-foreground)', fontStyle: 'italic', margin: '8px 0 0', textAlign: 'center' }}>
@@ -510,50 +459,6 @@ export default function ProfilePage() {
         </p>
       </div>
 
-      {/* ══ Lightbox ══════════════════════════════════════════════════════════ */}
-      <AnimatePresence>
-        {lightboxSrc && (
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Просмотр фото"
-            className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{ background: 'rgba(15,8,4,0.88)' }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={() => setLightboxSrc(null)}
-          >
-            <PressableButton
-              aria-label="Закрыть"
-              className="absolute right-4 top-4 flex size-10 items-center justify-center rounded-full"
-              style={{ background: 'rgba(255,255,255,0.14)', color: '#fff' }}
-              onClick={() => setLightboxSrc(null)}
-            >
-              <X size={18} aria-hidden="true" />
-            </PressableButton>
-
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <motion.img
-              src={lightboxSrc}
-              alt="Просмотр фото"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.94, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-              onClick={(e) => e.stopPropagation()}
-              style={{
-                maxWidth: '90vw',
-                maxHeight: '80vh',
-                objectFit: 'contain',
-                borderRadius: 16,
-                boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
-              }}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
     </PageLayout>
   );
 }

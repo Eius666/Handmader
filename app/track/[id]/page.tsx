@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Check, Send, Wallet, Package, Trash2, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Check, Wallet, Package, Trash2, MessageSquare } from 'lucide-react';
 import { NotificationBell } from '@/components/ui/NotificationBell';
 import { StarRating } from '@/components/ui/StarRating';
 import { Toast } from '@/components/ui/Toast';
@@ -13,9 +13,9 @@ import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { ImageCarousel } from '@/components/ui/ImageCarousel';
 import { PageTransition } from '@/components/motion/PageTransition';
 import { PressableButton, MotionCard } from '@/components/motion/Pressable';
-import { getOrder, startWork, markReady, confirmDelivery, submitRating, deleteOrder, getMasterTelegramId } from '@/lib/firestore';
+import { getOrder, startWork, markReady, confirmDelivery, submitRating, deleteOrder } from '@/lib/firestore';
+import { getVisibleProposals } from '@/lib/proposals';
 import { useAuth } from '@/hooks/useAuth';
-import { useTelegram } from '@/hooks/useTelegram';
 import { Order, OrderStatus, CATEGORY_LABELS } from '@/types';
 
 type StepState = 'done' | 'active' | 'todo';
@@ -58,7 +58,6 @@ const STATUS_META: Partial<Record<OrderStatus, { icon: string; text: string; sub
 export default function TrackPage() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const { openTelegramChat } = useTelegram();
   const router = useRouter();
 
   const [order,            setOrder]           = useState<Order | null>(null);
@@ -68,17 +67,15 @@ export default function TrackPage() {
   const [showRating,       setShowRating]      = useState(false);
   const [showDelete,       setShowDelete]      = useState(false);
   const [deleting,         setDeleting]        = useState(false);
-  const [masterTelegramId, setMasterTelegramId] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!id) return;
-    getOrder(id).then(setOrder).finally(() => setLoading(false));
-  }, [id]);
-
-  useEffect(() => {
-    if (!order?.selectedMasterId) return;
-    getMasterTelegramId(order.selectedMasterId).then(setMasterTelegramId).catch(console.error);
-  }, [order?.selectedMasterId]);
+    if (!id || !user) return;
+    Promise.all([getOrder(id), getVisibleProposals(id)])
+      .then(([loadedOrder, proposals]) => {
+        if (loadedOrder) setOrder({ ...loadedOrder, responses: proposals });
+      })
+      .finally(() => setLoading(false));
+  }, [id, user]);
 
   const isOwner    = order?.customerId      === user?.uid;
   const isMaster   = !isOwner && order?.selectedMasterId === user?.uid;
@@ -297,16 +294,6 @@ export default function TrackPage() {
                 <span className="text-xs text-muted-foreground">· ваш мастер</span>
               </div>
             </div>
-            {isOwner && masterTelegramId && (
-              <PressableButton
-                type="button"
-                onClick={() => openTelegramChat(masterTelegramId)}
-                className="flex shrink-0 items-center gap-2 rounded-full bg-[#229ED9] px-4 py-2.5 text-sm font-bold text-white shadow-[0_4px_14px_rgba(34,158,217,0.35)]"
-              >
-                <Send className="size-4" aria-hidden="true" />
-                Связаться
-              </PressableButton>
-            )}
           </MotionCard>
         )}
 

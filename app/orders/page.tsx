@@ -219,7 +219,7 @@ function OrderListCard({
   onDelete?: () => void;
 }) {
   const Icon = CATEGORY_ICONS[order.category] ?? Package;
-  const responseCount = Object.keys(order.responses ?? {}).length;
+  const responseCount = order.responseCount ?? Object.keys(order.responses ?? {}).length;
 
   return (
     <MotionCard

@@ -10,6 +10,7 @@ export default function OnboardingGate({ children }: { children: React.ReactNode
 
   useEffect(() => {
     if (user && !localStorage.getItem('handmader_onboarded')) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShow(true);
     }
   }, [user]);

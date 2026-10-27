@@ -37,6 +37,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText]       = useState('');
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState('');
   const [loading, setLoading] = useState(true);
 
   const scrollRef        = useRef<HTMLDivElement>(null);
@@ -111,22 +112,16 @@ export default function ChatPage() {
     if (!text.trim() || !order || !user || sending) return;
     const trimmed = text.trim();
     setText('');
+    setSendError('');
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
     atBottomRef.current = true;
     setSending(true);
     try {
-      await sendMessage(
-        orderId,
-        user.uid,
-        user.displayName,
-        trimmed,
-        order.customerId,
-        order.selectedMasterId ?? '',
-        order.customerName,
-        order.selectedMasterName ?? '',
-      );
+      await sendMessage(orderId, trimmed);
     } catch (err) {
       console.error('[Chat] sendMessage error:', err);
+      setText(trimmed);
+      setSendError(err instanceof Error ? err.message : 'Не удалось отправить сообщение');
     } finally {
       setSending(false);
     }
@@ -243,13 +238,17 @@ export default function ChatPage() {
 
       {/* ── Input form ── */}
       <div
-        className="shrink-0 flex items-end px-3 py-2"
+        className="shrink-0 flex flex-col px-3 py-2"
         style={{
           background: 'var(--background)',
           borderTop: '1px solid rgb(var(--primary-rgb) / 0.08)',
           paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))',
         }}
       >
+        {sendError && (
+          <p className="mb-2 px-1 text-xs font-semibold text-primary">{sendError}</p>
+        )}
+        <div className="flex items-end">
         <textarea
           ref={textareaRef}
           value={text}
@@ -277,6 +276,7 @@ export default function ChatPage() {
         >
           <Send className="size-4" aria-hidden="true" />
         </PressableButton>
+        </div>
       </div>
     </div>
   );

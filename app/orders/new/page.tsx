@@ -2,13 +2,13 @@
 
 import { useRef, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, Camera, Ruler, X } from 'lucide-react';
+import { ArrowLeft, Camera, MapPin, Ruler, Truck, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { createOrder } from '@/lib/firestore';
 import { DatePicker } from '@/components/ui/DatePicker';
-import { OrderCategory, CATEGORY_LABELS } from '@/types';
+import { OrderCategory } from '@/types';
 import { NotificationBell } from '@/components/ui/NotificationBell';
 import { Stagger, StaggerItem } from '@/components/motion/Stagger';
 import { PressableButton } from '@/components/motion/Pressable';
@@ -52,12 +52,15 @@ function NewOrderFormInner() {
   const initialCat = (searchParams.get('category') as OrderCategory) || 'hat';
 
   const [selectedCategory, setSelectedCategory] = useState<OrderCategory>(initialCat);
+  const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [budgetMin, setBudgetMin] = useState('');
   const [budgetMax, setBudgetMax] = useState('');
   const [deadline, setDeadline] = useState('');
   const [photos, setPhotos] = useState<string[]>([]);
   const [measurements, setMeasurements] = useState('');
+  const [location, setLocation] = useState('');
+  const [deliveryOption, setDeliveryOption] = useState<'local' | 'delivery' | 'both'>('both');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -81,28 +84,32 @@ function NewOrderFormInner() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
+    if (!title.trim()) { setError('Добавьте название заказа'); return; }
     if (!description.trim()) { setError('Добавьте описание'); return; }
+    if (!measurements.trim()) { setError('Укажите мерки или размеры изделия'); return; }
     if (!deadline) { setError('Укажите срок'); return; }
+    if (!location.trim()) { setError('Укажите город'); return; }
     const min = Number(budgetMin) || 500;
     const max = Number(budgetMax) || 3000;
     setError('');
     setSubmitting(true);
     try {
       const id = await createOrder({
-        customerId: user.uid,
-        customerName: user.displayName,
+        title: title.trim(),
         description: description.trim(),
         category: selectedCategory,
         photos,
         budgetMin: min,
         budgetMax: Math.max(min, max),
         deadline,
-        ...(measurements.trim() ? { measurements: measurements.trim() } : {}),
+        location: location.trim(),
+        deliveryOption,
+        measurements: measurements.trim(),
       });
       router.replace(`/orders/${id}`);
     } catch (err) {
       console.error(err);
-      setError('Не удалось создать заказ. Попробуйте снова.');
+      setError(err instanceof Error ? err.message : 'Не удалось создать заказ. Попробуйте снова.');
     } finally {
       setSubmitting(false);
     }
@@ -158,8 +165,20 @@ function NewOrderFormInner() {
           </Stagger>
         </section>
 
-        {/* Description */}
+        {/* Title and description */}
         <section className="flex flex-col gap-3">
+          <label htmlFor="title" className="text-base font-bold text-foreground">
+            Название
+          </label>
+          <input
+            id="title"
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="Например, тёплый свитер оверсайз"
+            maxLength={120}
+            className="w-full rounded-2xl bg-card px-5 py-4 text-base font-medium text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.05)] outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40"
+            required
+          />
           <label htmlFor="desc" className="text-base font-bold text-foreground">
             Описание
           </label>
@@ -265,6 +284,45 @@ function NewOrderFormInner() {
           </div>
         </section>
 
+        {/* Geography and delivery */}
+        <section className="flex flex-col gap-3">
+          <label htmlFor="location" className="flex items-center gap-2 text-base font-bold text-foreground">
+            <MapPin className="size-5 text-primary" aria-hidden="true" />
+            Город и получение
+          </label>
+          <input
+            id="location"
+            value={location}
+            onChange={(event) => setLocation(event.target.value)}
+            placeholder="Например, Москва"
+            className="w-full rounded-2xl bg-card px-5 py-4 text-base font-medium text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.05)] outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40"
+            required
+          />
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            {([
+              { value: 'local', label: 'Только мой город' },
+              { value: 'delivery', label: 'Доставка по России' },
+              { value: 'both', label: 'Оба варианта' },
+            ] as const).map((option) => (
+              <PressableButton
+                key={option.value}
+                type="button"
+                onClick={() => setDeliveryOption(option.value)}
+                aria-pressed={deliveryOption === option.value}
+                className="flex items-center justify-center gap-2 rounded-xl px-3 py-3 text-sm font-semibold"
+                style={{
+                  background: deliveryOption === option.value ? 'var(--primary)' : 'var(--card)',
+                  color: deliveryOption === option.value ? 'var(--primary-foreground)' : 'var(--foreground)',
+                  border: '1px solid rgb(var(--primary-rgb) / 18%)',
+                }}
+              >
+                <Truck className="size-4" aria-hidden="true" />
+                {option.label}
+              </PressableButton>
+            ))}
+          </div>
+        </section>
+
         {/* Deadline */}
         <section className="flex flex-col gap-3">
           <label className="text-base font-bold text-foreground">
@@ -290,6 +348,7 @@ function NewOrderFormInner() {
             value={measurements}
             onChange={(e) => setMeasurements(e.target.value)}
             className="w-full resize-y rounded-2xl bg-card px-5 py-4 text-base font-medium text-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.05)] outline-none placeholder:font-medium placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/40"
+            required
           />
           <p className="text-xs font-medium text-muted-foreground">
             Укажите свои размеры, чтобы мастер мог точнее оценить заказ

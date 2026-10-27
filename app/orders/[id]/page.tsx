@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Wallet, CalendarClock, Ruler } from 'lucide-react';
+import { ArrowLeft, Wallet, CalendarClock, MapPin, Ruler, Truck } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { MasterResponseCard } from '@/components/ui/MasterResponseCard';
 import { ImageCarousel } from '@/components/ui/ImageCarousel';
@@ -11,7 +11,8 @@ import { Stagger, StaggerItem } from '@/components/motion/Stagger';
 import { PressableButton } from '@/components/motion/Pressable';
 import { PageTransition } from '@/components/motion/PageTransition';
 import { getOrder, selectMaster } from '@/lib/firestore';
-import { Order, OrderResponse, CATEGORY_LABELS } from '@/types';
+import { getVisibleProposals } from '@/lib/proposals';
+import { Order, CATEGORY_LABELS } from '@/types';
 import { NotificationBell } from '@/components/ui/NotificationBell';
 
 export default function OrderDetailPage() {
@@ -27,19 +28,24 @@ export default function OrderDetailPage() {
   const isOwner = order?.customerId === user?.uid;
 
   useEffect(() => {
-    if (!id) return;
-    getOrder(id)
-      .then(setOrder)
+    if (!id || !user) return;
+    Promise.all([getOrder(id), getVisibleProposals(id)])
+      .then(([loadedOrder, proposals]) => {
+        if (loadedOrder) setOrder({ ...loadedOrder, responses: proposals });
+      })
+      .catch((error) => setToast(error instanceof Error ? error.message : 'Не удалось загрузить заказ'))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, user]);
 
-  async function handleSelectMaster(masterId: string, resp: OrderResponse) {
+  async function handleSelectMaster(masterId: string) {
     if (!order) return;
     setSelectingMaster(masterId);
     try {
-      await selectMaster(order.id, masterId, resp.masterName, resp.price);
+      await selectMaster(order.id, masterId);
       setToast('Мастер выбран!');
       setTimeout(() => router.replace(`/track/${order.id}`), 1500);
+    } catch (error) {
+      setToast(error instanceof Error ? error.message : 'Не удалось выбрать мастера');
     } finally {
       setSelectingMaster(null);
     }
@@ -96,6 +102,10 @@ export default function OrderDetailPage() {
             {CATEGORY_LABELS[order.category]}
           </span>
 
+          {order.title && (
+            <h2 className="font-display text-xl font-semibold text-foreground">{order.title}</h2>
+          )}
+
           <p className="text-base leading-relaxed text-foreground">{order.description}</p>
 
           <div className="flex flex-wrap gap-2">
@@ -103,6 +113,18 @@ export default function OrderDetailPage() {
               <Wallet className="size-4 text-primary" aria-hidden="true" />
               {order.budgetMin.toLocaleString('ru-RU')} — {order.budgetMax.toLocaleString('ru-RU')} ₽
             </span>
+            {order.location && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-sm font-semibold text-foreground">
+                <MapPin className="size-4 text-primary" aria-hidden="true" />
+                {order.location}
+              </span>
+            )}
+            {order.deliveryOption && (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-sm font-semibold text-foreground">
+                <Truck className="size-4 text-primary" aria-hidden="true" />
+                {deliveryLabel(order.deliveryOption)}
+              </span>
+            )}
             <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-sm font-semibold text-foreground">
               <CalendarClock className="size-4 text-primary" aria-hidden="true" />
               до {formatDate(order.deadline)}
@@ -178,9 +200,8 @@ export default function OrderDetailPage() {
                 {responses.map(([masterId, resp]) => (
                   <StaggerItem key={masterId}>
                     <MasterResponseCard
-                      masterId={masterId}
                       response={resp}
-                      onSelect={isOwner ? () => handleSelectMaster(masterId, resp) : undefined}
+                      onSelect={isOwner ? () => handleSelectMaster(masterId) : undefined}
                       isSelecting={selectingMaster === masterId}
                     />
                   </StaggerItem>
@@ -195,7 +216,6 @@ export default function OrderDetailPage() {
           <section className="flex flex-col gap-4">
             <h2 className="text-lg font-bold text-foreground">Выбранный мастер</h2>
             <MasterResponseCard
-              masterId={order.selectedMasterId!}
               response={order.responses[order.selectedMasterId!]}
               selected
             />
@@ -223,4 +243,10 @@ export default function OrderDetailPage() {
 function formatDate(s: string) {
   try { return new Date(s).toLocaleDateString('ru', { day: 'numeric', month: 'long' }); }
   catch { return s; }
+}
+
+function deliveryLabel(option: NonNullable<Order['deliveryOption']>) {
+  if (option === 'local') return 'Только личная встреча';
+  if (option === 'delivery') return 'Доставка по России';
+  return 'Встреча или доставка';
 }

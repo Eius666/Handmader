@@ -3,52 +3,45 @@ import {
   doc,
   getDoc,
   getDocs,
-  setDoc,
   updateDoc,
-  addDoc,
   deleteDoc,
   query,
   where,
   orderBy,
-  serverTimestamp,
   arrayUnion,
-  increment,
   onSnapshot,
   writeBatch,
   limit,
   Timestamp,
 } from 'firebase/firestore';
-import { db } from './firebase';
-import { Order, OrderResponse, User, OrderCategory, Chat, ChatMessage, VerificationStatus } from '@/types';
-import {
-  notifyMastersAboutOrder,
-  notifyCustomerNewResponse,
-  notifyMasterSelected,
-  notifyCustomerWorkStarted,
-  notifyCustomerOrderReady,
-  notifyMasterOrderCompleted,
-  notifyNewChatMessage,
-  notifyAdminVerificationRequest,
-  createInAppNotification,
-} from './notifications';
+import { auth, db } from './firebase';
+import { Order, User, OrderCategory, Chat, ChatMessage, VerificationStatus } from '@/types';
+import { getServerQuery, postServerCommand } from './serverCommand';
+
+interface ServerUserDto extends Omit<User, 'createdAt' | 'verificationSubmittedAt'> {
+  createdAt: string;
+  verificationSubmittedAt?: string;
+}
 
 // ─── Users ────────────────────────────────────────────────────────────────────
 
 export async function getUser(uid: string): Promise<User | null> {
-  const snap = await getDoc(doc(db, 'users', uid));
-  if (!snap.exists()) return null;
-  const data = snap.data();
+  if (auth.currentUser?.uid !== uid) throw new Error('Можно загрузить только собственный профиль');
+  const data = await getServerQuery<ServerUserDto | null>('/api/profile');
+  if (!data) return null;
   return {
     uid,
     email:           data.email          ?? '',
     displayName:     data.displayName    ?? '',
     role:            data.role           ?? null,
     hasSelectedRole: data.hasSelectedRole ?? true,
-    createdAt:       (data.createdAt as Timestamp)?.toDate() ?? new Date(),
+    createdAt:       new Date(data.createdAt),
     masterProfile:   data.masterProfile,
     telegramId:      data.telegramId as number | undefined,
     verificationStatus:         data.verificationStatus        as VerificationStatus | undefined,
-    verificationSubmittedAt:    (data.verificationSubmittedAt  as Timestamp)?.toDate(),
+    verificationSubmittedAt:    data.verificationSubmittedAt
+      ? new Date(data.verificationSubmittedAt)
+      : undefined,
     verificationRejectionReason: data.verificationRejectionReason as string | undefined,
     verificationExperience:     data.verificationExperience    as string | undefined,
     verificationSocialLinks:    data.verificationSocialLinks   as string[] | undefined,
@@ -57,105 +50,93 @@ export async function getUser(uid: string): Promise<User | null> {
 }
 
 export async function setUser(uid: string, data: Partial<User>): Promise<void> {
-  await setDoc(doc(db, 'users', uid), { ...data, updatedAt: serverTimestamp() }, { merge: true });
+  if (auth.currentUser?.uid !== uid) throw new Error('Можно изменить только собственный профиль');
+
+  let action: 'initialize' | 'set_role' | 'update_master_profile' | 'link_telegram';
+  let payload: Record<string, unknown>;
+  if (data.masterProfile) {
+    action = 'update_master_profile';
+    payload = data.masterProfile as unknown as Record<string, unknown>;
+  } else if (typeof data.telegramId === 'number') {
+    action = 'link_telegram';
+    payload = { telegramId: data.telegramId };
+  } else if (data.role) {
+    action = 'set_role';
+    payload = { role: data.role };
+  } else {
+    action = 'initialize';
+    payload = {};
+  }
+
+  await postServerCommand('/api/profile', {
+    action,
+    payload,
+    commandId: crypto.randomUUID(),
+  });
 }
 
 export async function submitVerification(
   uid: string,
-  displayName: string,
+  _displayName: string,
   data: { experience: string; socialLinks: string[]; portfolioPhotos: string[] },
 ): Promise<void> {
-  const snap = await getDoc(doc(db, 'users', uid));
-  if (!snap.exists()) throw new Error('Пользователь не найден');
-
-  const current = snap.data().verificationStatus as string | undefined;
-  if (current === 'pending') throw new Error('Заявка уже на рассмотрении');
-
-  const update: Record<string, unknown> = {
-    verificationStatus:          'pending',
-    verificationSubmittedAt:     serverTimestamp(),
-    verificationExperience:      data.experience,
-    verificationSocialLinks:     data.socialLinks.filter(Boolean),
-    verificationPortfolioPhotos: data.portfolioPhotos.filter(Boolean),
-  };
-  if (current === 'rejected') update.verificationRejectionReason = null;
-
-  await updateDoc(doc(db, 'users', uid), update);
-
-  notifyAdminVerificationRequest(displayName, uid).catch(console.error);
+  if (auth.currentUser?.uid !== uid) throw new Error('Можно изменить только собственный профиль');
+  await postServerCommand('/api/profile', {
+    action: 'submit_verification',
+    payload: data,
+    commandId: crypto.randomUUID(),
+  });
 }
 
 // ─── Orders ───────────────────────────────────────────────────────────────────
 
 export async function createOrder(
-  order: Omit<Order, 'id' | 'createdAt' | 'responses' | 'status'>
+  order: Omit<Order, 'id' | 'createdAt' | 'responses' | 'status' | 'customerId' | 'customerName'>
 ): Promise<string> {
-  const ref = await addDoc(collection(db, 'orders'), {
+  const result = await postServerCommand<{ orderId: string }>('/api/orders', {
     ...order,
-    status: 'awaiting_responses',
-    responses: {},
-    createdAt: serverTimestamp(),
+    commandId: crypto.randomUUID(),
   });
-  // fire-and-forget — notify relevant masters
-  notifyMastersAboutOrder(ref.id, order.category, order.description, order.budgetMin, order.budgetMax).catch(console.error);
-  return ref.id;
+  return result.orderId;
 }
 
 export async function getOrder(orderId: string): Promise<Order | null> {
-  const snap = await getDoc(doc(db, 'orders', orderId));
-  if (!snap.exists()) return null;
-  return mapOrder(snap.id, snap.data());
+  const data = await getServerQuery<ServerOrderDto>(`/api/orders/${encodeURIComponent(orderId)}`);
+  return mapServerOrder(data);
 }
 
 export async function getCustomerOrders(customerId: string): Promise<Order[]> {
-  const q = query(
-    collection(db, 'orders'),
-    where('customerId', '==', customerId),
-    orderBy('createdAt', 'desc')
-  );
-  const snaps = await getDocs(q);
-  return snaps.docs.map((d) => mapOrder(d.id, d.data()));
+  if (auth.currentUser?.uid !== customerId) throw new Error('Можно загрузить только собственные заказы');
+  const data = await getServerQuery<ServerOrderDto[]>('/api/orders?scope=mine');
+  return data.map(mapServerOrder);
 }
 
 export async function getAvailableOrders(category?: OrderCategory): Promise<Order[]> {
-  let q = query(
-    collection(db, 'orders'),
-    where('status', '==', 'awaiting_responses'),
-    orderBy('createdAt', 'desc')
-  );
-  if (category) {
-    q = query(
-      collection(db, 'orders'),
-      where('status', '==', 'awaiting_responses'),
-      where('category', '==', category),
-      orderBy('createdAt', 'desc')
-    );
-  }
-  const snaps = await getDocs(q);
-  return snaps.docs.map((d) => mapOrder(d.id, d.data()));
+  const data = await getServerQuery<ServerOrderDto[]>('/api/orders?scope=feed');
+  const orders = data.map(mapServerOrder);
+  return category ? orders.filter((order) => order.category === category) : orders;
 }
 
 export async function startWork(orderId: string): Promise<void> {
-  await updateDoc(doc(db, 'orders', orderId), { status: 'in_progress', startedAt: serverTimestamp() });
-  notifyCustomerWorkStarted(orderId).catch(console.error);
+  await transitionOrder(orderId, 'start_work');
 }
 
 export async function markReady(orderId: string): Promise<void> {
-  await updateDoc(doc(db, 'orders', orderId), { status: 'ready', readyAt: serverTimestamp() });
-  notifyCustomerOrderReady(orderId).catch(console.error);
+  await transitionOrder(orderId, 'mark_ready');
 }
 
 export async function confirmDelivery(orderId: string): Promise<void> {
-  await updateDoc(doc(db, 'orders', orderId), { status: 'completed', deliveredAt: serverTimestamp() });
+  await transitionOrder(orderId, 'confirm_delivery');
+}
 
-  const snap = await getDoc(doc(db, 'orders', orderId));
-  const masterId = snap.exists() ? (snap.data().selectedMasterId as string | undefined) : undefined;
-  if (masterId) {
-    await updateDoc(doc(db, 'users', masterId), {
-      'masterProfile.completedOrders': increment(1),
-    });
-  }
-  notifyMasterOrderCompleted(orderId, masterId ?? null).catch(console.error);
+async function transitionOrder(
+  orderId: string,
+  action: 'start_work' | 'mark_ready' | 'confirm_delivery',
+): Promise<void> {
+  await postServerCommand(`/api/orders/${encodeURIComponent(orderId)}/transition`, {
+    action,
+    commandId: crypto.randomUUID(),
+  });
 }
 
 export async function submitRating(
@@ -183,36 +164,6 @@ export async function submitRating(
   });
 }
 
-function stripUndefined(obj: Record<string, unknown>): Record<string, unknown> {
-  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
-}
-
-export async function addResponse(
-  orderId: string,
-  masterId: string,
-  response: Omit<OrderResponse, 'createdAt'>
-): Promise<void> {
-  const snap = await getDoc(doc(db, 'orders', orderId));
-  if (snap.exists() && snap.data().responses && masterId in snap.data().responses) {
-    throw new Error('Вы уже откликнулись на этот заказ');
-  }
-  const orderData = snap.exists() ? snap.data() : null;
-  const clean = stripUndefined({ ...response, createdAt: serverTimestamp() });
-  await updateDoc(doc(db, 'orders', orderId), {
-    [`responses.${masterId}`]: clean,
-  });
-  if (orderData) {
-    notifyCustomerNewResponse(
-      orderData.customerId as string,
-      orderId,
-      orderData.description as string,
-      response.masterName,
-      response.price,
-      response.timeline,
-    ).catch(console.error);
-  }
-}
-
 export async function deleteOrder(orderId: string): Promise<void> {
   await deleteDoc(doc(db, 'orders', orderId));
 }
@@ -220,90 +171,23 @@ export async function deleteOrder(orderId: string): Promise<void> {
 export async function selectMaster(
   orderId: string,
   masterId: string,
-  masterName: string,
-  selectedPrice: number
 ): Promise<void> {
-  await updateDoc(doc(db, 'orders', orderId), {
-    status: 'master_selected',
-    selectedMasterId: masterId,
-    selectedMasterName: masterName,
-    selectedPrice,
+  await postServerCommand(`/api/orders/${encodeURIComponent(orderId)}/select-master`, {
+    masterId,
+    commandId: crypto.randomUUID(),
   });
-  notifyMasterSelected(masterId, orderId).catch(console.error);
 }
 
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 
-/**
- * Send a message. Creates the chat document on first call (with createdAt),
- * then only updates lastMessage + increments the receiver's unread counter.
- */
 export async function sendMessage(
   orderId: string,
-  senderId: string,
-  senderName: string,
   text: string,
-  customerId: string,
-  masterId: string,
-  customerName = '',
-  masterName = '',
 ): Promise<void> {
-  const chatRef = doc(db, 'chats', orderId);
-  const chatSnap = await getDoc(chatRef);
-  const unreadField = senderId === customerId ? 'unreadMaster' : 'unreadCustomer';
-
-  if (!chatSnap.exists()) {
-    await setDoc(chatRef, {
-      orderId,
-      customerId,
-      masterId,
-      customerName,
-      masterName,
-      lastMessage: text.slice(0, 100),
-      lastMessageAt: serverTimestamp(),
-      unreadCustomer: senderId === customerId ? 0 : 1,
-      unreadMaster:   senderId === customerId ? 1 : 0,
-      createdAt: serverTimestamp(),
-    });
-  } else {
-    await updateDoc(chatRef, {
-      lastMessage: text.slice(0, 100),
-      lastMessageAt: serverTimestamp(),
-      [unreadField]: increment(1),
-    });
-  }
-
-  await addDoc(collection(db, 'chats', orderId, 'messages'), {
-    senderId,
-    senderName,
+  await postServerCommand(`/api/orders/${encodeURIComponent(orderId)}/messages`, {
     text,
-    createdAt: serverTimestamp(),
-    read: false,
+    commandId: crypto.randomUUID(),
   });
-
-  // Fire-and-forget: notify the other party about the new message
-  const recipientUid = senderId === customerId ? masterId : customerId;
-  if (recipientUid) {
-    (async () => {
-      const [recipientSnap, orderSnap] = await Promise.all([
-        getDoc(doc(db, 'users', recipientUid)),
-        getDoc(doc(db, 'orders', orderId)),
-      ]);
-      const desc = String(orderSnap.data()?.description ?? '');
-      const title = desc.length > 40 ? desc.slice(0, 40) + '…' : desc;
-
-      const tgId = recipientSnap.data()?.telegramId as number | undefined;
-      if (tgId) await notifyNewChatMessage(tgId, senderName, title, text, orderId);
-
-      void createInAppNotification(
-        recipientUid,
-        'new_message',
-        senderName,
-        text.slice(0, 100),
-        { orderId, chatId: orderId },
-      );
-    })().catch(console.error);
-  }
 }
 
 /**
@@ -316,7 +200,7 @@ export function subscribeToChatMessages(
 ): () => void {
   const q = query(
     collection(db, 'chats', orderId, 'messages'),
-    orderBy('createdAt', 'asc'),
+    orderBy('createdAt', 'desc'),
     limit(limitCount),
   );
   return onSnapshot(q, (snap) => {
@@ -327,7 +211,7 @@ export function subscribeToChatMessages(
       text:       d.data().text       as string,
       read:       d.data().read       as boolean,
       createdAt:  (d.data().createdAt as Timestamp)?.toDate() ?? new Date(),
-    }));
+    })).reverse();
     callback(messages);
   });
 }
@@ -392,17 +276,19 @@ export async function getChatList(uid: string): Promise<Chat[]> {
   return all.sort((a, b) => b.lastMessageAt.getTime() - a.lastMessageAt.getTime());
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-export async function getMasterTelegramId(masterId: string): Promise<number | null> {
-  const snap = await getDoc(doc(db, 'users', masterId));
-  return (snap.data()?.telegramId as number) ?? null;
+interface ServerOrderDto extends Omit<Order, 'createdAt' | 'responses' | 'ratings'> {
+  createdAt: string;
+  ratings?: Array<Omit<NonNullable<Order['ratings']>[number], 'createdAt'> & { createdAt: string }>;
 }
 
-function mapOrder(id: string, data: Record<string, unknown>): Order {
+function mapServerOrder(data: ServerOrderDto): Order {
   return {
     ...data,
-    id,
-    createdAt: (data.createdAt as Timestamp)?.toDate() ?? new Date(),
-  } as Order;
+    responses: {},
+    createdAt: new Date(data.createdAt),
+    ratings: data.ratings?.map((rating) => ({
+      ...rating,
+      createdAt: new Date(rating.createdAt),
+    })),
+  };
 }

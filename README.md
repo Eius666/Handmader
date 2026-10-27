@@ -1,4 +1,13 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Handmader / Вязубер
+
+Маркетплейс индивидуальных вязаных изделий. Проект развивается как модульный монолит с заменяемыми инфраструктурными адаптерами.
+
+- [Архитектура](docs/ARCHITECTURE.md)
+- [ADR: модульный монолит](docs/adr/0001-modular-monolith.md)
+- [Каноническая продуктовая спецификация](docs/PRODUCT-SPECIFICATION.md)
+- [Статус исправлений по аудиту](docs/IMPLEMENTATION-STATUS.md)
+
+Текущий production-прототип использует Next.js и Firebase. Доверенные операции постепенно переносятся из браузера в серверные команды; Firebase рассматривается как сменный инфраструктурный адаптер.
 
 ## Getting Started
 
