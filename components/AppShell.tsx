@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { SplashScreen } from './SplashScreen';
+import { AuthBoundary } from './AuthBoundary';
 
 // AuthProvider and OnboardingGate both import Firebase — ssr: false prevents Node.js init.
 const AuthProvider = dynamic(
@@ -49,9 +50,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <AuthProvider>
-        <OnboardingGate>
-          <div id="app-root">{children}</div>
-        </OnboardingGate>
+        <AuthBoundary>
+          <OnboardingGate>
+            <div id="app-root">{children}</div>
+          </OnboardingGate>
+        </AuthBoundary>
       </AuthProvider>
 
       {splash && <SplashScreen onDone={() => setSplash(false)} />}
