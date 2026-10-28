@@ -61,6 +61,12 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Staff identities are provisioned out of band and are never readable or
+    // writable by the marketplace client.
+    match /staffMembers/{staffId} {
+      allow read, write: if false;
+    }
+
     // Reviews are submitted and published by trusted server commands. Pending
     // feedback must not be observable by the other order participant.
     match /reviews/{reviewId} {

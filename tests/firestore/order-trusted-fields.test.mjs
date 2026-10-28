@@ -78,6 +78,10 @@ before(async () => {
       read: false,
       createdAt: 0,
     });
+    await setDoc(doc(context.firestore(), 'staffMembers', 'staff-1'), {
+      role: 'admin',
+      active: true,
+    });
   });
 });
 
@@ -163,6 +167,18 @@ test('browser cannot forge an embedded or standalone review', async () => {
     rating: 5,
   }));
   await assertFails(getDoc(doc(db, 'reviews', 'order-1_customer-1')));
+});
+
+test('browser cannot discover or forge staff access', async () => {
+  const staffDb = environment.authenticatedContext('staff-1').firestore();
+  const customerDb = environment.authenticatedContext('customer-1').firestore();
+
+  await assertFails(getDoc(doc(staffDb, 'staffMembers', 'staff-1')));
+  await assertFails(getDoc(doc(customerDb, 'staffMembers', 'staff-1')));
+  await assertFails(setDoc(doc(customerDb, 'staffMembers', 'customer-1'), {
+    role: 'admin',
+    active: true,
+  }));
 });
 
 test('browser cannot forge agreement or payment state', async () => {
