@@ -13,7 +13,7 @@ import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { Toast } from '@/components/ui/Toast';
 import { Stagger, StaggerItem } from '@/components/motion/Stagger';
 import { MotionCard, PressableButton } from '@/components/motion/Pressable';
-import { getCustomerOrders, submitRating, deleteOrder } from '@/lib/firestore';
+import { getCustomerOrders, submitRating, cancelOrder } from '@/lib/firestore';
 import { Order, OrderCategory, CATEGORY_LABELS, OrderStatus } from '@/types';
 
 const CATEGORY_ICONS: Record<OrderCategory, LucideIcon> = {
@@ -49,7 +49,7 @@ export default function OrdersPage() {
   const filtered = orders.filter((o) =>
     tab === 'active'
       ? ACTIVE_STATUSES.includes(o.status)
-      : o.status === 'completed',
+      : o.status === 'completed' || o.status === 'cancelled',
   );
 
   function handleCardClick(order: Order) {
@@ -60,18 +60,18 @@ export default function OrdersPage() {
     }
   }
 
-  const DELETABLE: OrderStatus[] = ['awaiting_responses', 'master_selected'];
+  const CANCELLABLE: OrderStatus[] = ['awaiting_responses'];
 
   async function handleDeleteConfirm() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await deleteOrder(deleteTarget.id);
+      await cancelOrder(deleteTarget.id);
       setOrders((prev) => prev.filter((o) => o.id !== deleteTarget.id));
-      setToast('Заказ удалён');
+      setToast('Заказ отменён');
       setDeleteTarget(null);
     } catch {
-      setToast('Не удалось удалить заказ');
+      setToast('Не удалось отменить заказ');
     } finally {
       setDeleting(false);
     }
@@ -123,7 +123,7 @@ export default function OrdersPage() {
                 transition={{ type: 'spring', stiffness: 420, damping: 34 }}
               />
             )}
-            <span className="relative">{t === 'active' ? 'Активные' : 'Завершённые'}</span>
+            <span className="relative">{t === 'active' ? 'Активные' : 'История'}</span>
           </button>
         ))}
       </div>
@@ -146,7 +146,7 @@ export default function OrdersPage() {
           >
             <span className="text-5xl">📋</span>
             <p className="text-[14px] font-semibold text-muted-foreground">
-              {tab === 'active' ? 'Активных заказов нет' : 'Завершённых заказов нет'}
+              {tab === 'active' ? 'Активных заказов нет' : 'История заказов пуста'}
             </p>
             {tab === 'active' && (
               <PressableButton
@@ -165,7 +165,7 @@ export default function OrdersPage() {
                 order.status === 'completed' &&
                 !!order.selectedMasterId &&
                 !order.hasSubmittedReview;
-              const canDelete = DELETABLE.includes(order.status);
+              const canDelete = CANCELLABLE.includes(order.status);
               return (
                 <StaggerItem key={order.id}>
                   <OrderListCard
@@ -193,11 +193,12 @@ export default function OrdersPage() {
 
       <ConfirmModal
         open={!!deleteTarget}
-        title="Удалить заказ?"
+        title="Отменить заказ?"
         body={deleteTarget
           ? (deleteTarget.description.length > 80 ? deleteTarget.description.slice(0, 80) + '…' : deleteTarget.description)
           : ''}
-        confirmLabel="Удалить"
+        confirmLabel="Отменить"
+        loadingLabel="Отменяем..."
         loading={deleting}
         onConfirm={handleDeleteConfirm}
         onCancel={() => setDeleteTarget(null)}
@@ -257,7 +258,7 @@ function OrderListCard({
           {canDelete && (
             <button
               type="button"
-              aria-label="Удалить заказ"
+              aria-label="Отменить заказ"
               onClick={(e) => { e.stopPropagation(); onDelete?.(); }}
               className="flex size-7 items-center justify-center rounded-full transition-colors active:scale-95"
               style={{ color: 'var(--muted-foreground)' }}

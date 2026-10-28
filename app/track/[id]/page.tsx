@@ -13,7 +13,7 @@ import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { ImageCarousel } from '@/components/ui/ImageCarousel';
 import { PageTransition } from '@/components/motion/PageTransition';
 import { PressableButton, MotionCard } from '@/components/motion/Pressable';
-import { getOrder, startWork, markReady, confirmDelivery, submitRating, deleteOrder } from '@/lib/firestore';
+import { getOrder, startWork, markReady, confirmDelivery, submitRating, cancelOrder } from '@/lib/firestore';
 import { getVisibleProposals } from '@/lib/proposals';
 import { useAuth } from '@/hooks/useAuth';
 import { Order, OrderStatus, CATEGORY_LABELS } from '@/types';
@@ -58,6 +58,7 @@ const STATUS_META: Partial<Record<OrderStatus, { icon: string; text: string; sub
   ready:           { icon: '✅', text: 'Готово!',  sub: 'Ваш заказ выполнен и ждёт передачи' },
   delivered:       { icon: '📦', text: 'Доставлен', sub: 'Заказ доставлен, ожидаем подтверждения' },
   completed:       { icon: '⭐', text: 'Завершён', sub: 'Спасибо! Не забудьте оставить отзыв' },
+  cancelled:       { icon: '✕', text: 'Отменён', sub: 'Заказ отменён до выбора исполнителя' },
 };
 
 export default function TrackPage() {
@@ -85,7 +86,7 @@ export default function TrackPage() {
   const isOwner    = order?.customerId      === user?.uid;
   const isMaster   = !isOwner && order?.selectedMasterId === user?.uid;
   const canConfirm = isOwner && (order?.status === 'ready' || order?.status === 'delivered');
-  const canDelete  = isOwner && !!order && ['awaiting_responses', 'master_selected'].includes(order.status);
+  const canDelete  = isOwner && order?.status === 'awaiting_responses';
 
   async function handleStart() {
     if (!order) return;
@@ -122,11 +123,11 @@ export default function TrackPage() {
     if (!order) return;
     setDeleting(true);
     try {
-      await deleteOrder(order.id);
-      setToast('Заказ удалён');
+      await cancelOrder(order.id);
+      setToast('Заказ отменён');
       setTimeout(() => router.replace('/orders'), 1000);
     } catch {
-      setToast('Не удалось удалить заказ');
+      setToast('Не удалось отменить заказ');
       setDeleting(false);
     }
     setShowDelete(false);
@@ -196,7 +197,7 @@ export default function TrackPage() {
         {canDelete && (
           <PressableButton
             type="button"
-            aria-label="Удалить заказ"
+            aria-label="Отменить заказ"
             onClick={() => setShowDelete(true)}
             className="flex size-10 items-center justify-center rounded-full bg-card text-muted-foreground shadow-[0_4px_16px_rgb(var(--foreground-rgb)_/_0.06)] active:text-red-600"
           >
@@ -456,9 +457,10 @@ export default function TrackPage() {
 
       <ConfirmModal
         open={showDelete}
-        title="Удалить заказ?"
+        title="Отменить заказ?"
         body={order.description.length > 80 ? order.description.slice(0, 80) + '…' : order.description}
-        confirmLabel="Удалить"
+        confirmLabel="Отменить"
+        loadingLabel="Отменяем..."
         loading={deleting}
         onConfirm={handleDelete}
         onCancel={() => setShowDelete(false)}

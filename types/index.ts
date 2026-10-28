@@ -36,7 +36,8 @@ export type OrderStatus =
   | 'in_progress'
   | 'ready'
   | 'delivered'
-  | 'completed';
+  | 'completed'
+  | 'cancelled';
 
 export type OrderCategory =
   | 'hat'
@@ -169,6 +170,7 @@ export const STATUS_LABELS: Record<OrderStatus, string> = {
   ready: 'Готов',
   delivered: 'Доставлен',
   completed: 'Завершён',
+  cancelled: 'Отменён',
 };
 
 export const STATUS_STEPS: OrderStatus[] = [

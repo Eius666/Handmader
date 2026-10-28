@@ -2,30 +2,6 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    function orderTrustedFieldsUnchanged() {
-      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
-        'status',
-        'selectedMasterId',
-        'selectedMasterName',
-        'selectedPrice',
-        'selectedAt',
-        'startedAt',
-        'readyAt',
-        'deliveredAt',
-        'responses',
-        'responseCount',
-        'ratings',
-        'reviewAuthorIds',
-        'flowVersion',
-        'agreementStatus',
-        'agreementVersion',
-        'finalPrice',
-        'paymentStatus',
-        'paymentId',
-        'paidAt'
-      ]);
-    }
-
     // Private account, contact and verification data is owner-readable only.
     // All mutations go through authenticated server commands.
     match /users/{userId} {
@@ -44,17 +20,13 @@ service cloud.firestore {
       allow write: if false;
     }
 
-    // Order reads and creates are server-mediated so eligibility and field
-    // projection cannot be bypassed. Remaining owner edits are narrowed until
-    // delete/review commands complete the migration.
+    // Order reads and every mutation are server-mediated so eligibility,
+    // audit history and field projection cannot be bypassed.
     match /orders/{orderId} {
       allow read:   if false;
       allow create: if false;
-      allow update: if request.auth != null
-                    && resource.data.customerId == request.auth.uid
-                    && orderTrustedFieldsUnchanged();
-      allow delete: if request.auth != null
-                    && resource.data.customerId == request.auth.uid;
+      allow update: if false;
+      allow delete: if false;
 
       match /proposals/{masterId} {
         allow read: if request.auth != null

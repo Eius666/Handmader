@@ -1,14 +1,14 @@
 'use client';
 
 import { motion } from 'motion/react';
-import { Clock, UserCheck, Scissors, Sparkles, CheckCheck, Truck, WalletCards, ShieldCheck } from 'lucide-react';
+import { Clock, UserCheck, Scissors, Sparkles, CheckCheck, Truck, WalletCards, ShieldCheck, XCircle } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { OrderStatus } from '@/types';
 
 interface StatusCfg {
   label: string;
   Icon:  LucideIcon;
-  tone:  'gold' | 'success';
+  tone:  'gold' | 'success' | 'danger';
 }
 
 const STATUS_CONFIG: Record<OrderStatus, StatusCfg> = {
@@ -20,13 +20,18 @@ const STATUS_CONFIG: Record<OrderStatus, StatusCfg> = {
   ready:              { label: 'готово',          Icon: Sparkles,   tone: 'gold' },
   delivered:          { label: 'доставлен',       Icon: Truck,      tone: 'gold' },
   completed:          { label: 'завершён',        Icon: CheckCheck, tone: 'success' },
+  cancelled:          { label: 'отменён',          Icon: XCircle,    tone: 'danger' },
 };
 
 export function StatusBadge({ status }: { status: OrderStatus }) {
   const cfg = STATUS_CONFIG[status] ?? { label: status, Icon: Clock, tone: 'gold' as const };
   const { Icon } = cfg;
-  const rgbVar = cfg.tone === 'gold' ? '--gold-rgb' : '--success-rgb';
-  const colorVar = cfg.tone === 'gold' ? '--gold' : '--success';
+  const rgbVar = cfg.tone === 'gold'
+    ? '--gold-rgb'
+    : cfg.tone === 'danger' ? '--danger-rgb' : '--success-rgb';
+  const colorVar = cfg.tone === 'gold'
+    ? '--gold'
+    : cfg.tone === 'danger' ? '--danger' : '--success';
 
   return (
     <motion.span

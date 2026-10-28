@@ -23,6 +23,26 @@ export async function postServerCommand<T>(
   return readServerResponse<T>(response, 'Не удалось выполнить операцию');
 }
 
+export async function deleteServerCommand<T>(
+  path: string,
+  body: Record<string, unknown>,
+): Promise<T> {
+  const currentUser = auth.currentUser;
+  if (!currentUser) throw new Error('Требуется авторизация');
+
+  const token = await currentUser.getIdToken();
+  const response = await fetch(path, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  return readServerResponse<T>(response, 'Не удалось выполнить операцию');
+}
+
 export async function getServerQuery<T>(path: string): Promise<T> {
   const currentUser = auth.currentUser;
   if (!currentUser) throw new Error('Требуется авторизация');

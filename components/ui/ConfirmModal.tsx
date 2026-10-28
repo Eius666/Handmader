@@ -8,6 +8,7 @@ interface Props {
   title: string;
   body?: string;
   confirmLabel?: string;
+  loadingLabel?: string;
   loading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -18,6 +19,7 @@ export function ConfirmModal({
   title,
   body,
   confirmLabel = 'Удалить',
+  loadingLabel = 'Удаляем...',
   loading = false,
   onConfirm,
   onCancel,
@@ -51,7 +53,7 @@ export function ConfirmModal({
             className="flex-1 rounded-xl py-3.5 text-[15px] font-bold disabled:opacity-60"
             style={{ background: 'var(--danger)', color: 'var(--danger-foreground)', boxShadow: '0 4px 14px rgb(var(--danger-rgb) / 32%)' }}
           >
-            {loading ? 'Удаляем...' : confirmLabel}
+            {loading ? loadingLabel : confirmLabel}
           </PressableButton>
         </div>
       </div>

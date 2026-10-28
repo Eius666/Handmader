@@ -8,6 +8,7 @@ import {
 } from '@firebase/rules-unit-testing';
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -138,6 +139,12 @@ test('browser cannot advance an order status', async () => {
   await assertFails(updateDoc(doc(db, 'orders', 'order-1'), {
     status: 'in_progress',
   }));
+});
+
+test('browser cannot physically delete an order', async () => {
+  const db = environment.authenticatedContext('customer-1').firestore();
+
+  await assertFails(deleteDoc(doc(db, 'orders', 'order-1')));
 });
 
 test('browser cannot forge an embedded or standalone review', async () => {

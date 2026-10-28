@@ -1,7 +1,6 @@
-import { deleteDoc, doc } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { auth } from './firebase';
 import { Order, User, OrderCategory, Chat, ChatMessage, VerificationStatus } from '@/types';
-import { getServerQuery, postServerCommand } from './serverCommand';
+import { deleteServerCommand, getServerQuery, postServerCommand } from './serverCommand';
 
 interface ServerUserDto extends Omit<User, 'createdAt' | 'verificationSubmittedAt'> {
   createdAt: string;
@@ -222,8 +221,10 @@ export async function simulateMockPayment(orderId: string): Promise<MockPaymentR
   );
 }
 
-export async function deleteOrder(orderId: string): Promise<void> {
-  await deleteDoc(doc(db, 'orders', orderId));
+export async function cancelOrder(orderId: string): Promise<void> {
+  await deleteServerCommand(`/api/orders/${encodeURIComponent(orderId)}`, {
+    commandId: crypto.randomUUID(),
+  });
 }
 
 export async function selectMaster(
