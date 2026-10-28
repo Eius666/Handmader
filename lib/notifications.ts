@@ -1,83 +1,83 @@
-import {
-  collection,
-  doc,
-  getDocs,
-  limit,
-  onSnapshot,
-  orderBy,
-  query,
-  Timestamp,
-  updateDoc,
-  where,
-  writeBatch,
-} from 'firebase/firestore';
+'use client';
 
 import type { AppNotification, NotificationType } from '@/types';
-import { db } from './firebase';
+import { getServerQuery, postServerCommand } from './serverCommand';
 
-// Notifications are created only by trusted server commands. The browser can
-// subscribe and update read state, but cannot create events or call channels.
+interface ServerNotificationDto {
+  id: string;
+  userId: string;
+  type: string;
+  title: string;
+  body: string;
+  orderId?: string;
+  chatId?: string;
+  read: boolean;
+  createdAt: string;
+}
+
+const POLL_INTERVAL_MS = 15_000;
 
 export function subscribeToUnreadCount(
   uid: string,
   callback: (count: number) => void,
 ): () => void {
-  const q = query(
-    collection(db, 'notifications'),
-    where('userId', '==', uid),
-    where('read', '==', false),
-  );
-  return onSnapshot(q, (snap) => callback(snap.size), () => callback(0));
+  void uid;
+  return poll(async () => {
+    const result = await getServerQuery<{ count: number }>('/api/notifications?mode=unread');
+    callback(result.count);
+  }, () => callback(0));
 }
 
 export function subscribeToNotifications(
-  uid: string,
+  _uid: string,
   callback: (notifications: AppNotification[]) => void,
   onError?: (error: Error) => void,
 ): () => void {
-  const q = query(
-    collection(db, 'notifications'),
-    where('userId', '==', uid),
-    orderBy('createdAt', 'desc'),
-    limit(30),
-  );
-  return onSnapshot(
-    q,
-    (snap) => {
-      const items: AppNotification[] = snap.docs.map((item) => {
-        const data = item.data();
-        return {
-          id: item.id,
-          userId: String(data.userId ?? ''),
-          type: data.type as NotificationType,
-          title: String(data.title ?? ''),
-          body: String(data.body ?? ''),
-          ...(typeof data.orderId === 'string' && data.orderId ? { orderId: data.orderId } : {}),
-          ...(typeof data.chatId === 'string' && data.chatId ? { chatId: data.chatId } : {}),
-          read: data.read === true,
-          createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(),
-        };
-      });
-      callback(items);
-    },
-    (error) => onError?.(error),
-  );
+  return poll(async () => {
+    const items = await getServerQuery<ServerNotificationDto[]>('/api/notifications?mode=list');
+    callback(items.map((item) => ({
+      id: item.id,
+      userId: item.userId,
+      type: item.type as NotificationType,
+      title: item.title,
+      body: item.body,
+      ...(item.orderId ? { orderId: item.orderId } : {}),
+      ...(item.chatId ? { chatId: item.chatId } : {}),
+      read: item.read,
+      createdAt: new Date(item.createdAt),
+    })));
+  }, onError);
 }
 
 export async function markNotificationRead(notificationId: string): Promise<void> {
-  await updateDoc(doc(db, 'notifications', notificationId), { read: true });
+  await postServerCommand('/api/notifications', { action: 'mark_read', notificationId });
 }
 
 export async function markAllNotificationsRead(uid: string): Promise<void> {
-  const snap = await getDocs(
-    query(
-      collection(db, 'notifications'),
-      where('userId', '==', uid),
-      where('read', '==', false),
-    ),
-  );
-  if (snap.empty) return;
-  const batch = writeBatch(db);
-  snap.docs.forEach((item) => batch.update(item.ref, { read: true }));
-  await batch.commit();
+  void uid;
+  await postServerCommand('/api/notifications', { action: 'mark_all_read' });
+}
+
+function poll(run: () => Promise<void>, onError?: (error: Error) => void): () => void {
+  let stopped = false;
+  let running = false;
+
+  const execute = async () => {
+    if (stopped || running) return;
+    running = true;
+    try {
+      await run();
+    } catch (error) {
+      onError?.(error instanceof Error ? error : new Error('Не удалось загрузить уведомления'));
+    } finally {
+      running = false;
+    }
+  };
+
+  void execute();
+  const interval = window.setInterval(() => void execute(), POLL_INTERVAL_MS);
+  return () => {
+    stopped = true;
+    window.clearInterval(interval);
+  };
 }

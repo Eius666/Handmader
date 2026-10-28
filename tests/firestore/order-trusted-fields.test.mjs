@@ -70,6 +70,14 @@ before(async () => {
       createdAt: 0,
       read: false,
     });
+    await setDoc(doc(context.firestore(), 'notifications', 'notification-1'), {
+      userId: 'customer-1',
+      type: 'new_response',
+      title: 'Новый отклик',
+      body: 'Тест',
+      read: false,
+      createdAt: 0,
+    });
   });
 });
 
@@ -121,6 +129,8 @@ test('browser cannot create an order or forge a system notification', async () =
     type: 'master_selected',
     read: false,
   }));
+  await assertFails(getDoc(doc(db, 'notifications', 'notification-1')));
+  await assertFails(updateDoc(doc(db, 'notifications', 'notification-1'), { read: true }));
 });
 
 test('browser cannot advance an order status', async () => {

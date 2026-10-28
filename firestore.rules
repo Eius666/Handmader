@@ -148,14 +148,10 @@ service cloud.firestore {
       }
     }
 
-    // System notifications are server-created. The recipient controls only
-    // their own read state or deletion.
+    // Notifications, including read state, are projected and mutated through
+    // authenticated server APIs. The browser cannot forge or rewrite events.
     match /notifications/{notifId} {
-      allow read:          if request.auth != null
-                           && resource.data.userId == request.auth.uid;
-      allow create:        if false;
-      allow update, delete: if request.auth != null
-                            && resource.data.userId == request.auth.uid;
+      allow read, write: if false;
     }
   }
 }
