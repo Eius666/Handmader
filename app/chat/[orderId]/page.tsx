@@ -39,6 +39,9 @@ export default function ChatPage() {
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [messagesLoading, setMessagesLoading] = useState(true);
+  const [messagesError, setMessagesError] = useState(false);
+  const [messagesRetryKey, setMessagesRetryKey] = useState(0);
 
   const scrollRef        = useRef<HTMLDivElement>(null);
   const textareaRef      = useRef<HTMLTextAreaElement>(null);
@@ -66,12 +69,40 @@ export default function ChatPage() {
   // Real-time messages subscription
   useEffect(() => {
     if (!orderId || !user) return;
+    let settled = false;
+    const timeout = window.setTimeout(() => {
+      if (!settled) {
+        setMessagesLoading(false);
+        setMessagesError(true);
+      }
+    }, 8_000);
     const unsub = subscribeToChatMessages(orderId, (msgs) => {
+      settled = true;
+      window.clearTimeout(timeout);
       setMessages(msgs);
-      markMessagesAsRead(orderId, user.uid).catch(console.error);
+      setMessagesLoading(false);
+      setMessagesError(false);
+      if (msgs.some((message) => message.senderId !== user.uid && !message.read)) {
+        markMessagesAsRead(orderId, user.uid).catch(console.error);
+      }
+    }, (error) => {
+      settled = true;
+      window.clearTimeout(timeout);
+      console.error(error);
+      setMessagesLoading(false);
+      setMessagesError(true);
     });
-    return unsub;
-  }, [orderId, user]);
+    return () => {
+      window.clearTimeout(timeout);
+      unsub();
+    };
+  }, [messagesRetryKey, orderId, user]);
+
+  function handleMessagesRetry() {
+    setMessagesLoading(true);
+    setMessagesError(false);
+    setMessagesRetryKey((value) => value + 1);
+  }
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -183,7 +214,19 @@ export default function ChatPage() {
         onScroll={handleScroll}
         className="flex-1 overflow-y-auto [&::-webkit-scrollbar]:hidden"
       >
-        {messages.length === 0 ? (
+        {messagesLoading ? (
+          <div className="flex h-full items-center justify-center">
+            <span className="size-8 animate-spin rounded-full border-2 border-secondary border-t-primary" />
+          </div>
+        ) : messagesError ? (
+          <div className="flex flex-col items-center justify-center gap-3 px-8 py-28 text-center">
+            <span className="text-5xl" aria-hidden="true">↻</span>
+            <p className="text-[14px] font-semibold text-foreground">Не удалось загрузить сообщения</p>
+            <PressableButton type="button" onClick={handleMessagesRetry} className="btn-outline px-5 py-3">
+              Повторить
+            </PressableButton>
+          </div>
+        ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center gap-3 px-8 py-28 text-center">
             <span className="text-5xl">💬</span>
             <p className="text-[14px] font-semibold text-muted-foreground">

@@ -26,20 +26,55 @@ export default function ChatsPage() {
   const router = useRouter();
   const [chats, setChats]   = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     if (!user) return;
+    let settled = false;
+    const timeout = window.setTimeout(() => {
+      if (!settled) {
+        setLoading(false);
+        setLoadError(true);
+      }
+    }, 8_000);
     getChatList(user.uid)
-      .then(setChats)
-      .catch(console.error)
+      .then((items) => {
+        settled = true;
+        window.clearTimeout(timeout);
+        setChats(items);
+        setLoadError(false);
+      })
+      .catch((error) => {
+        settled = true;
+        window.clearTimeout(timeout);
+        console.error(error);
+        setLoadError(true);
+      })
       .finally(() => setLoading(false));
-  }, [user]);
+    return () => window.clearTimeout(timeout);
+  }, [retryKey, user]);
+
+  function handleRetry() {
+    setLoading(true);
+    setLoadError(false);
+    setRetryKey((value) => value + 1);
+  }
 
   return (
     <PageLayout title="Чаты">
       {loading ? (
         <div className="flex flex-col pt-1">
           {[0, 1, 2, 3].map((i) => <SkeletonChatItem key={i} />)}
+        </div>
+      ) : loadError ? (
+        <div className="flex flex-col items-center gap-4 px-8 py-24 text-center">
+          <span className="text-5xl" aria-hidden="true">↻</span>
+          <p className="text-[14px] font-semibold text-foreground">Не удалось загрузить чаты</p>
+          <p className="text-[12px] text-muted-foreground">Проверьте соединение и попробуйте ещё раз</p>
+          <PressableButton type="button" onClick={handleRetry} className="btn-outline px-5 py-3">
+            Повторить
+          </PressableButton>
         </div>
       ) : chats.length === 0 ? (
         <div className="flex flex-col items-center gap-3 px-8 py-24 text-center">

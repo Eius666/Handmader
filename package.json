@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:domain": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test --experimental-strip-types modules/agreements/domain/agreement.test.ts modules/chat/domain/send-message.test.ts modules/identity/domain/protected-route.test.ts modules/notifications/domain/notification-route.test.ts modules/orders/domain/create-order.test.ts modules/orders/domain/order-access.test.ts modules/orders/domain/select-master.test.ts modules/orders/domain/transition-order.test.ts modules/payments/domain/mock-payment.test.ts modules/proposals/domain/submit-proposal.test.ts modules/reviews/domain/submit-review.test.ts modules/users/domain/profile.test.ts modules/users/domain/public-alias.test.ts",
+    "test:domain": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test --experimental-strip-types modules/agreements/domain/agreement.test.ts modules/chat/domain/chat-access.test.ts modules/chat/domain/send-message.test.ts modules/identity/domain/protected-route.test.ts modules/notifications/domain/notification-route.test.ts modules/orders/domain/create-order.test.ts modules/orders/domain/order-access.test.ts modules/orders/domain/order-counterpart.test.ts modules/orders/domain/select-master.test.ts modules/orders/domain/transition-order.test.ts modules/payments/domain/mock-payment.test.ts modules/proposals/domain/submit-proposal.test.ts modules/reviews/domain/submit-review.test.ts modules/users/domain/profile.test.ts modules/users/domain/public-alias.test.ts tests/config/firestore-indexes.test.mjs",
     "test:rules": "node --test tests/firestore/order-trusted-fields.test.mjs"
   },
   "dependencies": {

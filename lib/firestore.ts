@@ -1,18 +1,4 @@
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  updateDoc,
-  deleteDoc,
-  query,
-  where,
-  orderBy,
-  onSnapshot,
-  writeBatch,
-  limit,
-  Timestamp,
-} from 'firebase/firestore';
+import { deleteDoc, doc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { Order, User, OrderCategory, Chat, ChatMessage, VerificationStatus } from '@/types';
 import { getServerQuery, postServerCommand } from './serverCommand';
@@ -268,84 +254,59 @@ export async function sendMessage(
 export function subscribeToChatMessages(
   orderId: string,
   callback: (messages: ChatMessage[]) => void,
+  onError?: (error: Error) => void,
   limitCount = 50,
 ): () => void {
-  const q = query(
-    collection(db, 'chats', orderId, 'messages'),
-    orderBy('createdAt', 'desc'),
-    limit(limitCount),
-  );
-  return onSnapshot(q, (snap) => {
-    const messages: ChatMessage[] = snap.docs.map((d) => ({
-      id: d.id,
-      senderId:   d.data().senderId   as string,
-      senderName: d.data().senderName as string,
-      text:       d.data().text       as string,
-      read:       d.data().read       as boolean,
-      createdAt:  (d.data().createdAt as Timestamp)?.toDate() ?? new Date(),
-    })).reverse();
-    callback(messages);
-  });
+  interface MessageWire extends Omit<ChatMessage, 'createdAt'> { createdAt: string }
+  let stopped = false;
+  let running = false;
+  const execute = async () => {
+    if (stopped || running) return;
+    running = true;
+    try {
+      const items = await getServerQuery<MessageWire[]>(
+        `/api/orders/${encodeURIComponent(orderId)}/messages?limit=${limitCount}`,
+      );
+      callback(items.map((item) => ({ ...item, createdAt: new Date(item.createdAt) })));
+    } catch (error) {
+      onError?.(error instanceof Error ? error : new Error('Не удалось загрузить сообщения'));
+    } finally {
+      running = false;
+    }
+  };
+  void execute();
+  const interval = window.setInterval(() => void execute(), 5_000);
+  return () => {
+    stopped = true;
+    window.clearInterval(interval);
+  };
 }
 
 /**
  * Mark all messages from the other party as read and reset the reader's unread counter.
  */
 export async function markMessagesAsRead(orderId: string, readerId: string): Promise<void> {
-  const [unreadSnap, chatSnap] = await Promise.all([
-    getDocs(query(
-      collection(db, 'chats', orderId, 'messages'),
-      where('read', '==', false),
-    )),
-    getDoc(doc(db, 'chats', orderId)),
-  ]);
-
-  const batch = writeBatch(db);
-  let hasUpdates = false;
-  for (const msgDoc of unreadSnap.docs) {
-    if ((msgDoc.data().senderId as string) !== readerId) {
-      batch.update(msgDoc.ref, { read: true });
-      hasUpdates = true;
-    }
-  }
-  if (hasUpdates) await batch.commit();
-
-  if (chatSnap.exists()) {
-    const isCustomer = (chatSnap.data().customerId as string) === readerId;
-    await updateDoc(doc(db, 'chats', orderId), {
-      [isCustomer ? 'unreadCustomer' : 'unreadMaster']: 0,
-    });
-  }
+  void readerId;
+  await postServerCommand(`/api/orders/${encodeURIComponent(orderId)}/messages`, {
+    action: 'mark_read',
+  });
 }
 
 /**
  * Get all chats for a user (as customer or master), sorted by lastMessageAt desc.
  */
 export async function getChatList(uid: string): Promise<Chat[]> {
-  // Two simple where-only queries (no orderBy) to avoid requiring composite indexes.
-  // Client-side sort by lastMessageAt desc.
-  const [asCustomer, asMaster] = await Promise.all([
-    getDocs(query(collection(db, 'chats'), where('customerId', '==', uid))),
-    getDocs(query(collection(db, 'chats'), where('masterId',   '==', uid))),
-  ]);
-
-  const all = [...asCustomer.docs, ...asMaster.docs].map((d) => {
-    const data = d.data();
-    return {
-      orderId:        d.id,
-      customerId:     data.customerId    as string,
-      masterId:       data.masterId      as string,
-      customerName:   data.customerName  as string | undefined,
-      masterName:     data.masterName    as string | undefined,
-      lastMessage:    data.lastMessage   as string ?? '',
-      unreadCustomer: (data.unreadCustomer as number) ?? 0,
-      unreadMaster:   (data.unreadMaster   as number) ?? 0,
-      lastMessageAt:  (data.lastMessageAt  as Timestamp)?.toDate() ?? new Date(),
-      createdAt:      (data.createdAt      as Timestamp)?.toDate() ?? new Date(),
-    } satisfies Chat;
-  });
-
-  return all.sort((a, b) => b.lastMessageAt.getTime() - a.lastMessageAt.getTime());
+  if (auth.currentUser?.uid !== uid) throw new Error('Можно загрузить только собственные чаты');
+  interface ChatWire extends Omit<Chat, 'lastMessageAt' | 'createdAt'> {
+    lastMessageAt: string;
+    createdAt: string;
+  }
+  const items = await getServerQuery<ChatWire[]>('/api/chats');
+  return items.map((item) => ({
+    ...item,
+    lastMessageAt: new Date(item.lastMessageAt),
+    createdAt: new Date(item.createdAt),
+  }));
 }
 
 interface ServerOrderDto extends Omit<Order, 'createdAt' | 'responses' | 'ratings'> {

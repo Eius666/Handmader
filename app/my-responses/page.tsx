@@ -31,6 +31,8 @@ export default function MyResponsesPage() {
   const router = useRouter();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     if (!user) return;
@@ -45,14 +47,16 @@ export default function MyResponsesPage() {
           isSelected: order.selectedMasterId === user!.uid,
         }));
         setEntries(result);
+        setLoadError(false);
       } catch (err) {
         console.error(err);
+        setLoadError(true);
       } finally {
         setLoading(false);
       }
     }
     load();
-  }, [user]);
+  }, [retryKey, user]);
 
   const isLoading = loading && user?.role !== 'customer';
 
@@ -72,6 +76,27 @@ export default function MyResponsesPage() {
         {isLoading ? (
           <div className="flex justify-center py-16">
             <span className="size-8 rounded-full border-2 border-secondary border-t-primary animate-spin" />
+          </div>
+        ) : loadError ? (
+          <div
+            className="flex flex-col items-center gap-3 rounded-2xl py-14 text-center"
+            style={{ background: 'var(--card)', border: '1px solid rgb(var(--foreground-rgb) / 0.08)', boxShadow: 'var(--shadow-card)' }}
+          >
+            <span className="text-5xl" aria-hidden="true">↻</span>
+            <p className="text-[14px] font-semibold text-foreground">Не удалось загрузить отклики</p>
+            <p className="text-[12px] text-muted-foreground">Проверьте соединение и попробуйте ещё раз</p>
+            <PressableButton
+              type="button"
+              onClick={() => {
+                setLoading(true);
+                setLoadError(false);
+                setRetryKey((value) => value + 1);
+              }}
+              className="mt-2 rounded-full px-6 py-2.5 text-[13px] font-bold text-white"
+              style={{ background: 'var(--primary)', boxShadow: 'var(--shadow-primary)' }}
+            >
+              Повторить
+            </PressableButton>
           </div>
         ) : entries.length === 0 ? (
           <div

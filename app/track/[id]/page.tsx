@@ -17,6 +17,7 @@ import { getOrder, startWork, markReady, confirmDelivery, submitRating, deleteOr
 import { getVisibleProposals } from '@/lib/proposals';
 import { useAuth } from '@/hooks/useAuth';
 import { Order, OrderStatus, CATEGORY_LABELS } from '@/types';
+import { getOrderCounterpart } from '@/modules/orders/domain/order-counterpart';
 
 type StepState = 'done' | 'active' | 'todo';
 
@@ -159,6 +160,14 @@ export default function TrackPage() {
   const steps     = buildSteps(order.status);
   const statusInfo = STATUS_META[order.status] ?? { icon: '🧶', text: order.status, sub: '' };
   const selectedResp = order.selectedMasterId ? order.responses?.[order.selectedMasterId] : null;
+  const counterpart = order.selectedMasterId && user && (isOwner || isMaster)
+    ? getOrderCounterpart({
+      customerId: order.customerId,
+      customerName: order.customerName,
+      selectedMasterId: order.selectedMasterId,
+      selectedMasterName: order.selectedMasterName,
+    }, user.uid)
+    : null;
 
   return (
     <div className="flex h-full w-full flex-col overflow-hidden bg-background">
@@ -271,32 +280,38 @@ export default function TrackPage() {
           </ol>
         </section>
 
-        {/* Master card */}
-        {selectedResp && (
+        {/* Order counterpart card */}
+        {counterpart && (
           <MotionCard
             interactive={false}
             className="flex items-center gap-4 rounded-2xl bg-card p-4 shadow-[0_4px_20px_rgb(var(--foreground-rgb)_/_0.06)]"
           >
             <div className="relative size-14 shrink-0 overflow-hidden rounded-full bg-secondary">
-              {selectedResp.masterPhoto ? (
+              {counterpart.role === 'master' && selectedResp?.masterPhoto ? (
                 <Image
                   src={selectedResp.masterPhoto}
-                  alt={selectedResp.masterName}
+                  alt={counterpart.name}
                   fill
                   sizes="56px"
                   className="object-cover"
                 />
               ) : (
                 <div className="flex size-full items-center justify-center text-xl font-bold text-primary">
-                  {selectedResp.masterName?.[0]?.toUpperCase() ?? '?'}
+                  {counterpart.name[0]?.toUpperCase() ?? '?'}
                 </div>
               )}
             </div>
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <p className="text-base font-bold text-foreground">{selectedResp.masterName}</p>
+              <p className="text-base font-bold text-foreground">{counterpart.name}</p>
               <div className="flex items-center gap-1">
-                <StarRating value={Math.round(selectedResp.masterRating)} size={14} />
-                <span className="text-xs text-muted-foreground">· ваш мастер</span>
+                {counterpart.role === 'master' && selectedResp ? (
+                  <>
+                    <StarRating value={Math.round(selectedResp.masterRating)} size={14} />
+                    <span className="text-xs text-muted-foreground">· ваш мастер</span>
+                  </>
+                ) : (
+                  <span className="text-xs text-muted-foreground">заказчик</span>
+                )}
               </div>
             </div>
           </MotionCard>

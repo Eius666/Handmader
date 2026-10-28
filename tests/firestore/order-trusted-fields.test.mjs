@@ -1,5 +1,4 @@
 import { readFileSync } from 'node:fs';
-import assert from 'node:assert/strict';
 import test, { after, before } from 'node:test';
 
 import {
@@ -204,12 +203,12 @@ test('master sees only own proposal while customer sees every proposal', async (
   await assertSucceeds(getDoc(doc(customerDb, 'orders', 'order-1', 'proposals', 'master-2')));
 });
 
-test('chat is private and browser cannot create a message', async () => {
+test('browser cannot read or mutate raw chat documents', async () => {
   const customerDb = environment.authenticatedContext('customer-1').firestore();
   const intruderDb = environment.authenticatedContext('intruder').firestore();
 
-  await assertSucceeds(getDoc(doc(customerDb, 'chats', 'chat-1')));
-  await assertSucceeds(getDoc(doc(customerDb, 'chats', 'chat-1', 'messages', 'seed')));
+  await assertFails(getDoc(doc(customerDb, 'chats', 'chat-1')));
+  await assertFails(getDoc(doc(customerDb, 'chats', 'chat-1', 'messages', 'seed')));
   await assertFails(getDoc(doc(intruderDb, 'chats', 'chat-1')));
   await assertFails(getDoc(doc(intruderDb, 'chats', 'chat-1', 'messages', 'seed')));
   await assertFails(setDoc(doc(customerDb, 'chats', 'chat-1', 'messages', 'forged'), {
@@ -219,14 +218,14 @@ test('chat is private and browser cannot create a message', async () => {
   }));
 });
 
-test('participant can clear only own unread state', async () => {
+test('browser cannot clear chat read state directly', async () => {
   const customerDb = environment.authenticatedContext('customer-1').firestore();
   const masterDb = environment.authenticatedContext('master-1').firestore();
 
-  await assertSucceeds(updateDoc(doc(customerDb, 'chats', 'chat-1'), {
+  await assertFails(updateDoc(doc(customerDb, 'chats', 'chat-1'), {
     unreadCustomer: 0,
   }));
-  await assertSucceeds(updateDoc(doc(customerDb, 'chats', 'chat-1', 'messages', 'seed'), {
+  await assertFails(updateDoc(doc(customerDb, 'chats', 'chat-1', 'messages', 'seed'), {
     read: true,
   }));
   await assertFails(updateDoc(doc(masterDb, 'chats', 'chat-1'), {
@@ -234,7 +233,7 @@ test('participant can clear only own unread state', async () => {
   }));
 });
 
-test('chat query returns the latest 50 messages in chronological display order', async () => {
+test('browser cannot query chat message history', async () => {
   await environment.withSecurityRulesDisabled(async (context) => {
     const db = context.firestore();
     for (let index = 1; index <= 51; index += 1) {
@@ -247,14 +246,9 @@ test('chat query returns the latest 50 messages in chronological display order',
   });
 
   const db = environment.authenticatedContext('customer-1').firestore();
-  const snapshot = await getDocs(query(
+  await assertFails(getDocs(query(
     collection(db, 'chats', 'chat-1', 'messages'),
     orderBy('createdAt', 'desc'),
     limit(50),
-  ));
-  const messages = snapshot.docs.map((item) => item.data().text).reverse();
-
-  assert.equal(messages.length, 50);
-  assert.equal(messages[0], '002');
-  assert.equal(messages.at(-1), '051');
+  )));
 });
