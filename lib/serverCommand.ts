@@ -1,10 +1,7 @@
 'use client';
 
 import { auth } from './firebase';
-
-interface CommandErrorBody {
-  error?: string;
-}
+import { readServerResponse } from './serverResponse';
 
 export async function postServerCommand<T>(
   path: string,
@@ -23,12 +20,7 @@ export async function postServerCommand<T>(
     body: JSON.stringify(body),
   });
 
-  const payload = await response.json().catch(() => ({})) as CommandErrorBody & { data?: T };
-  if (!response.ok || !Object.prototype.hasOwnProperty.call(payload, 'data')) {
-    throw new Error(payload.error ?? 'Не удалось выполнить операцию');
-  }
-
-  return payload.data as T;
+  return readServerResponse<T>(response, 'Не удалось выполнить операцию');
 }
 
 export async function getServerQuery<T>(path: string): Promise<T> {
@@ -39,10 +31,5 @@ export async function getServerQuery<T>(path: string): Promise<T> {
   const response = await fetch(path, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  const payload = await response.json().catch(() => ({})) as CommandErrorBody & { data?: T };
-  if (!response.ok || !Object.prototype.hasOwnProperty.call(payload, 'data')) {
-    throw new Error(payload.error ?? 'Не удалось загрузить данные');
-  }
-
-  return payload.data as T;
+  return readServerResponse<T>(response, 'Не удалось загрузить данные');
 }
