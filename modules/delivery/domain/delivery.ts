@@ -90,8 +90,8 @@ function requireAcceptable(order: DeliveryOrderSnapshot, delivery: DeliverySnaps
   if (order.status !== 'delivered' || delivery.status !== 'delivered') {
     throw new DomainError('INVALID_STATE', 'Сначала подтвердите получение изделия');
   }
-  if (order.disputeStatus === 'open') {
-    throw new DomainError('INVALID_STATE', 'Заказ с открытым спором нельзя принять');
+  if (order.disputeStatus) {
+    throw new DomainError('INVALID_STATE', 'Заказ со спором нельзя принять');
   }
 }
 

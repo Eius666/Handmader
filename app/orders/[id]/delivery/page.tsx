@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { CheckCircle2, Handshake, PackageCheck, Truck } from 'lucide-react';
 
 import { PageLayout } from '@/components/layout/PageLayout';
@@ -13,6 +13,7 @@ import type { Order } from '@/types';
 
 export default function DeliveryPage() {
   const { id } = useParams<{ id: string }>();
+  const router = useRouter();
   const { user } = useAuth();
   const [order, setOrder] = useState<Order | null>(null);
   const [agreement, setAgreement] = useState<AgreementDto | null>(null);
@@ -91,7 +92,7 @@ export default function DeliveryPage() {
         {delivery?.status === 'delivered' && (
           <section className="flex flex-col gap-4 rounded-2xl bg-status-progress/10 p-5">
             <div className="flex gap-3"><CheckCircle2 className="size-6 text-status-progress" /><div><h2 className="font-bold">Изделие получено</h2><p className="mt-1 text-sm text-muted-foreground">Если спор не открыт, заказ будет автоматически принят {delivery.acceptanceDueAt ? formatDate(delivery.acceptanceDueAt) : 'через 5 дней'}.</p></div></div>
-            {isCustomer ? <PressableButton className="btn-primary" disabled={saving} onClick={() => void run(() => acceptDeliveredOrder(id), 'Изделие принято', 'accepted')}>{saving ? 'Принимаем…' : 'Принять изделие'}</PressableButton> : <p className="text-sm font-semibold text-muted-foreground">Ожидаем приёмку заказчика или окончание пятидневного срока.</p>}
+            {isCustomer ? <><PressableButton className="btn-primary" disabled={saving} onClick={() => void run(() => acceptDeliveredOrder(id), 'Изделие принято', 'accepted')}>{saving ? 'Принимаем…' : 'Принять изделие'}</PressableButton><button type="button" onClick={() => router.push(`/orders/${id}/dispute`)} className="rounded-xl border border-status-danger/30 py-3 font-bold text-status-danger">Открыть спор</button></> : <p className="text-sm font-semibold text-muted-foreground">Ожидаем приёмку заказчика или окончание пятидневного срока.</p>}
           </section>
         )}
 

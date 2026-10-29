@@ -306,6 +306,23 @@ export async function acceptDeliveredOrder(orderId: string): Promise<DeliveryDto
   });
 }
 
+export interface DisputeEvidenceDto { id: string; authorAlias: string; description: string; sourceUrl?: string; createdAt: string }
+export interface DisputeDto {
+  id: string; orderId: string; status: 'open' | 'resolved'; openedByAlias: string; reason: string; createdAt: string;
+  evidence: DisputeEvidenceDto[]; resolution?: 'accept_order' | 'full_refund' | 'partial_refund'; decisionSummary?: string;
+  customerRefundAmountMinor?: number; masterPayoutAmountMinor?: number; platformFeeAmountMinor?: number; resolvedAt?: string;
+}
+
+export function getDispute(orderId: string): Promise<DisputeDto | null> {
+  return getServerQuery<DisputeDto | null>(`/api/orders/${encodeURIComponent(orderId)}/dispute`);
+}
+export function openDispute(orderId: string, reason: string): Promise<DisputeDto> {
+  return postServerCommand<DisputeDto>(`/api/orders/${encodeURIComponent(orderId)}/dispute`, { action: 'open', reason, commandId: crypto.randomUUID() });
+}
+export function addDisputeEvidence(orderId: string, description: string, sourceUrl?: string): Promise<DisputeDto> {
+  return postServerCommand<DisputeDto>(`/api/orders/${encodeURIComponent(orderId)}/dispute`, { action: 'add_evidence', description, sourceUrl, commandId: crypto.randomUUID() });
+}
+
 export async function cancelOrder(orderId: string): Promise<void> {
   await deleteServerCommand(`/api/orders/${encodeURIComponent(orderId)}`, {
     commandId: crypto.randomUUID(),

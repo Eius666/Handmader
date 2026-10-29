@@ -15,6 +15,8 @@ export type NotificationType =
   | 'delivery_started'
   | 'delivery_received'
   | 'order_accepted'
+  | 'dispute_opened'
+  | 'dispute_resolved'
   | 'order_completed'
   | 'new_message'
   | 'verification_approved'

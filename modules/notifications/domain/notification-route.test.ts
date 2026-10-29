@@ -36,6 +36,10 @@ test('marketplace and agreement notifications open their task-specific screens',
     notificationRoute({ type: 'delivery_started', orderId: 'order-1' }),
     '/orders/order-1/delivery',
   );
+  assert.equal(
+    notificationRoute({ type: 'dispute_opened', orderId: 'order-1' }),
+    '/orders/order-1/dispute',
+  );
 });
 
 test('verification notification opens profile and missing metadata does not invent a route', () => {

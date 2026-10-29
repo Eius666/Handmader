@@ -69,6 +69,9 @@ export default function StaffReselectionsPage() {
       )}
     >
       <main className="flex flex-col gap-4 px-5 py-5">
+        <Link href="/staff/disputes" className="text-sm font-bold text-primary">
+          Перейти к спорам
+        </Link>
         <Link href="/staff/verifications" className="text-sm font-bold text-primary">
           Перейти к проверке мастеров
         </Link>

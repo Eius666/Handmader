@@ -234,6 +234,22 @@ test('browser cannot read or forge delivery and acceptance state', async () => {
   }));
 });
 
+test('browser cannot read, resolve, or forge dispute evidence', async () => {
+  const customerDb = environment.authenticatedContext('customer-1').firestore();
+  const staffDb = environment.authenticatedContext('staff-1').firestore();
+
+  await assertFails(setDoc(doc(customerDb, 'disputes', 'forged-dispute'), {
+    orderId: 'order-1', status: 'resolved', resolution: 'full_refund',
+  }));
+  await assertFails(getDoc(doc(customerDb, 'disputes', 'forged-dispute')));
+  await assertFails(setDoc(doc(customerDb, 'disputes', 'forged-dispute', 'evidence', 'forged'), {
+    authorId: 'master-1', description: 'Поддельное доказательство',
+  }));
+  await assertFails(updateDoc(doc(staffDb, 'orders', 'order-1'), {
+    disputeStatus: 'resolved_refund', settlementStatus: 'refund_pending',
+  }));
+});
+
 test('browser cannot read or forge reselection support cases', async () => {
   const customerDb = environment.authenticatedContext('customer-1').firestore();
   const staffDb = environment.authenticatedContext('staff-1').firestore();

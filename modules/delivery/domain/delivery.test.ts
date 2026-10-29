@@ -39,6 +39,7 @@ test('customer can accept a delivered order', () => {
 test('automatic acceptance waits five days and is blocked by dispute', () => {
   const delivery = { method: 'delivery' as const, status: 'delivered' as const, acceptanceDueAtMs: 100 };
   assert.throws(() => decideAutomaticAcceptance({ ...order, status: 'delivered' }, delivery, 99), /ещё не наступил/);
-  assert.throws(() => decideAutomaticAcceptance({ ...order, status: 'delivered', disputeStatus: 'open' }, delivery, 101), /с открытым спором/);
+  assert.throws(() => decideAutomaticAcceptance({ ...order, status: 'delivered', disputeStatus: 'open' }, delivery, 101), /со спором/);
+  assert.throws(() => decideAutomaticAcceptance({ ...order, status: 'delivered', disputeStatus: 'resolved_refund' }, delivery, 101), /со спором/);
   assert.deepEqual(decideAutomaticAcceptance({ ...order, status: 'delivered' }, delivery, 101), { status: 'accepted', automatic: true });
 });

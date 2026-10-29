@@ -38,6 +38,11 @@ export function notificationRoute(notification: RoutableNotification): string | 
       return notification.orderId
         ? `/orders/${encodeURIComponent(notification.orderId)}/delivery`
         : null;
+    case 'dispute_opened':
+    case 'dispute_resolved':
+      return notification.orderId
+        ? `/orders/${encodeURIComponent(notification.orderId)}/dispute`
+        : null;
     case 'master_selected':
     case 'payment_confirmed':
     case 'work_started':
