@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Check, Wallet, Package, Trash2, MessageSquare, Headphones } from 'lucide-react';
+import { ArrowLeft, Check, Wallet, Package, Trash2, MessageSquare, Headphones, ReceiptText } from 'lucide-react';
 import { NotificationBell } from '@/components/ui/NotificationBell';
 import { StarRating } from '@/components/ui/StarRating';
 import { Toast } from '@/components/ui/Toast';
@@ -372,6 +372,23 @@ export default function TrackPage() {
             </span>
           </div>
         </section>
+
+        {order.paymentStatus === 'funded' && (isOwner || isMaster) && (
+          <section className="flex flex-col gap-3 rounded-2xl bg-card p-5 shadow-[0_4px_20px_rgb(var(--foreground-rgb)_/_0.06)]">
+            <div className="flex gap-3">
+              <ReceiptText className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+              <div>
+                <p className="font-bold text-foreground">Аванс на материалы</p>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                  Запрос, подтверждение заказчика и фактические расходы сохраняются отдельно от вознаграждения мастера.
+                </p>
+              </div>
+            </div>
+            <button type="button" onClick={() => router.push(`/orders/${order.id}/materials`)} className="rounded-xl border border-primary/25 py-3 font-bold text-primary">
+              Открыть материалы
+            </button>
+          </section>
+        )}
 
         {canRequestReselection && order.reselectionRequestStatus === 'pending' && (
           <section className="flex gap-3 rounded-2xl border border-primary/20 bg-primary/10 p-4">

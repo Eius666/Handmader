@@ -28,6 +28,10 @@ test('marketplace and agreement notifications open their task-specific screens',
     notificationRoute({ type: 'proposal_reconfirmation_required', orderId: 'order-1' }),
     '/orders/order-1',
   );
+  assert.equal(
+    notificationRoute({ type: 'material_advance_requested', orderId: 'order-1' }),
+    '/orders/order-1/materials',
+  );
 });
 
 test('verification notification opens profile and missing metadata does not invent a route', () => {

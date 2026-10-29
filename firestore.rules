@@ -101,6 +101,12 @@ service cloud.firestore {
       }
     }
 
+    // Material advances and expense evidence are financial records. They are
+    // visible to participants only through authenticated server projections.
+    match /materialAdvances/{advanceId} {
+      allow read, write: if false;
+    }
+
     // Chat content, history and read state are projected through authenticated
     // server APIs. The browser cannot query or mutate the raw documents.
     match /chats/{chatId} {

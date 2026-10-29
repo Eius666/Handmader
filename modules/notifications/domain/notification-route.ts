@@ -26,6 +26,12 @@ export function notificationRoute(notification: RoutableNotification): string | 
       return notification.orderId
         ? `/orders/${encodeURIComponent(notification.orderId)}/agreement`
         : null;
+    case 'material_advance_requested':
+    case 'material_advance_authorized':
+    case 'material_expense_evidence_submitted':
+      return notification.orderId
+        ? `/orders/${encodeURIComponent(notification.orderId)}/materials`
+        : null;
     case 'master_selected':
     case 'payment_confirmed':
     case 'work_started':

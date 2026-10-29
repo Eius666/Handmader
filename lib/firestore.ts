@@ -221,6 +221,56 @@ export async function simulateMockPayment(orderId: string): Promise<MockPaymentR
   );
 }
 
+export interface MaterialAdvanceDto {
+  orderId: string;
+  status: 'requested' | 'authorized' | 'evidence_submitted';
+  currency: 'RUB';
+  requestedAmountMinor: number;
+  maximumAmountMinor: number;
+  requestedAt: string;
+  authorizedAt?: string;
+  evidence?: {
+    spentAmountMinor: number;
+    unusedAmountMinor: number;
+    note: string;
+    submittedAt: string;
+  };
+}
+
+export async function getMaterialAdvance(orderId: string): Promise<MaterialAdvanceDto | null> {
+  return getServerQuery<MaterialAdvanceDto | null>(
+    `/api/orders/${encodeURIComponent(orderId)}/material-advance`,
+  );
+}
+
+export async function requestMaterialAdvance(
+  orderId: string,
+  requestedAmountMinor: number,
+): Promise<MaterialAdvanceDto> {
+  return postServerCommand<MaterialAdvanceDto>(
+    `/api/orders/${encodeURIComponent(orderId)}/material-advance`,
+    { action: 'request', requestedAmountMinor, commandId: crypto.randomUUID() },
+  );
+}
+
+export async function authorizeMaterialAdvance(orderId: string): Promise<MaterialAdvanceDto> {
+  return postServerCommand<MaterialAdvanceDto>(
+    `/api/orders/${encodeURIComponent(orderId)}/material-advance`,
+    { action: 'authorize', commandId: crypto.randomUUID() },
+  );
+}
+
+export async function submitMaterialExpenseEvidence(
+  orderId: string,
+  spentAmountMinor: number,
+  note: string,
+): Promise<MaterialAdvanceDto> {
+  return postServerCommand<MaterialAdvanceDto>(
+    `/api/orders/${encodeURIComponent(orderId)}/material-advance`,
+    { action: 'submit_evidence', spentAmountMinor, note, commandId: crypto.randomUUID() },
+  );
+}
+
 export async function cancelOrder(orderId: string): Promise<void> {
   await deleteServerCommand(`/api/orders/${encodeURIComponent(orderId)}`, {
     commandId: crypto.randomUUID(),

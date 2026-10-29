@@ -7,6 +7,9 @@ export type NotificationType =
   | 'agreement_pending'
   | 'agreement_confirmed'
   | 'payment_confirmed'
+  | 'material_advance_requested'
+  | 'material_advance_authorized'
+  | 'material_expense_evidence_submitted'
   | 'work_started'
   | 'order_ready'
   | 'order_completed'
@@ -128,6 +131,7 @@ export interface Order {
   agreementVersion?: number;
   finalPrice?: number;
   paymentStatus?: 'funded';
+  materialAdvanceStatus?: 'requested' | 'authorized' | 'evidence_submitted';
   hasSubmittedReview?: boolean;
   ratings?: OrderRating[];
   measurements?: string;
