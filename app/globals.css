@@ -41,6 +41,12 @@
 :root {
   color-scheme: light;
 
+  /* Fonts are bundled with the application so builds never depend on an
+     external font service being reachable. */
+  --font-manrope: 'Manrope Variable';
+  --font-spectral: 'Spectral';
+  --font-caveat: 'Caveat Variable';
+
   /* ─── Palette — "Мастерская": linen canvas + spiced clay ─────────────────
      Warmer and quieter than a typical marketplace orange. One confident
      accent (clay), one quiet support hue (thread-gold), used sparingly. */

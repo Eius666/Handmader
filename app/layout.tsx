@@ -1,32 +1,18 @@
 import type { Metadata, Viewport } from 'next';
-import { Manrope, Spectral, Caveat } from 'next/font/google';
+import '@fontsource-variable/manrope';
+import '@fontsource-variable/caveat';
+import '@fontsource/spectral/400.css';
+import '@fontsource/spectral/400-italic.css';
+import '@fontsource/spectral/500.css';
+import '@fontsource/spectral/500-italic.css';
+import '@fontsource/spectral/600.css';
+import '@fontsource/spectral/600-italic.css';
+import '@fontsource/spectral/700.css';
+import '@fontsource/spectral/700-italic.css';
+import '@fontsource/spectral/800.css';
+import '@fontsource/spectral/800-italic.css';
 import { AppShell } from '@/components/AppShell';
 import './globals.css';
-
-// Body — geometric-humanist sans, clean and highly legible
-const manrope = Manrope({
-  subsets:  ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
-  weight:   ['400', '500', '600', '700', '800'],
-  variable: '--font-manrope',
-  display:  'swap',
-});
-
-// Display — warm literary serif for headings, prices, brand name
-const spectral = Spectral({
-  subsets:  ['cyrillic', 'cyrillic-ext', 'latin', 'latin-ext'],
-  weight:   ['400', '500', '600', '700', '800'],
-  style:    ['normal', 'italic'],
-  variable: '--font-spectral',
-  display:  'swap',
-});
-
-// Accent — a single handwritten "signature" touch, used sparingly
-const caveat = Caveat({
-  subsets:  ['cyrillic', 'latin'],
-  weight:   ['600', '700'],
-  variable: '--font-caveat',
-  display:  'swap',
-});
 
 export const metadata: Metadata = {
   title:       'Вязубер',
@@ -42,7 +28,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className={`${manrope.variable} ${spectral.variable} ${caveat.variable}`}>
+    <html lang="ru">
       <body>
         <AppShell>{children}</AppShell>
       </body>
