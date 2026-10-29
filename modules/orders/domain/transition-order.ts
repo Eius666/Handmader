@@ -48,6 +48,9 @@ export function decideOrderTransition(
       };
 
     case 'confirm_delivery':
+      if (order.flowVersion === 2) {
+        throw new DomainError('INVALID_STATE', 'Используйте подтверждение передачи и приёмки');
+      }
       requireActor(actorId, order.customerId, 'Только заказчик может подтвердить получение');
       requireStatus(order.status, ['ready', 'delivered']);
       return {

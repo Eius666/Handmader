@@ -271,6 +271,41 @@ export async function submitMaterialExpenseEvidence(
   );
 }
 
+export interface DeliveryDto {
+  orderId: string;
+  method: 'local' | 'delivery';
+  status: 'handoff_pending' | 'in_transit' | 'delivered' | 'accepted';
+  carrier?: string;
+  trackingNumber?: string;
+  startedAt: string;
+  deliveredAt?: string;
+  acceptanceDueAt?: string;
+  acceptedAt?: string;
+  acceptedAutomatically?: boolean;
+}
+
+export async function getDelivery(orderId: string): Promise<DeliveryDto | null> {
+  return getServerQuery<DeliveryDto | null>(`/api/orders/${encodeURIComponent(orderId)}/delivery`);
+}
+
+export async function startDelivery(orderId: string, input: { carrier?: string; trackingNumber?: string }): Promise<DeliveryDto> {
+  return postServerCommand<DeliveryDto>(`/api/orders/${encodeURIComponent(orderId)}/delivery`, {
+    action: 'start', ...input, commandId: crypto.randomUUID(),
+  });
+}
+
+export async function confirmDeliveryReceipt(orderId: string): Promise<DeliveryDto> {
+  return postServerCommand<DeliveryDto>(`/api/orders/${encodeURIComponent(orderId)}/delivery`, {
+    action: 'confirm_receipt', commandId: crypto.randomUUID(),
+  });
+}
+
+export async function acceptDeliveredOrder(orderId: string): Promise<DeliveryDto> {
+  return postServerCommand<DeliveryDto>(`/api/orders/${encodeURIComponent(orderId)}/delivery`, {
+    action: 'accept', commandId: crypto.randomUUID(),
+  });
+}
+
 export async function cancelOrder(orderId: string): Promise<void> {
   await deleteServerCommand(`/api/orders/${encodeURIComponent(orderId)}`, {
     commandId: crypto.randomUUID(),

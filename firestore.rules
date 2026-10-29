@@ -107,6 +107,10 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    match /deliveries/{deliveryId} {
+      allow read, write: if false;
+    }
+
     // Chat content, history and read state are projected through authenticated
     // server APIs. The browser cannot query or mutate the raw documents.
     match /chats/{chatId} {

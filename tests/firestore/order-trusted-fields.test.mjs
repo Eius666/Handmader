@@ -217,6 +217,23 @@ test('browser cannot read or forge material advance records', async () => {
   }));
 });
 
+test('browser cannot read or forge delivery and acceptance state', async () => {
+  const customerDb = environment.authenticatedContext('customer-1').firestore();
+  const masterDb = environment.authenticatedContext('master-1').firestore();
+
+  await assertFails(setDoc(doc(masterDb, 'deliveries', 'order-1'), {
+    orderId: 'order-1',
+    masterId: 'master-1',
+    status: 'accepted',
+    acceptedAutomatically: true,
+  }));
+  await assertFails(getDoc(doc(customerDb, 'deliveries', 'order-1')));
+  await assertFails(updateDoc(doc(customerDb, 'orders', 'order-1'), {
+    status: 'accepted',
+    deliveryStatus: 'accepted',
+  }));
+});
+
 test('browser cannot read or forge reselection support cases', async () => {
   const customerDb = environment.authenticatedContext('customer-1').firestore();
   const staffDb = environment.authenticatedContext('staff-1').firestore();

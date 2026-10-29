@@ -18,7 +18,9 @@ const STATUS_CONFIG: Record<OrderStatus, StatusCfg> = {
   paid:               { label: 'тестово оплачен', Icon: ShieldCheck, tone: 'success' },
   in_progress:        { label: 'в работе',       Icon: Scissors,   tone: 'success' },
   ready:              { label: 'готово',          Icon: Sparkles,   tone: 'gold' },
+  in_delivery:        { label: 'в доставке',      Icon: Truck,      tone: 'gold' },
   delivered:          { label: 'доставлен',       Icon: Truck,      tone: 'gold' },
+  accepted:           { label: 'принят',          Icon: CheckCheck, tone: 'success' },
   completed:          { label: 'завершён',        Icon: CheckCheck, tone: 'success' },
   cancelled:          { label: 'отменён',          Icon: XCircle,    tone: 'danger' },
 };

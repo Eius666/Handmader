@@ -60,3 +60,10 @@ test('new flow requires funded payment before production starts', () => {
   );
   assert.equal(started.nextStatus, 'in_progress');
 });
+
+test('new flow cannot bypass delivery and acceptance', () => {
+  assert.throws(
+    () => decideOrderTransition({ ...base, flowVersion: 2, status: 'ready' }, 'customer-1', 'confirm_delivery'),
+    /подтверждение передачи и приёмки/,
+  );
+});

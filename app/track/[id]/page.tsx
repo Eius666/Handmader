@@ -38,15 +38,17 @@ interface Step {
 
 function buildSteps(currentStatus: OrderStatus): Step[] {
   const steps: { id: string; label: string; status: OrderStatus }[] = [
-    { id: 'accepted',   label: 'Принят',   status: 'master_selected' },
+    { id: 'selected',   label: 'Мастер',   status: 'master_selected' },
     { id: 'terms',      label: 'Условия', status: 'awaiting_payment' },
     { id: 'paid',       label: 'Оплачен', status: 'paid' },
     { id: 'inprogress', label: 'В работе', status: 'in_progress' },
     { id: 'ready',      label: 'Готов',    status: 'ready' },
-    { id: 'delivered',  label: 'Доставлен', status: 'delivered' },
+    { id: 'delivery',   label: 'Передача', status: 'in_delivery' },
+    { id: 'delivered',  label: 'Получен', status: 'delivered' },
+    { id: 'accepted',   label: 'Принят', status: 'accepted' },
   ];
 
-  const ORDER: OrderStatus[] = ['master_selected', 'awaiting_payment', 'paid', 'in_progress', 'ready', 'delivered', 'completed'];
+  const ORDER: OrderStatus[] = ['master_selected', 'awaiting_payment', 'paid', 'in_progress', 'ready', 'in_delivery', 'delivered', 'accepted', 'completed'];
   const currentIdx = ORDER.indexOf(currentStatus);
 
   return steps.map((step) => {
@@ -64,7 +66,9 @@ const STATUS_META: Partial<Record<OrderStatus, { icon: string; text: string; sub
   paid:            { icon: '🛡️', text: 'Тестово оплачен', sub: 'Средства зарезервированы в тестовом контуре' },
   in_progress:     { icon: '🧶', text: 'В работе', sub: 'Мастер приступил к вязанию вашего заказа' },
   ready:           { icon: '✅', text: 'Готово!',  sub: 'Ваш заказ выполнен и ждёт передачи' },
+  in_delivery:     { icon: '🚚', text: 'Передаётся', sub: 'Ожидаем подтверждение получения заказчиком' },
   delivered:       { icon: '📦', text: 'Доставлен', sub: 'Заказ доставлен, ожидаем подтверждения' },
+  accepted:        { icon: '🤝', text: 'Принят', sub: 'Изделие принято, ожидается тестовая выплата' },
   completed:       { icon: '⭐', text: 'Завершён', sub: 'Спасибо! Не забудьте оставить отзыв' },
   cancelled:       { icon: '✕', text: 'Отменён', sub: 'Заказ отменён до выбора исполнителя' },
 };
@@ -96,7 +100,7 @@ export default function TrackPage() {
 
   const isOwner    = order?.customerId      === user?.uid;
   const isMaster   = !isOwner && order?.selectedMasterId === user?.uid;
-  const canConfirm = isOwner && (order?.status === 'ready' || order?.status === 'delivered');
+  const canConfirm = isOwner && order?.flowVersion !== 2 && (order?.status === 'ready' || order?.status === 'delivered');
   const canDelete  = isOwner && order?.status === 'awaiting_responses';
   const canRequestReselection = isOwner
     && (order?.status === 'master_selected' || order?.status === 'awaiting_payment')
@@ -531,6 +535,14 @@ export default function TrackPage() {
                 {acting ? 'Обновляем...' : '✓ Заказ готов'}
               </PressableButton>
             </motion.div>
+          ) : order.flowVersion === 2 && ['ready', 'in_delivery', 'delivered'].includes(order.status) ? (
+            <motion.div key="delivery" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
+              <PressableButton type="button" onClick={() => router.push(`/orders/${order.id}/delivery`)} className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-4 text-lg font-bold text-primary-foreground">
+                📦 Передача и приёмка
+              </PressableButton>
+            </motion.div>
+          ) : order.status === 'accepted' ? (
+            <motion.div key="accepted" className="flex w-full items-center justify-center rounded-xl bg-status-progress/15 py-4 text-base font-bold text-status-progress">✓ Изделие принято — ожидается выплата</motion.div>
           ) : canConfirm ? (
             <motion.div key="confirm" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
               <PressableButton

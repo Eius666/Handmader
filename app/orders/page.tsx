@@ -25,7 +25,7 @@ const CATEGORY_ICONS: Record<OrderCategory, LucideIcon> = {
   other:     Package,
 };
 
-const ACTIVE_STATUSES: OrderStatus[] = ['awaiting_responses', 'master_selected', 'awaiting_payment', 'paid', 'in_progress', 'ready', 'delivered'];
+const ACTIVE_STATUSES: OrderStatus[] = ['awaiting_responses', 'master_selected', 'awaiting_payment', 'paid', 'in_progress', 'ready', 'in_delivery', 'delivered', 'accepted'];
 
 export default function OrdersPage() {
   const { user } = useAuth();

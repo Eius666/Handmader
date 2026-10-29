@@ -30,3 +30,14 @@ test('chat cycles can page current messages without exposing earlier selection h
     && index.fields?.[1]?.fieldPath === 'chatCycle'),
   'messages need read + chatCycle index');
 });
+
+test('due deliveries can be selected for automatic acceptance', async () => {
+  const source = await readFile(new URL('../../firestore.indexes.json', import.meta.url), 'utf8');
+  const config = JSON.parse(source);
+  const indexes = config.indexes?.filter((candidate) => candidate.collectionGroup === 'deliveries') ?? [];
+
+  assert.ok(indexes.some((index) =>
+    index.fields?.[0]?.fieldPath === 'status'
+    && index.fields?.[1]?.fieldPath === 'acceptanceDueAt'),
+  'deliveries need status + acceptanceDueAt index');
+});

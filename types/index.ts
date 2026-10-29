@@ -12,6 +12,9 @@ export type NotificationType =
   | 'material_expense_evidence_submitted'
   | 'work_started'
   | 'order_ready'
+  | 'delivery_started'
+  | 'delivery_received'
+  | 'order_accepted'
   | 'order_completed'
   | 'new_message'
   | 'verification_approved'
@@ -42,7 +45,9 @@ export type OrderStatus =
   | 'paid'
   | 'in_progress'
   | 'ready'
+  | 'in_delivery'
   | 'delivered'
+  | 'accepted'
   | 'completed'
   | 'cancelled';
 
@@ -179,7 +184,9 @@ export const STATUS_LABELS: Record<OrderStatus, string> = {
   paid: 'Оплачен',
   in_progress: 'В работе',
   ready: 'Готов',
+  in_delivery: 'Передаётся',
   delivered: 'Доставлен',
+  accepted: 'Принят',
   completed: 'Завершён',
   cancelled: 'Отменён',
 };
@@ -190,6 +197,8 @@ export const STATUS_STEPS: OrderStatus[] = [
   'paid',
   'in_progress',
   'ready',
+  'in_delivery',
   'delivered',
+  'accepted',
   'completed',
 ];
