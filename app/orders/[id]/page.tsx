@@ -201,7 +201,9 @@ export default function OrderDetailPage() {
                   <StaggerItem key={masterId}>
                     <MasterResponseCard
                       response={resp}
-                      onSelect={isOwner ? () => handleSelectMaster(masterId) : undefined}
+                      onSelect={isOwner && (resp.status ?? 'active') === 'active'
+                        ? () => handleSelectMaster(masterId)
+                        : undefined}
                       isSelecting={selectingMaster === masterId}
                     />
                   </StaggerItem>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import Link from 'next/link';
 import { Check, RefreshCw, ShieldCheck, X } from 'lucide-react';
 
 import { PageLayout } from '@/components/layout/PageLayout';
@@ -89,6 +90,9 @@ export default function StaffVerificationsPage() {
       )}
     >
       <main className="flex flex-col gap-4 px-5 py-5">
+        <Link href="/staff/reselections" className="text-sm font-bold text-primary">
+          Перейти к обращениям о смене мастера
+        </Link>
         {loading && <div className="flex justify-center py-16"><Spinner size={36} /></div>}
 
         {!loading && error && (

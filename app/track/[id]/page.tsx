@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Check, Wallet, Package, Trash2, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Check, Wallet, Package, Trash2, MessageSquare, Headphones } from 'lucide-react';
 import { NotificationBell } from '@/components/ui/NotificationBell';
 import { StarRating } from '@/components/ui/StarRating';
 import { Toast } from '@/components/ui/Toast';
@@ -13,7 +13,15 @@ import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { ImageCarousel } from '@/components/ui/ImageCarousel';
 import { PageTransition } from '@/components/motion/PageTransition';
 import { PressableButton, MotionCard } from '@/components/motion/Pressable';
-import { getOrder, startWork, markReady, confirmDelivery, submitRating, cancelOrder } from '@/lib/firestore';
+import {
+  getOrder,
+  startWork,
+  markReady,
+  confirmDelivery,
+  submitRating,
+  cancelOrder,
+  requestMasterReselection,
+} from '@/lib/firestore';
 import { getVisibleProposals } from '@/lib/proposals';
 import { useAuth } from '@/hooks/useAuth';
 import { Order, OrderStatus, CATEGORY_LABELS } from '@/types';
@@ -73,6 +81,9 @@ export default function TrackPage() {
   const [showRating,       setShowRating]      = useState(false);
   const [showDelete,       setShowDelete]      = useState(false);
   const [deleting,         setDeleting]        = useState(false);
+  const [showReselection,  setShowReselection] = useState(false);
+  const [reselectionReason, setReselectionReason] = useState('');
+  const [requestingReselection, setRequestingReselection] = useState(false);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -87,6 +98,9 @@ export default function TrackPage() {
   const isMaster   = !isOwner && order?.selectedMasterId === user?.uid;
   const canConfirm = isOwner && (order?.status === 'ready' || order?.status === 'delivered');
   const canDelete  = isOwner && order?.status === 'awaiting_responses';
+  const canRequestReselection = isOwner
+    && (order?.status === 'master_selected' || order?.status === 'awaiting_payment')
+    && order?.paymentStatus !== 'funded';
 
   async function handleStart() {
     if (!order) return;
@@ -139,6 +153,24 @@ export default function TrackPage() {
     setOrder((previous) => previous ? { ...previous, hasSubmittedReview: true } : previous);
     setShowRating(false);
     setToast('Отзыв принят и будет опубликован через 7 дней');
+  }
+
+  async function handleReselectionRequest() {
+    if (!order) return;
+    setRequestingReselection(true);
+    try {
+      await requestMasterReselection(order.id, reselectionReason);
+      setOrder((previous) => previous
+        ? { ...previous, reselectionRequestStatus: 'pending' }
+        : previous);
+      setShowReselection(false);
+      setReselectionReason('');
+      setToast('Обращение передано в поддержку');
+    } catch (error) {
+      setToast(error instanceof Error ? error.message : 'Не удалось отправить обращение');
+    } finally {
+      setRequestingReselection(false);
+    }
   }
 
   if (loading) {
@@ -340,6 +372,73 @@ export default function TrackPage() {
             </span>
           </div>
         </section>
+
+        {canRequestReselection && order.reselectionRequestStatus === 'pending' && (
+          <section className="flex gap-3 rounded-2xl border border-primary/20 bg-primary/10 p-4">
+            <Headphones className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+            <div>
+              <p className="font-bold text-foreground">Обращение рассматривает поддержка</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                До решения поддержки текущий мастер и чат остаются без изменений.
+              </p>
+            </div>
+          </section>
+        )}
+
+        {canRequestReselection && order.reselectionRequestStatus !== 'pending' && (
+          <section className="flex flex-col gap-3 rounded-2xl bg-card p-5 shadow-[0_4px_20px_rgb(var(--foreground-rgb)_/_0.06)]">
+            <div className="flex gap-3">
+              <Headphones className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+              <div>
+                <p className="font-bold text-foreground">Не удалось договориться с мастером?</p>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                  Поддержка проверит обращение и при необходимости вернёт заказ к выбору исполнителя.
+                </p>
+              </div>
+            </div>
+
+            {showReselection ? (
+              <div className="flex flex-col gap-3">
+                <label className="flex flex-col gap-1.5 text-sm font-bold text-foreground">
+                  Причина обращения
+                  <textarea
+                    className="input-field min-h-28 font-normal"
+                    value={reselectionReason}
+                    onChange={(event) => setReselectionReason(event.target.value)}
+                    placeholder="Опишите, какие условия не удалось согласовать"
+                    maxLength={1_000}
+                  />
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    disabled={requestingReselection}
+                    onClick={() => setShowReselection(false)}
+                    className="rounded-xl bg-secondary py-3 font-bold text-foreground disabled:opacity-50"
+                  >
+                    Отмена
+                  </button>
+                  <button
+                    type="button"
+                    disabled={requestingReselection || reselectionReason.trim().length < 10}
+                    onClick={() => void handleReselectionRequest()}
+                    className="rounded-xl bg-primary py-3 font-bold text-primary-foreground disabled:opacity-50"
+                  >
+                    {requestingReselection ? 'Отправляем...' : 'Отправить'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowReselection(true)}
+                className="rounded-xl border border-primary/25 py-3 font-bold text-primary"
+              >
+                Обратиться в поддержку
+              </button>
+            )}
+          </section>
+        )}
       </div>
       </PageTransition>
       </div>

@@ -85,3 +85,29 @@ test('expired proposal requires reconfirmation before selection', () => {
     (error: unknown) => error instanceof DomainError && error.code === 'INVALID_STATE',
   );
 });
+
+test('proposal from an earlier reselection cycle cannot be selected', () => {
+  assert.throws(
+    () => decideMasterSelection({
+      ...order,
+      reselectionCycle: 1,
+      proposals: {
+        'master-1': {
+          ...order.proposals['master-1'],
+          confirmedReselectionCycle: 0,
+        },
+      },
+    }, 'customer-1', 'master-1'),
+    (error: unknown) => error instanceof DomainError && error.code === 'INVALID_STATE',
+  );
+});
+
+test('previous selected master is excluded from reselection', () => {
+  assert.throws(
+    () => decideMasterSelection({
+      ...order,
+      excludedMasterIds: ['master-1'],
+    }, 'customer-1', 'master-1'),
+    (error: unknown) => error instanceof DomainError && error.code === 'FORBIDDEN',
+  );
+});

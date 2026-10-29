@@ -14,6 +14,8 @@ interface Props {
 }
 
 export function MasterResponseCard({ response, onSelect, isSelecting, selected }: Props) {
+  const needsReconfirmation = response.status === 'reconfirmation_required';
+  const excluded = response.status === 'excluded';
   return (
     /* Double-bezel */
     <MotionCard
@@ -89,6 +91,18 @@ export function MasterResponseCard({ response, onSelect, isSelecting, selected }
             <p className="text-[12px] leading-relaxed text-muted-foreground">{response.comment}</p>
           )}
 
+          {needsReconfirmation && (
+            <p className="rounded-xl bg-status-waiting/10 px-3 py-2 text-[12px] font-semibold text-foreground">
+              Ожидаем подтверждения цены и срока мастером
+            </p>
+          )}
+
+          {excluded && (
+            <p className="rounded-xl bg-secondary px-3 py-2 text-[12px] font-semibold text-muted-foreground">
+              Предыдущий исполнитель исключён из повторного выбора
+            </p>
+          )}
+
           {/* Portfolio thumbnails */}
           {response.portfolioPhotos && response.portfolioPhotos.length > 0 && (
             <div className="flex gap-2">
@@ -111,7 +125,7 @@ export function MasterResponseCard({ response, onSelect, isSelecting, selected }
             </div>
           )}
 
-          {onSelect && !selected && (
+          {onSelect && !selected && !needsReconfirmation && !excluded && (
             <PressableButton
               type="button"
               onClick={onSelect}

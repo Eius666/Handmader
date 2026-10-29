@@ -3,10 +3,11 @@
 import { getServerQuery, postServerCommand } from './serverCommand';
 import type { OrderCategory, OrderResponse, OrderStatus } from '@/types';
 
-interface ProposalWire extends Omit<OrderResponse, 'createdAt' | 'updatedAt' | 'validUntil'> {
+interface ProposalWire extends Omit<OrderResponse, 'createdAt' | 'updatedAt' | 'validUntil' | 'reconfirmationDeadline'> {
   createdAt: string;
   updatedAt: string;
   validUntil: string;
+  reconfirmationDeadline?: string;
 }
 
 export interface MyProposalRow {
@@ -60,12 +61,21 @@ export async function getMyProposals(): Promise<MyProposalRow[]> {
   }));
 }
 
+export async function reconfirmProposal(orderId: string): Promise<void> {
+  await postServerCommand(`/api/orders/${encodeURIComponent(orderId)}/proposals/reconfirm`, {
+    commandId: crypto.randomUUID(),
+  });
+}
+
 function mapProposal(proposal: ProposalWire): OrderResponse {
   return {
     ...proposal,
     createdAt: parseDate(proposal.createdAt),
     updatedAt: parseDate(proposal.updatedAt),
     validUntil: proposal.validUntil ? parseDate(proposal.validUntil) : undefined,
+    reconfirmationDeadline: proposal.reconfirmationDeadline
+      ? parseDate(proposal.reconfirmationDeadline)
+      : undefined,
   };
 }
 

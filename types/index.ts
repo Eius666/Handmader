@@ -12,7 +12,11 @@ export type NotificationType =
   | 'order_completed'
   | 'new_message'
   | 'verification_approved'
-  | 'verification_rejected';
+  | 'verification_rejected'
+  | 'order_reopened'
+  | 'master_reselection_closed'
+  | 'proposal_reconfirmation_required'
+  | 'proposal_reconfirmed';
 
 export interface AppNotification {
   id: string;
@@ -98,6 +102,7 @@ export interface OrderResponse {
   validUntil?: Date;
   version?: number;
   status?: string;
+  reconfirmationDeadline?: Date;
 }
 
 export interface Order {
@@ -128,6 +133,8 @@ export interface Order {
   measurements?: string;
   location?: string;
   deliveryOption?: 'local' | 'delivery' | 'both';
+  reselectionRequestStatus?: 'pending' | 'resolved';
+  reconfirmationDeadline?: Date;
 }
 
 export interface Chat {

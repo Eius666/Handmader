@@ -4,6 +4,7 @@ export interface ProposalOrderSnapshot {
   id: string;
   customerId: string;
   status: string;
+  excludedMasterIds?: readonly string[];
 }
 
 export interface ProposalActorSnapshot {
@@ -40,6 +41,9 @@ export function decideProposalSubmission(
   }
   if (order.customerId === actor.id) {
     throw new DomainError('FORBIDDEN', 'Нельзя откликнуться на собственный заказ');
+  }
+  if (order.excludedMasterIds?.includes(actor.id)) {
+    throw new DomainError('FORBIDDEN', 'Предыдущий исполнитель исключён из повторного выбора');
   }
   if (order.status !== 'awaiting_responses') {
     throw new DomainError('INVALID_STATE', 'Приём откликов на этот заказ завершён');

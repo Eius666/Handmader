@@ -14,6 +14,10 @@ export function notificationRoute(notification: RoutableNotification): string | 
         : null;
     case 'new_order':
     case 'new_response':
+    case 'order_reopened':
+    case 'master_reselection_closed':
+    case 'proposal_reconfirmation_required':
+    case 'proposal_reconfirmed':
       return notification.orderId
         ? `/orders/${encodeURIComponent(notification.orderId)}`
         : null;

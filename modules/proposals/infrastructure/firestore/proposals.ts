@@ -32,6 +32,7 @@ export interface ProposalDto {
   createdAt: string;
   updatedAt: string;
   validUntil: string;
+  reconfirmationDeadline?: string;
 }
 
 interface StoredProposal {
@@ -48,6 +49,13 @@ interface StoredProposal {
   createdAt?: unknown;
   updatedAt?: unknown;
   validUntil?: unknown;
+  confirmedReselectionCycle?: unknown;
+}
+
+interface ProposalProjectionContext {
+  reselectionCycle: number;
+  excludedMasterIds: string[];
+  reconfirmationDeadline?: Timestamp;
 }
 
 export async function submitProposalInFirestore(
@@ -89,6 +97,7 @@ export async function submitProposalInFirestore(
       category: String(order.category ?? ''),
       location: typeof order.location === 'string' ? order.location : undefined,
       deliveryOption,
+      excludedMasterIds: stringArray(order.excludedMasterIds),
     }, {
       id: command.actorId,
       role: user.role,
@@ -110,6 +119,7 @@ export async function submitProposalInFirestore(
       id: orderSnapshot.id,
       customerId: String(order.customerId ?? ''),
       status: String(order.status ?? ''),
+      excludedMasterIds: stringArray(order.excludedMasterIds),
     }, {
       id: command.actorId,
       role: typeof user.role === 'string' ? user.role : null,
@@ -142,6 +152,9 @@ export async function submitProposalInFirestore(
       createdAt,
       updatedAt: now,
       validUntil: Timestamp.fromDate(decision.validUntil),
+      confirmedReselectionCycle: typeof order.reselectionCycle === 'number'
+        ? order.reselectionCycle
+        : 0,
     };
 
     transaction.set(proposalRef, stored);
@@ -197,15 +210,16 @@ export async function getVisibleProposalsFromFirestore(
   if (!orderSnapshot.exists) throw new DomainError('NOT_FOUND', 'Заказ не найден');
 
   const order = orderSnapshot.data() ?? {};
+  const context = proposalProjectionContext(order);
   const isCustomer = order.customerId === actorId;
   const proposals: ProposalDto[] = [];
 
   if (isCustomer) {
     const snapshot = await orderRef.collection('proposals').get();
-    snapshot.docs.forEach((item) => proposals.push(proposalDto(item.data() as StoredProposal)));
+    snapshot.docs.forEach((item) => proposals.push(proposalDto(item.data() as StoredProposal, context)));
   } else {
     const own = await orderRef.collection('proposals').doc(actorId).get();
-    if (own.exists) proposals.push(proposalDto(own.data() as StoredProposal));
+    if (own.exists) proposals.push(proposalDto(own.data() as StoredProposal, context));
   }
 
   if (proposals.length > 0) {
@@ -218,7 +232,7 @@ export async function getVisibleProposalsFromFirestore(
     ? Object.entries(legacy)
     : Object.entries(legacy).filter(([masterId]) => masterId === actorId);
 
-  return visibleLegacy.map(([masterId, value]) => legacyProposalDto(masterId, value));
+  return visibleLegacy.map(([masterId, value]) => legacyProposalDto(masterId, value, context));
 }
 
 export async function getMyProposalsFromFirestore(actorId: string) {
@@ -234,7 +248,10 @@ export async function getMyProposalsFromFirestore(actorId: string) {
     const order = orderSnapshot.data() ?? {};
 
     return {
-      proposal: proposalDto(proposalSnapshot.data() as StoredProposal),
+      proposal: proposalDto(
+        proposalSnapshot.data() as StoredProposal,
+        proposalProjectionContext(order),
+      ),
       order: {
         id: orderSnapshot.id,
         description: String(order.description ?? ''),
@@ -253,9 +270,21 @@ export async function getMyProposalsFromFirestore(actorId: string) {
     .sort((left, right) => right.order.createdAt.localeCompare(left.order.createdAt));
 }
 
-function proposalDto(value: StoredProposal): ProposalDto {
+function proposalDto(
+  value: StoredProposal,
+  context: ProposalProjectionContext = { reselectionCycle: 0, excludedMasterIds: [] },
+): ProposalDto {
+  const masterId = String(value.masterId ?? '');
+  const confirmedCycle = typeof value.confirmedReselectionCycle === 'number'
+    ? value.confirmedReselectionCycle
+    : 0;
+  const status = context.excludedMasterIds.includes(masterId)
+    ? 'excluded'
+    : confirmedCycle < context.reselectionCycle
+      ? 'reconfirmation_required'
+      : String(value.status ?? 'active');
   return {
-    masterId: String(value.masterId ?? ''),
+    masterId,
     masterName: String(value.masterAlias ?? 'Мастер'),
     masterRating: numberOrZero(value.masterRating),
     masterCompletedOrders: numberOrZero(value.masterCompletedOrders),
@@ -265,14 +294,21 @@ function proposalDto(value: StoredProposal): ProposalDto {
     comment: String(value.comment ?? ''),
     portfolioPhotos: [],
     version: numberOrZero(value.version),
-    status: String(value.status ?? 'active'),
+    status,
     createdAt: timestampIso(value.createdAt),
     updatedAt: timestampIso(value.updatedAt),
     validUntil: timestampIso(value.validUntil),
+    ...(status === 'reconfirmation_required' && context.reconfirmationDeadline
+      ? { reconfirmationDeadline: timestampIso(context.reconfirmationDeadline) }
+      : {}),
   };
 }
 
-function legacyProposalDto(masterId: string, value: Record<string, unknown>): ProposalDto {
+function legacyProposalDto(
+  masterId: string,
+  value: Record<string, unknown>,
+  context: ProposalProjectionContext,
+): ProposalDto {
   const createdAt = timestampIso(value.createdAt);
   return {
     masterId,
@@ -285,11 +321,32 @@ function legacyProposalDto(masterId: string, value: Record<string, unknown>): Pr
     comment: String(value.comment ?? ''),
     portfolioPhotos: [],
     version: 1,
-    status: 'active',
+    status: context.excludedMasterIds.includes(masterId)
+      ? 'excluded'
+      : context.reselectionCycle > 0
+        ? 'reconfirmation_required'
+        : 'active',
     createdAt,
     updatedAt: createdAt,
     validUntil: '',
+    ...(context.reselectionCycle > 0 && context.reconfirmationDeadline
+      ? { reconfirmationDeadline: timestampIso(context.reconfirmationDeadline) }
+      : {}),
   };
+}
+
+function proposalProjectionContext(order: Record<string, unknown>): ProposalProjectionContext {
+  return {
+    reselectionCycle: typeof order.reselectionCycle === 'number' ? order.reselectionCycle : 0,
+    excludedMasterIds: stringArray(order.excludedMasterIds),
+    reconfirmationDeadline: order.reconfirmationDeadline instanceof Timestamp
+      ? order.reconfirmationDeadline
+      : undefined,
+  };
+}
+
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
 }
 
 function numberOrZero(value: unknown): number {

@@ -7,6 +7,7 @@ export interface OrderAccessSnapshot {
   category: string;
   location?: string;
   deliveryOption?: DeliveryOption;
+  excludedMasterIds?: readonly string[];
 }
 
 export interface OrderActorSnapshot {
@@ -24,6 +25,7 @@ export function canMasterDiscoverOrder(
   if (order.status !== 'awaiting_responses') return false;
   if (actor.role !== 'master' && actor.role !== 'both') return false;
   if (order.customerId === actor.id) return false;
+  if (order.excludedMasterIds?.includes(actor.id)) return false;
   if (!actor.categories.includes(order.category)) return false;
 
   const orderCity = normalizeCity(order.location);

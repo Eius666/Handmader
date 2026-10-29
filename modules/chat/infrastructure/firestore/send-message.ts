@@ -54,11 +54,14 @@ export async function sendMessageInFirestore(
     const customerAlias = createPublicAlias('customer', String(order.customerId ?? ''));
     const masterAlias = createPublicAlias('master', selectedMasterId ?? '');
     const unreadField = decision.senderRole === 'customer' ? 'unreadMaster' : 'unreadCustomer';
+    const chatCycle = typeof order.reselectionCycle === 'number' ? order.reselectionCycle : 0;
 
     if (chatSnapshot.exists) {
       transaction.update(chatRef, {
         lastMessage: decision.text.slice(0, 100),
         lastMessageAt: now,
+        status: 'active',
+        cycle: chatCycle,
         [unreadField]: FieldValue.increment(1),
       });
     } else {
@@ -73,6 +76,8 @@ export async function sendMessageInFirestore(
         unreadCustomer: decision.senderRole === 'master' ? 1 : 0,
         unreadMaster: decision.senderRole === 'customer' ? 1 : 0,
         createdAt: now,
+        status: 'active',
+        cycle: chatCycle,
       });
     }
 
@@ -82,6 +87,7 @@ export async function sendMessageInFirestore(
       text: decision.text,
       createdAt: now,
       read: false,
+      chatCycle,
     });
 
     transaction.create(adminDb.collection('notifications').doc(), {

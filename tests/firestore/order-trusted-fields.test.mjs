@@ -201,6 +201,24 @@ test('browser cannot forge agreement or payment state', async () => {
   }));
 });
 
+test('browser cannot read or forge reselection support cases', async () => {
+  const customerDb = environment.authenticatedContext('customer-1').firestore();
+  const staffDb = environment.authenticatedContext('staff-1').firestore();
+
+  await assertFails(setDoc(doc(customerDb, 'reselectionCases', 'forged-case'), {
+    orderId: 'order-1',
+    customerId: 'customer-1',
+    status: 'pending',
+    reason: 'Поддельное обращение',
+  }));
+  await assertFails(getDoc(doc(customerDb, 'reselectionCases', 'forged-case')));
+  await assertFails(getDoc(doc(staffDb, 'reselectionCases', 'forged-case')));
+  await assertFails(updateDoc(doc(customerDb, 'orders', 'order-1'), {
+    reselectionRequestStatus: 'pending',
+    excludedMasterIds: ['master-1'],
+  }));
+});
+
 test('browser cannot write an embedded or standalone proposal', async () => {
   const db = environment.authenticatedContext('master-1').firestore();
 

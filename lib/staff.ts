@@ -20,6 +20,17 @@ export interface VerificationApplicationDto {
   submittedAt: string;
 }
 
+export interface ReselectionCaseDto {
+  id: string;
+  orderId: string;
+  orderTitle: string;
+  orderStatus: string;
+  customerAlias: string;
+  previousMasterAlias: string;
+  reason: string;
+  requestedAt: string;
+}
+
 export function getStaffActor(): Promise<StaffActorDto> {
   return getServerQuery<StaffActorDto>('/api/staff/me');
 }
@@ -36,5 +47,18 @@ export function decideVerification(
   return postServerCommand(
     `/api/staff/verifications/${encodeURIComponent(userId)}/decision`,
     { decision, reason, commandId: crypto.randomUUID() },
+  );
+}
+
+export function getPendingReselections(): Promise<ReselectionCaseDto[]> {
+  return getServerQuery<ReselectionCaseDto[]>('/api/staff/reselections');
+}
+
+export function reopenMasterSelection(
+  caseId: string,
+): Promise<{ orderId: string; status: 'awaiting_responses'; reconfirmationDeadline: string }> {
+  return postServerCommand(
+    `/api/staff/reselections/${encodeURIComponent(caseId)}/reopen`,
+    { commandId: crypto.randomUUID() },
   );
 }

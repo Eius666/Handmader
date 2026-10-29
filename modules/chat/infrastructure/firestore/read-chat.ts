@@ -56,10 +56,18 @@ export async function listMessagesForActorFromFirestore(
     masterId: String(chat.masterId ?? ''),
   }, actorId);
 
-  const snapshot = await chatRef.collection('messages')
-    .orderBy('createdAt', 'desc')
-    .limit(Math.min(Math.max(limitCount, 1), 100))
-    .get();
+  const cycle = finiteNumber(chat.cycle);
+  const baseQuery = chatRef.collection('messages');
+  const snapshot = cycle > 0
+    ? await baseQuery
+      .where('chatCycle', '==', cycle)
+      .orderBy('createdAt', 'desc')
+      .limit(Math.min(Math.max(limitCount, 1), 100))
+      .get()
+    : await baseQuery
+      .orderBy('createdAt', 'desc')
+      .limit(Math.min(Math.max(limitCount, 1), 100))
+      .get();
   return snapshot.docs.map((item) => messageDto(item.id, item.data())).reverse();
 }
 
@@ -75,7 +83,11 @@ export async function markMessagesReadForActorInFirestore(
     customerId: String(chat.customerId ?? ''),
     masterId: String(chat.masterId ?? ''),
   }, actorId);
-  const unreadSnapshot = await chatRef.collection('messages').where('read', '==', false).get();
+  const cycle = finiteNumber(chat.cycle);
+  const unreadQuery = chatRef.collection('messages').where('read', '==', false);
+  const unreadSnapshot = cycle > 0
+    ? await unreadQuery.where('chatCycle', '==', cycle).get()
+    : await unreadQuery.get();
   const writer = adminDb.bulkWriter();
   for (const item of unreadSnapshot.docs) {
     if (item.data().senderId !== actorId) writer.update(item.ref, { read: true });

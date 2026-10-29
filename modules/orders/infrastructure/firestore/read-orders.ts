@@ -39,6 +39,8 @@ export interface OrderDto {
   measurements?: string;
   location?: string;
   deliveryOption?: 'local' | 'delivery' | 'both';
+  reselectionRequestStatus?: 'pending' | 'resolved';
+  reconfirmationDeadline?: string;
 }
 
 export async function getOrderForActorFromFirestore(
@@ -127,6 +129,7 @@ function orderAccessSnapshot(data: Record<string, unknown>): OrderAccessSnapshot
     category: stringValue(data.category),
     location: stringValue(data.location) || undefined,
     deliveryOption,
+    excludedMasterIds: stringArray(data.excludedMasterIds),
   };
 }
 
@@ -175,6 +178,13 @@ function orderDto(id: string, data: Record<string, unknown>, actorId: string): O
   if (typeof data.measurements === 'string') result.measurements = data.measurements;
   if (typeof data.location === 'string') result.location = data.location;
   if (deliveryOption) result.deliveryOption = deliveryOption;
+  if (isCustomer
+    && (data.reselectionRequestStatus === 'pending' || data.reselectionRequestStatus === 'resolved')) {
+    result.reselectionRequestStatus = data.reselectionRequestStatus;
+  }
+  if (data.reconfirmationDeadline instanceof Timestamp) {
+    result.reconfirmationDeadline = data.reconfirmationDeadline.toDate().toISOString();
+  }
   if (Array.isArray(data.ratings) && (isCustomer || isSelectedMaster)) {
     result.ratings = data.ratings
       .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === 'object')

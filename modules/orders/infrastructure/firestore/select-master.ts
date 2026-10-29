@@ -28,6 +28,8 @@ interface StoredResponse {
   masterAlias?: unknown;
   price?: unknown;
   validUntil?: unknown;
+  status?: unknown;
+  confirmedReselectionCycle?: unknown;
 }
 
 function proposalFromStored(masterId: string, value: StoredResponse): ProposalSnapshot {
@@ -40,6 +42,10 @@ function proposalFromStored(masterId: string, value: StoredResponse): ProposalSn
     validUntil: value.validUntil instanceof Timestamp
       ? value.validUntil.toDate()
       : undefined,
+    status: typeof value.status === 'string' ? value.status : undefined,
+    confirmedReselectionCycle: typeof value.confirmedReselectionCycle === 'number'
+      ? value.confirmedReselectionCycle
+      : 0,
   };
 }
 
@@ -77,6 +83,10 @@ export async function selectMasterInFirestore(
       customerId: String(data.customerId ?? ''),
       status: String(data.status ?? ''),
       selectedMasterId: typeof data.selectedMasterId === 'string' ? data.selectedMasterId : undefined,
+      reselectionCycle: typeof data.reselectionCycle === 'number' ? data.reselectionCycle : 0,
+      excludedMasterIds: Array.isArray(data.excludedMasterIds)
+        ? data.excludedMasterIds.filter((item): item is string => typeof item === 'string')
+        : [],
       proposals,
     }, command.actorId, command.masterId);
 
@@ -97,6 +107,8 @@ export async function selectMasterInFirestore(
       selectedPrice: decision.selectedPrice,
       selectedAt: now,
       updatedAt: now,
+      reselectionRequestStatus: FieldValue.delete(),
+      reconfirmationDeadline: FieldValue.delete(),
     });
 
     const chatRef = adminDb.collection('chats').doc(command.orderId);
@@ -111,6 +123,8 @@ export async function selectMasterInFirestore(
       unreadCustomer: 0,
       unreadMaster: 0,
       createdAt: now,
+      status: 'active',
+      cycle: typeof data.reselectionCycle === 'number' ? data.reselectionCycle : 0,
     });
 
     const auditRef = adminDb.collection('auditEvents').doc();

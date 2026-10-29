@@ -48,6 +48,22 @@
         { "fieldPath": "subjectId", "order": "ASCENDING" },
         { "fieldPath": "publishAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "messages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "chatCycle", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "messages",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "read", "order": "ASCENDING" },
+        { "fieldPath": "chatCycle", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [

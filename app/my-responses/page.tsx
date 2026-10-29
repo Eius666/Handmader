@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { MessageSquare } from 'lucide-react';
-import { getMyProposals } from '@/lib/proposals';
+import { getMyProposals, reconfirmProposal } from '@/lib/proposals';
 import { useAuth } from '@/hooks/useAuth';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { NotificationBell } from '@/components/ui/NotificationBell';
@@ -24,6 +24,8 @@ interface Entry {
   myPrice: number;
   myTimeline: string;
   isSelected: boolean;
+  proposalStatus?: string;
+  reconfirmationDeadline?: Date;
 }
 
 export default function MyResponsesPage() {
@@ -33,6 +35,7 @@ export default function MyResponsesPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
+  const [busyOrderId, setBusyOrderId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -45,6 +48,8 @@ export default function MyResponsesPage() {
           myPrice: proposal.price,
           myTimeline: proposal.timeline,
           isSelected: order.selectedMasterId === user!.uid,
+          proposalStatus: proposal.status,
+          reconfirmationDeadline: proposal.reconfirmationDeadline,
         }));
         setEntries(result);
         setLoadError(false);
@@ -116,8 +121,10 @@ export default function MyResponsesPage() {
           </div>
         ) : (
           <Stagger className="contents">
-          {entries.map(({ order, myPrice, myTimeline, isSelected }) => {
+          {entries.map(({ order, myPrice, myTimeline, isSelected, proposalStatus, reconfirmationDeadline }) => {
             const isRejected = order.status === 'master_selected' && !isSelected;
+            const needsReconfirmation = proposalStatus === 'reconfirmation_required';
+            const excluded = proposalStatus === 'excluded';
             return (
               <StaggerItem key={order.id}>
               <MotionCard
@@ -190,6 +197,39 @@ export default function MyResponsesPage() {
                     <MessageSquare className="size-4" aria-hidden="true" />
                     Чат с клиентом
                   </PressableButton>
+                )}
+
+                {needsReconfirmation && (
+                  <div className="flex flex-col gap-2 rounded-xl bg-status-waiting/10 p-3">
+                    <p className="text-xs font-semibold text-foreground">
+                      Подтвердите, что цена и срок ещё актуальны
+                      {reconfirmationDeadline ? ` до ${reconfirmationDeadline.toLocaleString('ru-RU')}` : ''}.
+                    </p>
+                    <PressableButton
+                      type="button"
+                      disabled={busyOrderId === order.id}
+                      onClick={async () => {
+                        setBusyOrderId(order.id);
+                        try {
+                          await reconfirmProposal(order.id);
+                          setEntries((current) => current.map((entry) => entry.order.id === order.id
+                            ? { ...entry, proposalStatus: 'active', reconfirmationDeadline: undefined }
+                            : entry));
+                        } finally {
+                          setBusyOrderId(null);
+                        }
+                      }}
+                      className="rounded-xl bg-primary py-2.5 text-[13px] font-bold text-primary-foreground disabled:opacity-50"
+                    >
+                      {busyOrderId === order.id ? 'Подтверждаем...' : 'Подтвердить отклик'}
+                    </PressableButton>
+                  </div>
+                )}
+
+                {excluded && (
+                  <p className="rounded-xl bg-secondary p-3 text-xs font-semibold text-muted-foreground">
+                    Вы исключены из повторного выбора по этому заказу.
+                  </p>
                 )}
               </MotionCard>
               </StaggerItem>

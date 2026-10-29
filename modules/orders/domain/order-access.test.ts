@@ -35,6 +35,12 @@ test('category mismatch and local-only delivery keep order hidden', () => {
   }), false);
 });
 
+test('previous selected master does not rediscover a reopened order', () => {
+  assert.equal(canMasterDiscoverOrder({ ...order, excludedMasterIds: ['master-1'] }, {
+    id: 'master-1', role: 'master', categories: ['hat'], city: 'Москва', verified: true,
+  }), false);
+});
+
 test('owner, selected master and responding master retain access', () => {
   const blankActor = { role: null, categories: [], verified: false };
   assert.equal(canActorReadOrder(order, { ...blankActor, id: 'customer-1' }), true);

@@ -227,6 +227,13 @@ export async function cancelOrder(orderId: string): Promise<void> {
   });
 }
 
+export async function requestMasterReselection(orderId: string, reason: string): Promise<void> {
+  await postServerCommand(`/api/orders/${encodeURIComponent(orderId)}/reselection-requests`, {
+    reason,
+    commandId: crypto.randomUUID(),
+  });
+}
+
 export async function selectMaster(
   orderId: string,
   masterId: string,
@@ -310,8 +317,9 @@ export async function getChatList(uid: string): Promise<Chat[]> {
   }));
 }
 
-interface ServerOrderDto extends Omit<Order, 'createdAt' | 'responses' | 'ratings'> {
+interface ServerOrderDto extends Omit<Order, 'createdAt' | 'responses' | 'ratings' | 'reconfirmationDeadline'> {
   createdAt: string;
+  reconfirmationDeadline?: string;
   ratings?: Array<Omit<NonNullable<Order['ratings']>[number], 'createdAt'> & { createdAt: string }>;
 }
 
@@ -320,6 +328,9 @@ function mapServerOrder(data: ServerOrderDto): Order {
     ...data,
     responses: {},
     createdAt: new Date(data.createdAt),
+    reconfirmationDeadline: data.reconfirmationDeadline
+      ? new Date(data.reconfirmationDeadline)
+      : undefined,
     ratings: data.ratings?.map((rating) => ({
       ...rating,
       createdAt: new Date(rating.createdAt),

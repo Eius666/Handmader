@@ -5,6 +5,8 @@ export interface ProposalSnapshot {
   masterAlias: string;
   price: number;
   validUntil?: Date;
+  status?: string;
+  confirmedReselectionCycle?: number;
 }
 
 export interface SelectableOrderSnapshot {
@@ -13,6 +15,8 @@ export interface SelectableOrderSnapshot {
   status: string;
   proposals: Readonly<Record<string, ProposalSnapshot>>;
   selectedMasterId?: string;
+  reselectionCycle?: number;
+  excludedMasterIds?: readonly string[];
 }
 
 export interface SelectMasterDecision {
@@ -50,6 +54,17 @@ export function decideMasterSelection(
   const proposal = order.proposals[masterId];
   if (!proposal || proposal.masterId !== masterId) {
     throw new DomainError('NOT_FOUND', 'Отклик этого мастера не найден');
+  }
+
+  if (order.excludedMasterIds?.includes(masterId)) {
+    throw new DomainError('FORBIDDEN', 'Предыдущий исполнитель исключён из повторного выбора');
+  }
+
+  const reselectionCycle = order.reselectionCycle ?? 0;
+  if (proposal.status === 'excluded'
+    || proposal.status === 'reconfirmation_required'
+    || (proposal.confirmedReselectionCycle ?? 0) < reselectionCycle) {
+    throw new DomainError('INVALID_STATE', 'Мастер должен подтвердить актуальность отклика');
   }
 
   if (!Number.isFinite(proposal.price) || proposal.price <= 0) {
