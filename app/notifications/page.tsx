@@ -23,6 +23,8 @@ function notifIcon(type: NotificationType): string {
     case 'work_started':           return '🔧';
     case 'order_ready':            return '✨';
     case 'order_completed':        return '🎉';
+    case 'test_settlement_completed': return '🧾';
+    case 'test_refund_completed':  return '↩️';
     case 'new_message':            return '💬';
     case 'verification_approved':  return '✅';
     case 'verification_rejected':  return '❌';

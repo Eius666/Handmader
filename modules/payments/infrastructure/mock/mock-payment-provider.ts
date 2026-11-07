@@ -10,4 +10,18 @@ export const mockPaymentProvider: PaymentProvider = {
       status: 'funded',
     };
   },
+  async payout(input) {
+    return {
+      provider: 'mock',
+      providerPayoutId: `mock_payout_${input.orderId}_${input.idempotencyKey}`,
+      status: 'completed',
+    };
+  },
+  async refund(input) {
+    return {
+      provider: 'mock',
+      providerRefundId: `mock_refund_${input.orderId}_${input.idempotencyKey}`,
+      status: 'completed',
+    };
+  },
 };

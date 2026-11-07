@@ -201,6 +201,20 @@ test('browser cannot forge agreement or payment state', async () => {
   }));
 });
 
+test('browser cannot read or forge test payouts and refunds', async () => {
+  const customerDb = environment.authenticatedContext('customer-1').firestore();
+  const staffDb = environment.authenticatedContext('staff-1').firestore();
+
+  await assertFails(setDoc(doc(customerDb, 'refunds', 'order-1'), {
+    orderId: 'order-1', amountMinor: 100, status: 'completed', testMode: true,
+  }));
+  await assertFails(setDoc(doc(staffDb, 'payouts', 'order-1'), {
+    orderId: 'order-1', amountMinor: 100, status: 'completed', testMode: true,
+  }));
+  await assertFails(getDoc(doc(customerDb, 'refunds', 'order-1')));
+  await assertFails(getDoc(doc(staffDb, 'payouts', 'order-1')));
+});
+
 test('browser cannot read or forge material advance records', async () => {
   const customerDb = environment.authenticatedContext('customer-1').firestore();
   const masterDb = environment.authenticatedContext('master-1').firestore();

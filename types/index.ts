@@ -17,6 +17,8 @@ export type NotificationType =
   | 'order_accepted'
   | 'dispute_opened'
   | 'dispute_resolved'
+  | 'test_settlement_completed'
+  | 'test_refund_completed'
   | 'order_completed'
   | 'new_message'
   | 'verification_approved'
@@ -51,6 +53,8 @@ export type OrderStatus =
   | 'delivered'
   | 'accepted'
   | 'completed'
+  | 'partially_refunded'
+  | 'refunded'
   | 'cancelled';
 
 export type OrderCategory =
@@ -190,6 +194,8 @@ export const STATUS_LABELS: Record<OrderStatus, string> = {
   delivered: 'Доставлен',
   accepted: 'Принят',
   completed: 'Завершён',
+  partially_refunded: 'Частичный возврат',
+  refunded: 'Возвращён',
   cancelled: 'Отменён',
 };
 

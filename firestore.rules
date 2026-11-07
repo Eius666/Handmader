@@ -101,6 +101,16 @@ service cloud.firestore {
       }
     }
 
+    // Test payout and refund ledger is server-owned. It must never be
+    // mistaken for or forged as a real provider operation by the browser.
+    match /payouts/{payoutId} {
+      allow read, write: if false;
+    }
+
+    match /refunds/{refundId} {
+      allow read, write: if false;
+    }
+
     // Material advances and expense evidence are financial records. They are
     // visible to participants only through authenticated server projections.
     match /materialAdvances/{advanceId} {

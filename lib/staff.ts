@@ -38,6 +38,13 @@ export interface StaffDisputeDto {
   suggestedMasterAmountMinor: number; suggestedPlatformFeeAmountMinor: number;
 }
 
+export interface StaffSettlementDto {
+  orderId: string; orderTitle: string; orderStatus: string; customerAlias: string; masterAlias: string;
+  settlementStatus: string; grossAmountMinor: number; customerRefundAmountMinor: number;
+  masterPayoutAmountMinor: number; platformFeeAmountMinor: number;
+  outcome: 'completed' | 'partially_refunded' | 'refunded';
+}
+
 export function getStaffActor(): Promise<StaffActorDto> {
   return getServerQuery<StaffActorDto>('/api/staff/me');
 }
@@ -79,4 +86,12 @@ export function resolveDispute(disputeId: string, input: {
   customerRefundAmountMinor: number; masterPayoutAmountMinor: number; platformFeeAmountMinor: number;
 }) {
   return postServerCommand(`/api/staff/disputes/${encodeURIComponent(disputeId)}/resolve`, { ...input, commandId: crypto.randomUUID() });
+}
+
+export function getPendingSettlements(): Promise<StaffSettlementDto[]> {
+  return getServerQuery<StaffSettlementDto[]>('/api/staff/settlements');
+}
+
+export function executeTestSettlement(orderId: string) {
+  return postServerCommand(`/api/staff/settlements/${encodeURIComponent(orderId)}/execute`, { commandId: crypto.randomUUID() });
 }

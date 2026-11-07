@@ -70,6 +70,8 @@ const STATUS_META: Partial<Record<OrderStatus, { icon: string; text: string; sub
   delivered:       { icon: '📦', text: 'Доставлен', sub: 'Заказ доставлен, ожидаем подтверждения' },
   accepted:        { icon: '🤝', text: 'Принят', sub: 'Изделие принято, ожидается тестовая выплата' },
   completed:       { icon: '⭐', text: 'Завершён', sub: 'Спасибо! Не забудьте оставить отзыв' },
+  partially_refunded: { icon: '↩️', text: 'Частичный возврат', sub: 'Спор и тестовый расчёт завершены; реальные деньги не переводились' },
+  refunded:        { icon: '↩️', text: 'Возврат', sub: 'Тестовый возврат выполнен; реальные деньги не переводились' },
   cancelled:       { icon: '✕', text: 'Отменён', sub: 'Заказ отменён до выбора исполнителя' },
 };
 
@@ -506,6 +508,8 @@ export default function TrackPage() {
             >
               ✓ Заказ завершён
             </motion.div>
+          ) : order.status === 'partially_refunded' || order.status === 'refunded' ? (
+            <motion.div key="refunded" className="flex w-full items-center justify-center rounded-xl bg-status-warning/15 py-4 text-base font-bold text-status-warning">↩ Тестовый возврат зафиксирован</motion.div>
           ) : order.flowVersion === 2 && order.status === 'master_selected' ? (
             <motion.div key="agreement" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.2 }}>
               <PressableButton

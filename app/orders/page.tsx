@@ -49,11 +49,11 @@ export default function OrdersPage() {
   const filtered = orders.filter((o) =>
     tab === 'active'
       ? ACTIVE_STATUSES.includes(o.status)
-      : o.status === 'completed' || o.status === 'cancelled',
+      : ['completed', 'cancelled', 'partially_refunded', 'refunded'].includes(o.status),
   );
 
   function handleCardClick(order: Order) {
-    if (['master_selected', 'awaiting_payment', 'paid', 'in_progress', 'ready', 'delivered'].includes(order.status)) {
+    if (['master_selected', 'awaiting_payment', 'paid', 'in_progress', 'ready', 'in_delivery', 'delivered', 'accepted', 'completed', 'partially_refunded', 'refunded'].includes(order.status)) {
       router.push(`/track/${order.id}`);
     } else {
       router.push(`/orders/${order.id}`);

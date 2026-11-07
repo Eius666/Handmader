@@ -36,7 +36,7 @@ export default function StaffDisputesPage() {
   }
 
   return <PageLayout title="Споры" showBack hideNav><main className="flex flex-col gap-4 px-5 py-5">
-    <div className="flex gap-4 text-sm font-bold text-primary"><Link href="/staff/verifications">Верификации</Link><Link href="/staff/reselections">Смена мастера</Link></div>
+    <div className="flex gap-4 text-sm font-bold text-primary"><Link href="/staff/settlements">Расчёты</Link><Link href="/staff/verifications">Верификации</Link><Link href="/staff/reselections">Смена мастера</Link></div>
     {loading && <div className="flex justify-center py-16"><Spinner size={36} /></div>}
     {error && <section className="rounded-xl bg-status-danger/10 p-4 font-semibold text-status-danger">{error}</section>}
     {!loading && items.length === 0 && <section className="flex flex-col items-center gap-3 rounded-2xl bg-card p-8 text-center"><ShieldCheck className="size-10 text-primary" /><p className="font-bold">Открытых споров нет</p></section>}

@@ -123,7 +123,8 @@ export async function acceptDeliveryInFirestore(command: Command): Promise<Deliv
     const updated = { ...delivery, status: decision.status, acceptedAt: now, acceptedAutomatically: false, updatedAt: now };
     const result = toDto(updated);
     transaction.update(refs.delivery, { status: decision.status, acceptedAt: now, acceptedAutomatically: false, updatedAt: now });
-    transaction.update(refs.order, { status: 'accepted', deliveryStatus: decision.status, acceptedAt: now, updatedAt: now });
+    transaction.update(refs.order, { status: 'accepted', deliveryStatus: decision.status, settlementStatus: 'payout_pending', acceptedAt: now, updatedAt: now });
+    transaction.update(adminDb.collection('payments').doc(command.orderId), { settlementStatus: 'payout_pending', updatedAt: now });
     writeSideEffects(transaction, refs, command, result, now, {
       eventType: 'order_accepted', notifyUserId: String(order.selectedMasterId ?? ''),
       title: 'Заказ принят', body: 'Заказчик принял изделие; далее будет выполнена тестовая выплата', commandType: 'accept_delivery',
@@ -157,7 +158,8 @@ export async function autoAcceptDueDeliveriesInFirestore(limit = 100): Promise<{
       const notificationRef = adminDb.collection('notifications').doc();
       const auditRef = adminDb.collection('auditEvents').doc();
       transaction.update(item.ref, { status: 'accepted', acceptedAt: now, acceptedAutomatically: true, updatedAt: now });
-      transaction.update(orderRef, { status: 'accepted', deliveryStatus: 'accepted', acceptedAt: now, acceptedAutomatically: true, updatedAt: now });
+      transaction.update(orderRef, { status: 'accepted', deliveryStatus: 'accepted', settlementStatus: 'payout_pending', acceptedAt: now, acceptedAutomatically: true, updatedAt: now });
+      transaction.update(adminDb.collection('payments').doc(item.id), { settlementStatus: 'payout_pending', updatedAt: now });
       transaction.create(notificationRef, {
         userId: String(order.selectedMasterId ?? ''), type: 'order_accepted', title: 'Заказ принят автоматически',
         body: 'Пять дней после подтверждения получения прошли без открытого спора', orderId: item.id, read: false, createdAt: now, createdBy: 'system',

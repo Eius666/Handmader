@@ -22,6 +22,8 @@ const STATUS_CONFIG: Record<OrderStatus, StatusCfg> = {
   delivered:          { label: 'доставлен',       Icon: Truck,      tone: 'gold' },
   accepted:           { label: 'принят',          Icon: CheckCheck, tone: 'success' },
   completed:          { label: 'завершён',        Icon: CheckCheck, tone: 'success' },
+  partially_refunded: { label: 'частичный возврат', Icon: WalletCards, tone: 'gold' },
+  refunded:           { label: 'возвращён',         Icon: WalletCards, tone: 'danger' },
   cancelled:          { label: 'отменён',          Icon: XCircle,    tone: 'danger' },
 };
 

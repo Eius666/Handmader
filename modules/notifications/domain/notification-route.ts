@@ -48,6 +48,8 @@ export function notificationRoute(notification: RoutableNotification): string | 
     case 'work_started':
     case 'order_ready':
     case 'order_completed':
+    case 'test_settlement_completed':
+    case 'test_refund_completed':
       return notification.orderId
         ? `/track/${encodeURIComponent(notification.orderId)}`
         : null;
