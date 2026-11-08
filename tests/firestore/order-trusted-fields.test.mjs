@@ -201,6 +201,15 @@ test('browser cannot forge agreement or payment state', async () => {
   }));
 });
 
+test('browser cannot read or forge order amendments', async () => {
+  const db = environment.authenticatedContext('customer-1').firestore();
+  await assertFails(setDoc(doc(db, 'orderAmendments', 'order-1'), {
+    orderId: 'order-1', status: 'confirmed', description: 'Поддельное изменение',
+  }));
+  await assertFails(getDoc(doc(db, 'orderAmendments', 'order-1')));
+  await assertFails(updateDoc(doc(db, 'orders', 'order-1'), { amendmentStatus: 'confirmed', measurements: 'Подмена' }));
+});
+
 test('browser cannot read or forge test payouts and refunds', async () => {
   const customerDb = environment.authenticatedContext('customer-1').firestore();
   const staffDb = environment.authenticatedContext('staff-1').firestore();

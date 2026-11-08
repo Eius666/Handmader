@@ -20,6 +20,7 @@ test('marketplace and agreement notifications open their task-specific screens',
     notificationRoute({ type: 'agreement_pending', orderId: 'order-1' }),
     '/orders/order-1/agreement',
   );
+  assert.equal(notificationRoute({ type: 'amendment_pending', orderId: 'order-1' }), '/orders/order-1/amendment');
   assert.equal(
     notificationRoute({ type: 'payment_confirmed', orderId: 'order-1' }),
     '/track/order-1',

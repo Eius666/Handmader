@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft, Check, Wallet, Package, Trash2, MessageSquare, Headphones, ReceiptText, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Check, Wallet, Package, Trash2, MessageSquare, Headphones, ReceiptText, ShieldAlert, PencilLine } from 'lucide-react';
 import { NotificationBell } from '@/components/ui/NotificationBell';
 import { StarRating } from '@/components/ui/StarRating';
 import { Toast } from '@/components/ui/Toast';
@@ -393,6 +393,13 @@ export default function TrackPage() {
             <button type="button" onClick={() => router.push(`/orders/${order.id}/materials`)} className="rounded-xl border border-primary/25 py-3 font-bold text-primary">
               Открыть материалы
             </button>
+          </section>
+        )}
+
+        {order.paymentStatus === 'funded' && ['paid', 'in_progress'].includes(order.status) && (isOwner || isMaster) && (
+          <section className="flex flex-col gap-3 rounded-2xl bg-card p-5 shadow-[0_4px_20px_rgb(var(--foreground-rgb)_/_0.06)]">
+            <div className="flex gap-3"><PencilLine className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" /><div><p className="font-bold text-foreground">Изменить условия</p><p className="mt-1 text-sm leading-relaxed text-muted-foreground">Новые мерки, описание или срок вступят в силу только после подтверждения обеих сторон.</p></div></div>
+            <button type="button" onClick={() => router.push(`/orders/${order.id}/amendment`)} className="rounded-xl border border-primary/25 py-3 font-bold text-primary">{order.amendmentStatus === 'pending' ? 'Проверить изменение' : 'Предложить изменение'}</button>
           </section>
         )}
 

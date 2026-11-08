@@ -19,6 +19,8 @@ function notifIcon(type: NotificationType): string {
     case 'master_selected':        return '✅';
     case 'agreement_pending':      return '📋';
     case 'agreement_confirmed':    return '🤝';
+    case 'amendment_pending':      return '✏️';
+    case 'amendment_confirmed':    return '✅';
     case 'payment_confirmed':      return '🛡️';
     case 'work_started':           return '🔧';
     case 'order_ready':            return '✨';
