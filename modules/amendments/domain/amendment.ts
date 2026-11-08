@@ -23,6 +23,7 @@ export interface AmendmentInput {
   measurements: unknown;
   deadline: unknown;
   tolerances?: unknown;
+  finalPrice: unknown;
   reason: unknown;
 }
 
@@ -43,12 +44,14 @@ export function decideAmendmentProposal(
   const measurements = requiredText(input.measurements, 'Укажите обновлённые мерки', 5_000);
   const deadline = dateText(input.deadline);
   const tolerances = optionalText(input.tolerances, 1_000);
+  const finalPrice = price(input.finalPrice);
   const reason = requiredText(input.reason, 'Объясните причину изменения', 2_000);
   if (reason.length < 10) throw new DomainError('VALIDATION_ERROR', 'Причина должна содержать не менее 10 символов');
   if (description === agreement.description
     && measurements === agreement.measurements
     && deadline === agreement.deadline
-    && tolerances === (agreement.tolerances ?? '')) {
+    && tolerances === (agreement.tolerances ?? '')
+    && finalPrice === agreement.finalPrice) {
     throw new DomainError('VALIDATION_ERROR', 'Измените хотя бы одно условие');
   }
   return {
@@ -61,9 +64,20 @@ export function decideAmendmentProposal(
     measurements,
     deadline,
     ...(tolerances ? { tolerances } : {}),
-    finalPrice: agreement.finalPrice,
+    finalPrice,
     reason,
   };
+}
+
+function price(value: unknown) {
+  if (!Number.isSafeInteger(value) || Number(value) < 100) {
+    throw new DomainError('VALIDATION_ERROR', 'Итоговая цена должна быть целым числом не менее 100 ₽');
+  }
+  const amountMinor = Number(value) * 100;
+  if (!Number.isSafeInteger(amountMinor)) {
+    throw new DomainError('VALIDATION_ERROR', 'Итоговая цена слишком велика');
+  }
+  return Number(value);
 }
 
 export function decideAmendmentConfirmation(

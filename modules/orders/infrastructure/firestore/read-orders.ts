@@ -41,7 +41,7 @@ export interface OrderDto {
   deliveryOption?: 'local' | 'delivery' | 'both';
   reselectionRequestStatus?: 'pending' | 'resolved';
   reconfirmationDeadline?: string;
-  amendmentStatus?: 'pending' | 'confirmed';
+  amendmentStatus?: 'pending' | 'financial_pending' | 'confirmed';
 }
 
 export async function getOrderForActorFromFirestore(
@@ -186,7 +186,7 @@ function orderDto(id: string, data: Record<string, unknown>, actorId: string): O
   if (data.reconfirmationDeadline instanceof Timestamp) {
     result.reconfirmationDeadline = data.reconfirmationDeadline.toDate().toISOString();
   }
-  if (data.amendmentStatus === 'pending' || data.amendmentStatus === 'confirmed') result.amendmentStatus = data.amendmentStatus;
+  if (data.amendmentStatus === 'pending' || data.amendmentStatus === 'financial_pending' || data.amendmentStatus === 'confirmed') result.amendmentStatus = data.amendmentStatus;
   if (Array.isArray(data.ratings) && (isCustomer || isSelectedMaster)) {
     result.ratings = data.ratings
       .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === 'object')

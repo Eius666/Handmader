@@ -8,6 +8,8 @@ export type NotificationType =
   | 'agreement_confirmed'
   | 'amendment_pending'
   | 'amendment_confirmed'
+  | 'price_adjustment_pending'
+  | 'price_adjustment_completed'
   | 'payment_confirmed'
   | 'material_advance_requested'
   | 'material_advance_authorized'
@@ -152,7 +154,7 @@ export interface Order {
   deliveryOption?: 'local' | 'delivery' | 'both';
   reselectionRequestStatus?: 'pending' | 'resolved';
   reconfirmationDeadline?: Date;
-  amendmentStatus?: 'pending' | 'confirmed';
+  amendmentStatus?: 'pending' | 'financial_pending' | 'confirmed';
 }
 
 export interface Chat {

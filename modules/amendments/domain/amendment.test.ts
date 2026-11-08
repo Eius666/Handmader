@@ -6,10 +6,10 @@ import { decideAmendmentConfirmation, decideAmendmentProposal } from './amendmen
 const order = { id: 'o1', customerId: 'c1', selectedMasterId: 'm1', status: 'in_progress', paymentStatus: 'funded' };
 const agreement = { status: 'confirmed', version: 2, description: 'Свитер', measurements: 'Рост 170 см', deadline: '2026-12-20', tolerances: '±2 см', finalPrice: 9_000 };
 
-test('participant proposes a non-financial amendment after payment', () => {
-  const result = decideAmendmentProposal(order, agreement, 'c1', { description: 'Свитер с высоким воротом', measurements: 'Рост 170 см', deadline: '2026-12-25', tolerances: '±2 см', reason: 'Добавили высокий ворот' });
+test('participant proposes a versioned amendment after payment', () => {
+  const result = decideAmendmentProposal(order, agreement, 'c1', { description: 'Свитер с высоким воротом', measurements: 'Рост 170 см', deadline: '2026-12-25', tolerances: '±2 см', finalPrice: 10_000, reason: 'Добавили высокий ворот' });
   assert.equal(result.targetAgreementVersion, 3);
-  assert.equal(result.finalPrice, 9_000);
+  assert.equal(result.finalPrice, 10_000);
   assert.equal(result.masterId, 'm1');
 });
 
@@ -21,7 +21,7 @@ test('both participants confirm the same amendment independently', () => {
 });
 
 test('amendment requires a funded order that is not ready yet', () => {
-  assert.throws(() => decideAmendmentProposal({ ...order, status: 'ready' }, agreement, 'c1', { description: 'Новое описание', measurements: 'Рост 170 см', deadline: '2026-12-25', reason: 'Согласованное изменение' }), (error) => error instanceof DomainError && error.code === 'INVALID_STATE');
+  assert.throws(() => decideAmendmentProposal({ ...order, status: 'ready' }, agreement, 'c1', { description: 'Новое описание', measurements: 'Рост 170 см', deadline: '2026-12-25', finalPrice: 9_000, reason: 'Согласованное изменение' }), (error) => error instanceof DomainError && error.code === 'INVALID_STATE');
 });
 
 test('unchanged terms and unrelated users are rejected', () => {

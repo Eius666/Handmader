@@ -429,7 +429,7 @@ export default function TrackPage() {
         {order.paymentStatus === 'funded' && ['paid', 'in_progress'].includes(order.status) && (isOwner || isMaster) && (
           <section className="flex flex-col gap-3 rounded-2xl bg-card p-5 shadow-[0_4px_20px_rgb(var(--foreground-rgb)_/_0.06)]">
             <div className="flex gap-3"><PencilLine className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" /><div><p className="font-bold text-foreground">Изменить условия</p><p className="mt-1 text-sm leading-relaxed text-muted-foreground">Новые мерки, описание или срок вступят в силу только после подтверждения обеих сторон.</p></div></div>
-            <button type="button" onClick={() => router.push(`/orders/${order.id}/amendment`)} className="rounded-xl border border-primary/25 py-3 font-bold text-primary">{order.amendmentStatus === 'pending' ? 'Проверить изменение' : 'Предложить изменение'}</button>
+            <button type="button" onClick={() => router.push(`/orders/${order.id}/amendment`)} className="rounded-xl border border-primary/25 py-3 font-bold text-primary">{order.amendmentStatus === 'pending' ? 'Проверить изменение' : order.amendmentStatus === 'financial_pending' ? 'Завершить корректировку цены' : 'Предложить изменение'}</button>
           </section>
         )}
 

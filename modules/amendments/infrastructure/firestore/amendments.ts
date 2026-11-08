@@ -10,7 +10,7 @@ export interface AmendmentDto {
   version: number;
   baseAgreementVersion: number;
   targetAgreementVersion: number;
-  status: 'pending' | 'confirmed';
+  status: 'pending' | 'financial_pending' | 'confirmed';
   description: string;
   measurements: string;
   deadline: string;
@@ -18,6 +18,7 @@ export interface AmendmentDto {
   finalPrice: number;
   reason: string;
   confirmations: AmendmentConfirmations;
+  priceAdjustment?: { type: 'top_up' | 'refund'; amountMinor: number; status: 'pending' | 'completed' };
   proposedBy: string;
   updatedAt: string;
   confirmedAt?: string;
@@ -77,11 +78,23 @@ export async function changeAmendmentInFirestore(command: {
       if (numberValue(amendment.baseAgreementVersion) !== agreement.version) throw new DomainError('INVALID_STATE', 'Базовые условия уже изменились; создайте новое предложение');
       const confirmation = decideAmendmentConfirmation(order, command.actorId, confirmations(amendment.confirmations));
       const version = numberValue(amendment.version);
-      const confirmedAt = confirmation.fullyConfirmed ? now : undefined;
-      const update = { confirmations: confirmation.confirmations, status: confirmation.fullyConfirmed ? 'confirmed' : 'pending', ...(confirmedAt ? { confirmedAt } : {}), updatedAt: now };
+      const priceChanged = numberValue(amendment.finalPrice) !== agreement.finalPrice;
+      const nextStatus = confirmation.fullyConfirmed ? (priceChanged ? 'financial_pending' : 'confirmed') : 'pending';
+      const priceAdjustment = confirmation.fullyConfirmed && priceChanged ? {
+        type: numberValue(amendment.finalPrice) > agreement.finalPrice ? 'top_up' : 'refund',
+        amountMinor: Math.abs(numberValue(amendment.finalPrice) - agreement.finalPrice) * 100,
+        status: 'pending',
+      } : undefined;
+      const update = {
+        confirmations: confirmation.confirmations,
+        status: nextStatus,
+        ...(confirmation.fullyConfirmed ? { partiesConfirmedAt: now } : {}),
+        ...(priceAdjustment ? { priceAdjustment } : {}),
+        updatedAt: now,
+      };
       transaction.update(amendmentRef, update);
       transaction.update(amendmentRef.collection('versions').doc(String(version).padStart(6, '0')), update);
-      if (confirmation.fullyConfirmed) {
+      if (confirmation.fullyConfirmed && !priceChanged) {
         const targetVersion = numberValue(amendment.targetAgreementVersion);
         const newAgreement = {
           ...agreementSnapshot.data(),
@@ -98,6 +111,12 @@ export async function changeAmendmentInFirestore(command: {
         });
         for (const userId of [order.customerId, order.selectedMasterId!]) notify(transaction, userId, 'amendment_confirmed', 'Изменение заказа согласовано', `Действует версия условий №${targetVersion}`, command.orderId, now);
         eventType = 'order_amendment_confirmed';
+      } else if (confirmation.fullyConfirmed) {
+        transaction.update(orderRef, { amendmentStatus: 'financial_pending', updatedAt: now });
+        for (const userId of [order.customerId, order.selectedMasterId!]) {
+          notify(transaction, userId, 'price_adjustment_pending', 'Новая цена согласована', `${priceAdjustment?.type === 'top_up' ? 'Требуется тестовая доплата' : 'Требуется тестовый возврат'} ${(priceAdjustment?.amountMinor ?? 0) / 100} ₽`, command.orderId, now);
+        }
+        eventType = 'order_amendment_price_adjustment_pending';
       } else {
         notify(transaction, command.actorId === order.customerId ? order.selectedMasterId! : order.customerId, 'amendment_pending', 'Изменение ждёт подтверждения', 'Вторая сторона уже подтвердила текущую версию', command.orderId, now);
         eventType = 'order_amendment_party_confirmed';
@@ -112,9 +131,10 @@ export async function changeAmendmentInFirestore(command: {
 
 function orderDomain(id: string, data: DocumentData) { return { id, customerId: stringValue(data.customerId), selectedMasterId: stringValue(data.selectedMasterId) || undefined, status: stringValue(data.status), paymentStatus: stringValue(data.paymentStatus) || undefined }; }
 function agreementDomain(data: DocumentData) { return { status: stringValue(data.status), version: numberValue(data.version), description: stringValue(data.description), measurements: stringValue(data.measurements), deadline: stringValue(data.deadline), tolerances: stringValue(data.tolerances) || undefined, finalPrice: numberValue(data.finalPrice) }; }
-function amendmentDto(data: DocumentData): AmendmentDto { return { orderId: stringValue(data.orderId), version: numberValue(data.version), baseAgreementVersion: numberValue(data.baseAgreementVersion), targetAgreementVersion: numberValue(data.targetAgreementVersion), status: data.status === 'confirmed' ? 'confirmed' : 'pending', description: stringValue(data.description), measurements: stringValue(data.measurements), deadline: stringValue(data.deadline), ...(stringValue(data.tolerances) ? { tolerances: stringValue(data.tolerances) } : {}), finalPrice: numberValue(data.finalPrice), reason: stringValue(data.reason), confirmations: confirmations(data.confirmations), proposedBy: stringValue(data.proposedBy), updatedAt: timestampIso(data.updatedAt), ...(data.confirmedAt instanceof Timestamp ? { confirmedAt: timestampIso(data.confirmedAt) } : {}) }; }
+function amendmentDto(data: DocumentData): AmendmentDto { const adjustment = priceAdjustmentDto(data.priceAdjustment); return { orderId: stringValue(data.orderId), version: numberValue(data.version), baseAgreementVersion: numberValue(data.baseAgreementVersion), targetAgreementVersion: numberValue(data.targetAgreementVersion), status: data.status === 'confirmed' ? 'confirmed' : data.status === 'financial_pending' ? 'financial_pending' : 'pending', description: stringValue(data.description), measurements: stringValue(data.measurements), deadline: stringValue(data.deadline), ...(stringValue(data.tolerances) ? { tolerances: stringValue(data.tolerances) } : {}), finalPrice: numberValue(data.finalPrice), reason: stringValue(data.reason), confirmations: confirmations(data.confirmations), ...(adjustment ? { priceAdjustment: adjustment } : {}), proposedBy: stringValue(data.proposedBy), updatedAt: timestampIso(data.updatedAt), ...(data.confirmedAt instanceof Timestamp ? { confirmedAt: timestampIso(data.confirmedAt) } : {}) }; }
 function requireParticipant(order: DocumentData, actorId: string) { if (actorId !== order.customerId && actorId !== order.selectedMasterId) throw new DomainError('FORBIDDEN', 'Изменение доступно только участникам заказа'); }
 function confirmations(value: unknown): AmendmentConfirmations { const data = value && typeof value === 'object' ? value as Record<string, unknown> : {}; return { customer: data.customer === true, master: data.master === true }; }
+function priceAdjustmentDto(value: unknown): AmendmentDto['priceAdjustment'] { const data = value && typeof value === 'object' ? value as Record<string, unknown> : null; if (!data || (data.type !== 'top_up' && data.type !== 'refund')) return undefined; return { type: data.type, amountMinor: numberValue(data.amountMinor), status: data.status === 'completed' ? 'completed' : 'pending' }; }
 function notify(transaction: Transaction, userId: string, type: string, title: string, body: string, orderId: string, now: Timestamp) { transaction.create(adminDb.collection('notifications').doc(), { userId, type, title, body, orderId, read: false, createdAt: now, createdBy: 'system' }); }
 function stringValue(value: unknown) { return typeof value === 'string' ? value : ''; }
 function numberValue(value: unknown) { return typeof value === 'number' && Number.isFinite(value) ? value : 0; }

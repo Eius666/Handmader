@@ -205,17 +205,23 @@ export async function confirmAgreement(orderId: string): Promise<AgreementDto> {
 
 export interface AmendmentDto {
   orderId: string; version: number; baseAgreementVersion: number; targetAgreementVersion: number;
-  status: 'pending' | 'confirmed'; description: string; measurements: string; deadline: string;
+  status: 'pending' | 'financial_pending' | 'confirmed'; description: string; measurements: string; deadline: string;
   tolerances?: string; finalPrice: number; reason: string;
-  confirmations: { customer: boolean; master: boolean }; proposedBy: string; updatedAt: string; confirmedAt?: string;
+  confirmations: { customer: boolean; master: boolean };
+  priceAdjustment?: { type: 'top_up' | 'refund'; amountMinor: number; status: 'pending' | 'completed' };
+  proposedBy: string; updatedAt: string; confirmedAt?: string;
 }
 
 export function getAmendment(orderId: string): Promise<AmendmentDto | null> {
   return getServerQuery<AmendmentDto | null>(`/api/orders/${encodeURIComponent(orderId)}/amendment`);
 }
 
-export function proposeAmendment(orderId: string, input: { description: string; measurements: string; deadline: string; tolerances?: string; reason: string }): Promise<AmendmentDto> {
+export function proposeAmendment(orderId: string, input: { description: string; measurements: string; deadline: string; tolerances?: string; finalPrice: number; reason: string }): Promise<AmendmentDto> {
   return postServerCommand<AmendmentDto>(`/api/orders/${encodeURIComponent(orderId)}/amendment`, { action: 'propose', ...input, commandId: crypto.randomUUID() });
+}
+
+export function settleAmendmentPrice(orderId: string): Promise<AmendmentDto> {
+  return postServerCommand<AmendmentDto>(`/api/orders/${encodeURIComponent(orderId)}/amendment`, { action: 'settle_price', commandId: crypto.randomUUID() });
 }
 
 export function confirmAmendment(orderId: string): Promise<AmendmentDto> {

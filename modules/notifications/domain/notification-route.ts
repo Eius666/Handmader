@@ -28,6 +28,8 @@ export function notificationRoute(notification: RoutableNotification): string | 
         : null;
     case 'amendment_pending':
     case 'amendment_confirmed':
+    case 'price_adjustment_pending':
+    case 'price_adjustment_completed':
       return notification.orderId
         ? `/orders/${encodeURIComponent(notification.orderId)}/amendment`
         : null;
