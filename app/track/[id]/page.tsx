@@ -93,11 +93,41 @@ export default function TrackPage() {
 
   useEffect(() => {
     if (!id || !user) return;
+    let active = true;
+    let responses: Order['responses'];
+
     Promise.all([getOrder(id), getVisibleProposals(id)])
       .then(([loadedOrder, proposals]) => {
-        if (loadedOrder) setOrder({ ...loadedOrder, responses: proposals });
+        responses = proposals;
+        if (active && loadedOrder) setOrder({ ...loadedOrder, responses });
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    const refresh = async () => {
+      if (document.visibilityState !== 'visible') return;
+      try {
+        const loadedOrder = await getOrder(id);
+        if (active && loadedOrder) {
+          setOrder((current) => ({
+            ...loadedOrder,
+            responses: responses ?? current?.responses,
+          }));
+        }
+      } catch {
+        // A temporary refresh failure must not replace the last valid order state.
+      }
+    };
+    const interval = window.setInterval(() => void refresh(), 8_000);
+    const handleVisibility = () => void refresh();
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [id, user]);
 
   const isOwner    = order?.customerId      === user?.uid;
